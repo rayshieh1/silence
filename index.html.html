@@ -1,0 +1,2613 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>靜思語錄產生器</title>
+    <!-- 引入開源霞鶩文楷體作為跨平台字型備援 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1b365d;
+            --bg-color: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --accent-color: #6b7280;
+            --check-bg-color: #1b365d;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow-x: hidden;
+            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-color);
+        }
+
+        body { display: flex; justify-content: center; align-items: flex-start; padding: 0; }
+
+        .container {
+            width: 100vw; min-height: 100vh; max-width: none; background: var(--card-bg);
+            padding: 8px 12px 20px 12px; display: flex; flex-direction: column;
+            justify-content: flex-start; position: relative;
+        }
+
+        .header-area {
+            position: relative; width: 100%; height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 0px; padding-bottom: 0px; flex-shrink: 0;
+        }
+
+        .header-text {
+            position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; margin: 0 auto; z-index: 1; pointer-events: none;
+        }
+
+        h1 {
+            color: var(--primary-color); margin: 0; font-size: 1.8rem; line-height: 1.05;
+            font-weight: bold; letter-spacing: -0.5px; text-align: center; width: 100%;
+        }
+
+        .subtitle {
+            color: #777; font-size: 0.65rem; margin: 2px 0 0 0; display: block !important;
+            line-height: 1.25; white-space: nowrap; text-align: center; width: 100%;
+        }
+
+        .header-avatar {
+            width: 60px !important; min-width: 60px !important; max-width: 60px !important;
+            height: 60px; aspect-ratio: 1 / 1; border-radius: 8px; object-fit: cover;
+            flex-shrink: 0; margin-left: auto; margin-right: 0; z-index: 2; position: relative;
+        }
+
+        .input-group { display: flex; gap: 6px; margin-top: 2px; margin-bottom: 4px; width: 100%; flex-shrink: 0; align-items: flex-start; }
+
+        textarea {
+            width: 100%; height: 38px; padding: 3px 5px; font-size: 10px; border: 1.5px solid #e0e0e0;
+            border-radius: 8px; outline: none; resize: none; font-family: inherit; flex: 1; min-width: 0;
+            background-color: #ffffff; line-height: 1.2; white-space: pre-wrap;
+            overflow: hidden; -ms-overflow-style: none; scrollbar-width: none;
+        }
+        textarea::-webkit-scrollbar { display: none; }
+
+        textarea::placeholder { color: #999999; font-size: 8.8px; line-height: 1.2; }
+        textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(27, 54, 93, 0.1); }
+
+        .input-right-control {
+            display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;
+            height: 38px; width: 60px !important; min-width: 60px !important; max-width: 60px !important; flex-shrink: 0;
+            padding-right: 0px; box-sizing: border-box;
+        }
+
+        .input-action-tools {
+            display: flex; align-items: center; justify-content: flex-end; gap: 3px; height: 16px; width: 100%; margin-bottom: 1px;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color); color: white; border: none; padding: 0; border-radius: 6px;
+            font-size: 11px; letter-spacing: 0.3px; font-weight: bold; cursor: pointer; white-space: nowrap !important;
+            user-select: none !important; -webkit-user-select: none !important; -webkit-tap-highlight-color: transparent !important;
+            caret-color: transparent !important; outline: none !important; box-shadow: none !important;
+            display: flex; align-items: center; justify-content: center; height: 20px !important;
+            width: 60px !important; min-width: 60px !important; max-width: 60px !important; box-sizing: border-box; flex-shrink: 0;
+        }
+
+        .btn-submit:hover { background-color: #0f2341; }
+
+        .status-bar {
+            display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #666;
+            margin-bottom: 8px; background: #ffffff; padding: 2px 0 2px 0 !important; border-radius: 6px; width: 100%;
+            flex-shrink: 0; overflow: hidden; gap: 6px;
+        }
+
+        .analysis-tags { display: flex; align-items: center; padding-left: 0 !important; margin-left: 0 !important; flex: 1; min-width: 0; overflow: hidden; }
+
+        #keywordsContainer {
+            display: flex; flex-wrap: nowrap; gap: 3px; height: 20px; width: 100%;
+            overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+            padding-left: 4px !important; margin-left: 0 !important; align-items: center;
+        }
+        #keywordsContainer::-webkit-scrollbar { display: none; }
+
+        .tag-list-container { display: flex; gap: 2px; flex-wrap: nowrap; align-items: center; padding-left: 0 !important; margin-left: 0 !important; overflow-x: auto; }
+
+        .keyword-badge, .card-tag-btn {
+            background-color: var(--primary-color); color: #ffffff; padding: 1px 4px; border-radius: 5px !important;
+            font-size: 0.65rem; font-weight: bold; cursor: pointer; border: 1.5px solid var(--primary-color);
+            transition: all 0.2s ease; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,0.1); white-space: nowrap;
+            letter-spacing: -0.3px; flex-shrink: 0; appearance: none; -webkit-appearance: none; user-select: none;
+            -webkit-tap-highlight-color: transparent; caret-color: transparent !important;
+            height: 18px; line-height: 14px; display: inline-flex; align-items: center; justify-content: center;
+        }
+
+        .keyword-badge.active, .card-tag-btn.active {
+            background-color: #ffffff !important; color: var(--primary-color) !important;
+            border: 1.5px solid var(--primary-color) !important; border-radius: 5px !important; box-shadow: 0 1px 4px rgba(27, 54, 93, 0.2);
+        }
+
+        .btn-next-page {
+            background-color: var(--primary-color); color: #ffffff; border: none; padding: 0; border-radius: 6px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: auto;
+            width: 60px !important; min-width: 60px !important; max-width: 60px !important;
+            height: 20px !important; box-sizing: border-box; flex-shrink: 0; user-select: none; -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent; caret-color: transparent !important; outline: none;
+        }
+
+        .btn-next-page:hover { background-color: #0f2341; }
+        .btn-next-page svg { width: 14px; height: 14px; stroke: #ffffff; fill: none; transition: transform 0.2s ease; }
+        .btn-next-page:active svg { transform: rotate(180deg); }
+
+        .cards-grid { display: flex; flex-direction: column; justify-content: flex-start; gap: 4px; width: 100%; flex-shrink: 0; }
+
+        .card {
+            background-color: #ffffff; border-top: 3px solid var(--primary-color); padding: 5px 8px 3px 8px;
+            border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); display: flex; flex-direction: column;
+            justify-content: flex-start; height: auto; flex-shrink: 0; position: relative; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card.selected-card {
+            border-top-color: var(--primary-color);
+            background-color: #f9fafb;
+            box-shadow: 0 0 0 1.5px var(--primary-color), 0 2px 8px rgba(27, 54, 93, 0.15);
+        }
+
+        .card-main-body { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; width: 100%; }
+
+        .card-content {
+            font-size: 1.05rem; line-height: 1.25; color: #1a2530; margin: 0; padding: 0 0 2px 0;
+            font-weight: 500; display: block; flex: 1;
+        }
+
+        .card-right-side { display: flex; flex-direction: row; align-items: center; justify-content: flex-end; gap: 3px; flex-shrink: 0; margin-right: 0; }
+
+        .ai-card .card-right-side {
+            display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-start; gap: 4px; flex-shrink: 0; margin-right: -3px;
+        }
+
+        .ai-card-top-btns { display: flex; flex-direction: row; align-items: center; gap: 3px; }
+
+        .card-checkbox {
+            appearance: none; -webkit-appearance: none;
+            width: 16px; height: 16px; border: 1.5px solid #9ca3af; border-radius: 4px;
+            outline: none; cursor: pointer; background-color: #ffffff; margin: 0;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            transition: all 0.2s ease; flex-shrink: 0;
+        }
+
+        .card-checkbox:checked { background-color: var(--check-bg-color); border-color: var(--check-bg-color); }
+        .card-checkbox:checked::after {
+            content: ''; position: absolute; width: 4px; height: 8px;
+            border: solid #ffffff; border-width: 0 2px 2px 0;
+            transform: rotate(45deg); top: 1px;
+        }
+
+        .btn-speak, .btn-copy {
+            background: transparent; border: none; color: var(--primary-color); cursor: pointer;
+            padding: 0; line-height: 1; transition: transform 0.1s ease; -webkit-tap-highlight-color: transparent;
+            display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; text-align: center; margin: 0;
+        }
+        .btn-speak:active, .btn-copy:active { transform: scale(1.2); }
+        .btn-speak.speaking { color: #e74c3c; }
+
+        .btn-copy svg { width: 14px; height: 14px; stroke: var(--primary-color); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .btn-copy.copied svg { stroke: var(--primary-color); stroke-width: 2.5; }
+
+        .card-meta {
+            display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: #888;
+            padding-top: 2px; padding-bottom: 4px; margin-top: 1px; padding-left: 0 !important; gap: 4px; flex-shrink: 0; flex-wrap: nowrap;
+            width: 100%;
+        }
+
+        .bottom-buttons-row { display: flex; gap: 6px; width: 100%; margin-top: 6px; margin-bottom: 2px; flex-shrink: 0; }
+
+        .btn-generate-ai {
+            flex: 1; height: 36px; margin: 0; background-color: #e5e7eb; color: #9ca3af;
+            border: none; border-radius: 8px; font-size: 0.82rem; font-weight: bold; cursor: not-allowed;
+            display: flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.25s ease;
+            box-shadow: none; flex-shrink: 0; padding: 0 4px; white-space: nowrap;
+        }
+
+        .btn-generate-ai.active {
+            background: linear-gradient(135deg, #1b365d 0%, #2b5288 100%);
+            color: #ffffff; cursor: pointer; box-shadow: 0 3px 8px rgba(27, 54, 93, 0.25);
+        }
+        .btn-generate-ai.active:hover { background: linear-gradient(135deg, #0f2341 0%, #1b365d 100%); }
+
+        .btn-morning-image {
+            flex: 1; height: 36px; margin: 0;
+            background-color: #e5e7eb; color: #9ca3af;
+            border: none; border-radius: 8px; font-size: 0.82rem; font-weight: bold;
+            cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 4px;
+            transition: all 0.25s ease; box-shadow: none; flex-shrink: 0; padding: 0 4px; white-space: nowrap;
+        }
+
+        .btn-morning-image.active {
+            background: linear-gradient(135deg, #2b5288 0%, #1b365d 100%);
+            color: #ffffff; cursor: pointer; box-shadow: 0 3px 8px rgba(27, 54, 93, 0.2);
+        }
+        .btn-morning-image.active:hover { background: linear-gradient(135deg, #0f2341 0%, #1b365d 100%); }
+
+        .ai-card {
+            background: #f8fafc; border-top: 3px solid #64748b;
+            border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+            padding: 5px 8px 6px 8px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            margin-top: 4px; width: 100%; animation: fadeIn 0.4s ease; flex-shrink: 0;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(0, 0, 0, 0.75); z-index: 9999;
+            display: none; align-items: center; justify-content: center;
+            padding: 8px; backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: #ffffff; border-radius: 12px; padding: 10px;
+            max-width: 520px; width: 100%; display: flex; flex-direction: column;
+            align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .modal-canvas-wrapper {
+            width: 100%; display: flex; justify-content: center; overflow: hidden; border-radius: 8px;
+            max-height: 72vh; position: relative;
+        }
+
+        #morningCanvas {
+            max-width: 100%; max-height: 72vh; width: auto; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            display: block;
+        }
+
+        #morningImgOverlay {
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            max-width: 100%; max-height: 72vh; width: auto; height: auto; border-radius: 8px;
+            opacity: 1; cursor: pointer; z-index: 10; -webkit-touch-callout: default !important;
+        }
+
+        .modal-actions { display: flex; gap: 4px; width: 100%; align-items: center; height: 40px; flex-wrap: nowrap; }
+
+        .btn-toggle-aspect {
+            flex: 1; min-width: 0; height: 38px; border: none; border-radius: 6px;
+            font-weight: bold; font-size: 0.85rem; cursor: pointer;
+            background-color: #e5e5e5; color: #333333; transition: background-color 0.2s ease, color 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center; gap: 3px; white-space: nowrap; padding: 0 4px;
+        }
+        .btn-toggle-aspect:hover { background-color: #d1d5db; }
+        .btn-toggle-aspect svg { width: 18px; height: 18px; fill: none; stroke: currentColor; flex-shrink: 0; }
+
+        .btn-greeting-option {
+            width: 38px; min-width: 38px; max-width: 38px; height: 38px; border: none; border-radius: 6px;
+            font-weight: bold; cursor: pointer; background-color: #e5e5e5; color: #333333; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; padding: 0; flex-shrink: 0; overflow: hidden;
+        }
+        .btn-greeting-option:hover { background-color: #d1d5db; }
+        .btn-greeting-option.active { background-color: #1b365d !important; color: #ffffff !important; }
+        .btn-greeting-option svg { width: 28px; height: 28px; flex-shrink: 0; display: block; }
+
+        /* 🌸 正方形按鈕標準規格：寬高 38px、灰色底 #e5e5e5、圓角 6px */
+        .btn-square-action { 
+            width: 38px !important; min-width: 38px !important; max-width: 38px !important; 
+            height: 38px !important; min-height: 38px !important; max-height: 38px !important;
+            aspect-ratio: 1 / 1;
+            border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold;
+            padding: 0; margin: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-sizing: border-box; background-color: #e5e5e5;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .btn-square-action:active { transform: scale(0.95); }
+
+        .btn-line-square { color: #06C755; }
+        .btn-line-square:hover { background-color: #d1d5db; }
+        .btn-line-square svg { width: 28px; height: 28px; fill: none; }
+
+        .btn-download-square { color: #333333; }
+        .btn-download-square:hover { background-color: #d1d5db; }
+        .btn-download-square svg { width: 24px; height: 24px; stroke: #333333; fill: none; }
+
+        /* 🌸 取消鈕灰底方塊規格完全同步，圖示保持鮮紅醒目 */
+        .btn-close-square { 
+            color: #dc2626; 
+            font-size: 1.35rem; 
+            font-weight: 900; 
+            line-height: 1; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .btn-close-square:hover { background-color: #d1d5db; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 680px) {
+            h1 { font-size: 1.55rem; }
+            .container { padding: 6px 8px 16px 8px; }
+            .cards-grid { gap: 4px; }
+            .card, .ai-card { padding: 4px 6px 4px 6px; }
+            .card-content { font-size: 0.98rem; line-height: 1.2; padding-bottom: 1px; }
+            .status-bar { margin-bottom: 6px; }
+            .card-meta { margin-top: 1px; padding-top: 1px; padding-bottom: 4px; }
+            .keyword-badge, .card-tag-btn { font-size: 0.6rem; padding: 1px 2px; border-radius: 5px !important; }
+            textarea::placeholder { font-size: 8.8px; }
+            .bottom-buttons-row { margin-top: 4px; }
+            .btn-generate-ai, .btn-morning-image { height: 34px; font-size: 0.75rem; }
+            .btn-greeting-option, .btn-square-action { 
+                width: 34px !important; min-width: 34px !important; max-width: 34px !important; 
+                height: 34px !important; min-height: 34px !important; max-height: 34px !important; 
+            }
+            .btn-greeting-option svg { width: 22px; height: 22px; }
+            .btn-toggle-aspect { height: 34px; font-size: 0.75rem; }
+            .modal-actions { gap: 2px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-area">
+        <div class="header-text">
+            <h1>靜思語錄產生器</h1>
+            <p class="subtitle">輸入當下境遇或任選核心重點後<br>按獲得啟發即可得到智慧指引</p>
+        </div>
+        <img src="https://lh3.googleusercontent.com/d/1wTre0yQG95uB71xYSgFXbZLVmRE9b8tr" alt="Header Avatar" class="header-avatar">
+    </div>
+
+    <!-- 🌸 輸入格區域 -->
+    <div class="input-group">
+        <textarea id="userPrompt" placeholder="可輸入最多三行每列十字的文字後，&#10;或直接選取關鍵詞按獲得啟發找出最貼近的金句開示；&#10;亦可勾選任何方塊產生自創語句或生成問候圖。" onkeydown="checkLineLimitOnKeyDown(event, this)" oninput="enforceMaxCharsPerLine(this)"></textarea>
+        <div class="input-right-control">
+            <div class="input-action-tools">
+                <button class="btn-speak" id="btnSpeakInput" type="button" onclick="speakInputText(this)" title="點擊朗讀輸入內容">🔊</button>
+                <input type="checkbox" class="card-checkbox" id="customInputCheckbox" data-card-id="custom_input" onchange="handleCustomCheckboxChange(this)" title="勾選將輸入文字生成問候圖">
+            </div>
+            <button class="btn-submit" id="searchBtn" type="button" onclick="doSearch()">獲得啟發</button>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="analysis-tags" id="analysisBox">
+            <div id="keywordsContainer"></div>
+        </div>
+        <button class="btn-next-page" id="nextPageBtn" type="button" onclick="refreshCoreKeywords()" title="重新整理核心重點與金句">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6"></path>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+        </button>
+    </div>
+
+    <div class="cards-grid" id="mainCardsGrid">
+        <div id="resultsList" style="display: flex; flex-direction: column; gap: 4px; width: 100%;"></div>
+        
+        <div class="bottom-buttons-row" id="buttonsRow">
+            <button class="btn-generate-ai" id="aiGenerateBtn" type="button" disabled onclick="generateAiAphorism()">
+                ✨ 勾選多個金句自創結緣語
+            </button>
+
+            <button class="btn-morning-image" id="morningImageBtn" type="button" disabled onclick="triggerMorningModalFromSelected()">
+                🌸 勾選一句生成自創問候圖
+            </button>
+        </div>
+
+        <div id="aiResultBox" style="width: 100%;"></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="morningModal">
+    <div class="modal-content">
+        <div class="modal-canvas-wrapper">
+            <canvas id="morningCanvas" width="450" height="800"></canvas>
+            <img id="morningImgOverlay" alt="問候圖（長按可儲存）" />
+        </div>
+        <div class="modal-actions">
+            <button class="btn-greeting-option" id="btnGreetMorning" onclick="selectGreetingText('早安')" title="早安">
+                <svg viewBox="0 0 100 100">
+                    <circle cx="68" cy="32" r="28" fill="#F8E38C"></circle>
+                    <polygon points="42,5 2,98 82,98" fill="#82C341" stroke="#4B8820" stroke-width="2" stroke-linejoin="round"></polygon>
+                    <line x1="42" y1="5" x2="2" y2="98" stroke="#4B8820" stroke-width="2.5"></line>
+                    <line x1="42" y1="5" x2="82" y2="98" stroke="#4B8820" stroke-width="2.5"></line>
+                    <line x1="2" y1="98" x2="82" y2="98" stroke="#4B8820" stroke-width="2.5"></line>
+                </svg>
+            </button>
+
+            <button class="btn-greeting-option" id="btnGreetAfternoon" onclick="selectGreetingText('日安')" title="問安">
+                <svg viewBox="0 0 100 100">
+                    <g fill="#F59E0B">
+                        <rect x="46" y="2" width="8" height="16" rx="4"></rect>
+                        <rect x="46" y="82" width="8" height="16" rx="4"></rect>
+                        <rect x="2" y="46" width="16" height="8" rx="4"></rect>
+                        <rect x="82" y="46" width="16" height="8" rx="4"></rect>
+                        <rect x="15" y="15" width="14" height="8" rx="4" transform="rotate(45 22 19)"></rect>
+                        <rect x="71" y="71" width="14" height="8" rx="4" transform="rotate(45 78 75)"></rect>
+                        <rect x="15" y="71" width="14" height="8" rx="4" transform="rotate(-45 22 75)"></rect>
+                        <rect x="70" y="15" width="14" height="8" rx="4" transform="rotate(-45 78 19)"></rect>
+                    </g>
+                    <circle cx="50" cy="50" r="32" fill="#FBBF24"></circle>
+                    <path d="M 50,18 A 32,32 0 0 1 82,50 A 32,32 0 0 1 50,82 A 32,32 0 0 0 50,18 Z" fill="#F59E0B"></path>
+                </svg>
+            </button>
+
+            <button class="btn-greeting-option" id="btnGreetNight" onclick="selectGreetingText('晚安')" title="晚安">
+                <svg viewBox="0 0 100 100">
+                    <g transform="translate(100, 0) scale(-1, 1)">
+                        <path d="M 52,8 C 76,8 94,26 94,50 C 94,74 76,92 52,92 C 34,92 20,80 14,64 C 30,68 50,56 50,36 C 50,22 40,12 28,8 C 36,8 44,8 52,8 Z" fill="#FDE047"></path>
+                        <path d="M 52,12 C 72,12 88,28 88,50 C 88,70 73,86 52,86 C 40,86 28,78 22,66 C 36,68 52,56 52,36 C 52,24 44,15 34,12 C 40,12 46,12 52,12 Z" fill="#FEF08A" opacity="0.65"></path>
+                        <path d="M 18,84 C 10,84 4,77 4,68 C 4,59 11,53 18,52 C 21,42 31,37 41,37 C 51,37 60,43 62,52 C 70,52 76,59 76,67 C 76,76 70,84 61,84 Z" fill="#FFFFFF" opacity="0.95"></path>
+                    </g>
+                </svg>
+            </button>
+
+            <button class="btn-toggle-aspect" id="toggleAspectBtn" onclick="toggleImageAspectMode()">
+                <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="1.5" stroke-width="2.2"></rect>
+                    <path d="M12 17v3" stroke-width="2.2"></path>
+                    <path d="M6 21c3-0.8 9-0.8 12 0" stroke-width="2.2"></path>
+                </svg>
+                <span>橫幅</span>
+            </button>
+
+            <button class="btn-square-action btn-line-square" id="btnLineShare" onclick="shareToLine()" title="用 LINE 傳送金句">
+                <svg viewBox="0 0 100 100">
+                    <path d="M 50,15 C 28,15 10,29 10,46 C 10,56 18,65 30,71 C 29,76 25,84 20,88 C 28,87 36,83 41,78 C 44,79 47,80 50,80 C 72,80 90,66 90,48 C 90,29 72,15 50,15 Z" fill="none" stroke="#06C755" stroke-width="7" stroke-linejoin="round"></path>
+                    <text x="50" y="57" font-family="-apple-system, BlinkMacSystemFont, Arial, sans-serif" font-size="26" font-weight="900" fill="#06C755" text-anchor="middle">LINE</text>
+                </svg>
+            </button>
+            <button class="btn-square-action btn-download-square" onclick="downloadCurrentMorningImage()" title="下載圖片">
+                <svg viewBox="0 0 24 24" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v13.5"></path>
+                    <polyline points="6 10 12 15.5 18 10"></polyline>
+                    <path d="M3 21.5h18" stroke-width="4.2"></path>
+                </svg>
+            </button>
+            <!-- 🌸 灰色正方形取消按鈕 -->
+            <button class="btn-square-action btn-close-square" onclick="closeMorningModal()" title="關閉">✕</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var defaultPlaceholderText = "可輸入最多三行每列十字的文字後，\n或直接選取關鍵詞按獲得啟發找出最貼近的金句開示；\n亦可勾選任何方塊產生自創語句或生成問候圖。";
+var aphorismShowCounts = {}; 
+var tagShowCounts = {}; 
+var lastDisplayedIds = []; 
+var currentDisplayedCards = [];
+
+var recentTemplateIndices = [];
+var aiImageDownloadCounter = 0;
+var currentSelectedGreeting = "";
+var currentModalText = "";
+
+var daytimeGreetingsPool = [
+    "日安", "工作順利", "能量滿格", "諸事順遂", "步步高升", "今日事畢",
+    "平安喜樂", "幸福美滿", "闔家平安", "身體健康", "萬事如意",
+    "心想事成", "舒心自在", "幸福滿杯", "順心如意", "日日平安", "喜樂滿盈"
+];
+
+// 🌸 背景圖清單：要新增圖片，只要在下面加一行，填上網址和用途即可
+//    用途：「早安」＝只用早安；「白天」＝早安、日安都用；「晚安」＝只用晚安；「不選」＝日安、沒選早午晚安時使用
+var backgroundImages = [
+    { no: 1, url: "https://lh3.googleusercontent.com/d/1ZvfF2ODIimJv3JwRP_w27QxYj3wrfeel", use: "早安" },
+    { no: 2, url: "https://lh3.googleusercontent.com/d/1-EAYnTCF4afPFQgVuICTzb-dKqL3qk_k", use: "白天" },
+    { no: 3, url: "https://lh3.googleusercontent.com/d/1YvemrnxzOjZpjW_jh1pJLBmxXCwTZrR1", use: "早安" },
+    { no: 4, url: "https://lh3.googleusercontent.com/d/1T6_KDd_oIsTtFHTtPOxwC5tZekZjmfT0", use: "早安" },
+    { no: 5, url: "https://lh3.googleusercontent.com/d/1MfFnaoRgc1knb1HqS7WGQqgGYXqorYNH", use: "早安" },
+    { no: 6, url: "https://lh3.googleusercontent.com/d/1kWcKP35RGBh6kU7ZuAYDKkkNbcy-dYTT", use: "不選" },
+    { no: 7, url: "https://lh3.googleusercontent.com/d/1cMjQ4G4JfnXS37Ta8Qk2LpC_MAwNeQi-", use: "不選" },
+    { no: 8, url: "https://lh3.googleusercontent.com/d/17yCSF0Wo1ukQTVXzKhllSkCaGdpJ0jxE", use: "白天" },
+    { no: 9, url: "https://lh3.googleusercontent.com/d/1QA0j9rg-thTpIhlbTwrCAAPMtYVwn8l7", use: "白天" },
+    { no: 10, url: "https://lh3.googleusercontent.com/d/19nK31Un1wRzEQXjpFhkQA56M-OWYy72y", use: "早安" },
+    { no: 11, url: "https://lh3.googleusercontent.com/d/17SpoDUq1LOUUDyOI3WYD7_l7Z2UgRnL0", use: "不選" },
+    { no: 12, url: "https://lh3.googleusercontent.com/d/1g6FSudILJeqbJDPk2N6aP8-k7hefPpbK", use: "早安" },
+    { no: 13, url: "https://lh3.googleusercontent.com/d/1yXcwmud5yqidZ-8Bg7J5UFp23_4b2bRz", use: "早安" },
+    { no: 14, url: "https://lh3.googleusercontent.com/d/1dTsiiMEVxXJ9CfuaHyETPUhubaBZ5UhV", use: "不選" },
+    { no: 15, url: "https://lh3.googleusercontent.com/d/17PEd1EMNrPlgNBxAO8BcY85pL529hMrp", use: "不選" },
+    { no: 16, url: "https://lh3.googleusercontent.com/d/1HrWHeS_zaj3HjJz54oN17Ri8dfj68IDl", use: "早安" },
+    { no: 17, url: "https://lh3.googleusercontent.com/d/1IaYGCFc8PLu2hmI68c10YAXnIHPA_C25", use: "晚安" },
+    { no: 18, url: "https://lh3.googleusercontent.com/d/1PrVZJ4i0FOJs_W9Qfmvp2y_5cvV0Tnx-", use: "晚安" },
+    { no: 19, url: "https://lh3.googleusercontent.com/d/1TbsTIMTW8r6T1FABF4i0HZYOTan9UvoV", use: "晚安" },
+    { no: 20, url: "https://lh3.googleusercontent.com/d/1GREFl5bU3bxGnMc448oV6okshG3tuekk", use: "晚安" },
+    { no: 21, url: "https://lh3.googleusercontent.com/d/18lv3InNZrkYneiyXF7AgOMwOiS7-d1_Z", use: "晚安" },
+    { no: 22, url: "https://lh3.googleusercontent.com/d/1PpoascwJ8kJMUg7tI0roDlE7dyY3YJL4", use: "晚安" },
+    { no: 23, url: "https://lh3.googleusercontent.com/d/1M4BZk94SwXAZfE1-KqAm9RCAm45Gfq4j", use: "晚安" },
+    { no: 24, url: "https://lh3.googleusercontent.com/d/1ILY573KtmZUo-50mBEISLZRdoKlKUynQ", use: "白天" },
+    { no: 25, url: "https://lh3.googleusercontent.com/d/1C1xJDL_yVKsvhjMHn9-OR1TNjBSJPWPc", use: "白天" },
+    { no: 26, url: "https://lh3.googleusercontent.com/d/1QvhYRQBJyzTxHX7f4lxibcPh6TdXHpHd", use: "不選" },
+    { no: 27, url: "https://lh3.googleusercontent.com/d/1G-WuFZX3zpRtkOtP0hrIIHedikImPgTz", use: "白天" },
+    { no: 28, url: "https://lh3.googleusercontent.com/d/1cekfyMQlcrxa7euHfl20xF_OTJsqdKvH", use: "白天" },
+    { no: 29, url: "https://lh3.googleusercontent.com/d/1VCAkfCMsnRS-NQWcJFdoUk26Hxlmn550", use: "早安" },
+    { no: 30, url: "https://lh3.googleusercontent.com/d/1_wMhVZbBHtLRDxAynk_I-7zyJWaFANAo", use: "不選" },
+    { no: 31, url: "https://lh3.googleusercontent.com/d/18E4PNdmP7GrkMnzuFCKC2Pc5jurVFuR9", use: "早安" },
+    { no: 32, url: "https://lh3.googleusercontent.com/d/1Qpph-oFfk70xr20SlvnEF8cUgYorYroZ", use: "早安" },
+    { no: 33, url: "https://lh3.googleusercontent.com/d/1RINrvjV5uQAxzN9608_BejUL4w1LI92h", use: "不選" },
+    { no: 34, url: "https://lh3.googleusercontent.com/d/1iheNTHjP12UvHoPwVAjel9fyuuHqfPKZ", use: "不選" },
+    { no: 35, url: "https://lh3.googleusercontent.com/d/1FBzBanq7y4vj9UzvcuFpXB57pzRJPIXY", use: "不選" },
+    { no: 36, url: "https://lh3.googleusercontent.com/d/1AUf4VyTwQtrisH4aqBPjUx_1bl9Bbbxo", use: "不選" },
+    { no: 37, url: "https://lh3.googleusercontent.com/d/1zVllgFb-5fVNNOkJ4gGjww-wQUrqydlq", use: "不選" },
+    { no: 38, url: "https://lh3.googleusercontent.com/d/1VyEJV_fGddOMXvZjcpj3xXNd0ki86AC3", use: "白天" },
+    { no: 39, url: "https://lh3.googleusercontent.com/d/10yRIb3S_7NyLFL_DIEDhDpVJNWGOsCPp", use: "晚安" },
+    { no: 40, url: "https://lh3.googleusercontent.com/d/1hg_KTvqH9fUCkEeBjW0VHTKi7z53f82J", use: "晚安" },
+    { no: 41, url: "https://lh3.googleusercontent.com/d/1Ts3QsG61FWYy1KIgmPw2wQ9jirLtlt4K", use: "晚安" }
+];
+
+// 🌸 沒選早午晚安時，依金句主題優先挑選的圖片編號（不到 3 張時，改從「不選」全部隨機挑）
+var backgroundThemeGroups = [
+    { tags: ["健康", "工作", "時間"], nos: [11, 14, 26, 36] },
+    { tags: ["平靜", "知足", "修養"], nos: [15, 30] },
+    { tags: ["大愛", "感恩", "希望", "光明"], nos: [6, 7, 33, 35, 37] }
+];
+
+var copySvg = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+var checkSvg = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+var allSystemTags = [
+    "智慧", "轉念", "包容", "知足", "謙虛", "反省", "自愛", "大愛", "修養", "樂觀",
+    "無愧", "真誠", "誠信", "自律", "善念", "健康", "感恩", "惜福", "專注", "平靜",
+    "正念", "尊嚴", "歡喜", "快樂", "安定", "無私", "解脫", "自由", "態度", "協助",
+    "溝通", "原諒", "批評", "本份", "付出", "生氣", "合作", "謹慎", "失敗", "堅持",
+    "學習", "改變", "處事", "毅力", "努力", "團結", "信心", "勇氣", "積極", "行動",
+    "盡責", "準備", "磨練", "說話", "讚美", "教育", "平等", "尊重", "時間", "愛心",
+    "利益", "比較", "改過", "父母", "家庭", "孝順", "感情", "衝突", "團隊", "做人",
+    "欣賞", "體諒", "關懷", "禮讓", "溫暖", "得失", "事業", "功德", "考驗", "經驗",
+    "成就", "人格", "煩惱", "方向", "工作", "困難", "責任", "心情", "抱怨", "幸福",
+    "希望", "選擇", "名利", "欲望", "生命", "珍惜", "機會", "命運", "價值", "光明",
+    "克服", "溫情"
+];
+
+var negTagList = ["生氣", "失敗", "批評", "衝突", "困難", "煩惱", "抱怨", "欲望", "名利", "得失", "比較", "考驗", "磨練"];
+var posTagList = ["智慧", "轉念", "包容", "知足", "謙虛", "反省", "自愛", "大愛", "修養", "樂觀", "無愧", "真誠", "誠信", "自律", "善念", "感恩", "惜福", "平靜", "正念", "尊嚴", "歡喜", "快樂", "安定", "無私", "解脫", "自由", "讚美", "愛心", "幸福", "希望", "光明", "溫暖", "克服", "溫情"];
+
+allSystemTags.forEach(function(t) { tagShowCounts[t] = 0; });
+
+var aphorismsData = [
+    {id:1, origId:1, content:"口說好話，心想好意，身行好事。", semanticTags:["說話","善念","行動"], lines:["口說好話，","心想好意，","身行好事。"]},
+    {id:2, origId:2, content:"理直氣和，得理要饒人。", semanticTags:["包容","修養","原諒","處事","衝突"], lines:["理直氣和，","得理要饒人。"]},
+    {id:3, origId:3, content:"太陽光大，父母恩大，君子量大。", semanticTags:["父母","感恩","孝順"], lines:["太陽光大，","父母恩大，","君子量大。"]},
+    {id:4, origId:4, content:"話多不如話少；話少不如話好。", semanticTags:["說話","溝通","謹慎"], lines:["話多不如話少；","話少不如話好。"]},
+    {id:5, origId:5, content:"做好事不能少我一人，做壞事不能多我一人。", semanticTags:["本份","自律","付出"], lines:["做好事不能少我一人，","做壞事不能多我一人。"]},
+    {id:6, origId:6, content:"要原諒一個無心傷害的人，不能做一個輕易被傷害的人。", semanticTags:["原諒","包容","勇氣"], lines:["要原諒一個無心傷害的人，","不能做一個輕易被傷害的人。"]},
+    {id:7, origId:7, content:"聰明的人得失心重；有智慧的人勇於捨得。", semanticTags:["智慧","得失","解脫"], lines:["聰明的人得失心重；","有智慧的人勇於捨得。"]},
+    {id:8, origId:8, content:"塵世裡最貴重的禮物是原諒。", semanticTags:["原諒","包容","珍惜"], lines:["塵世裡最貴重的","禮物是原諒。"]},
+    {id:9, origId:9, content:"一個人的快樂，不是因為他擁有得多，而是因為他計較得少。", semanticTags:["快樂","知足","自由"], lines:["一個人的快樂，","不是因為他擁有得多，","而是因為他計較得少。"]},
+    {id:10, origId:10, content:"對社會與其擔心，不如化作信心，更要付出一份愛心。", semanticTags:["付出","信心","愛心"], lines:["對社會與其擔心，","不如化作信心，","更要付出一份愛心。"]},
+    {id:11, origId:11, content:"真正的愛心，是照顧好自己的這顆心。", semanticTags:["愛心","自愛","心情"], lines:["真正的愛心，","是照顧好自己的這顆心。"]},
+    {id:12, origId:12, content:"做人要立好志，發好願。", semanticTags:["做人","方向","堅持"], lines:["做人要立好志，","發好願。"]},
+    {id:13, origId:13, content:"原諒別人就是善待自己。", semanticTags:["原諒","自愛","解脫"], lines:["原諒別人就是善待自己。"]},
+    {id:14, origId:14, content:"生氣是一種瘋病，醜化了自己。", semanticTags:["生氣","修養","自律"], lines:["生氣是一種瘋病，","醜化了自己。"]},
+    {id:15, origId:15, content:"人生最大的成就，是從失敗中站立起來。", semanticTags:["失敗","成就","勇氣"], lines:["人生最大的成就，","是從失敗中站立起來。"]},
+    {id:16, origId:16, content:"唯其尊重自己的人，才更勇於縮小自己。", semanticTags:["尊嚴","謙虛","自愛"], lines:["唯其尊重自己的人，","才更勇於縮小自己。"]},
+    {id:17, origId:17, content:"有智慧才能分辨善惡邪正；有謙虛才能建立美滿人生。", semanticTags:["智慧","謙虛","幸福","家庭"], lines:["有智慧才能分辨善惡邪正；","有謙虛才能建立美滿人生。"]},
+    {id:18, origId:18, content:"米粒愈飽滿，垂得愈低。", semanticTags:["謙虛","修養","做人"], lines:["米粒愈飽滿，","垂得愈低。"]},
+    {id:19, origId:19, content:"待人退一步，愛人寬一寸，在人生的道路中就會活的很快樂。", semanticTags:["快樂","包容","禮讓"], lines:["待人退一步，愛人寬一寸，","在人生的道路中就會活的很快樂。"]},
+    {id:20, origId:20, content:"人要自愛，才能愛普天下的人。", semanticTags:["自愛","大愛","付出"], lines:["人要自愛，","才能愛普天下的人。"]},
+    {id:21, origId:21, content:"時間可以造就人格，成就事業，也可以儲積功德。", semanticTags:["時間","事業","功德"], lines:["時間可以造就人格，","成就事業，","也可以儲積功德。"]},
+    {id:22, origId:22, content:"人的心地是一畦田，土地沒有播下好種子，也長不出好的果實。", semanticTags:["善念","心情","改變"], lines:["人的心地是一畦田，","土地沒有播下好種子，","也長不出好的果實。"]},
+    {id:23, origId:23, content:"能付出愛心就是福；能消除煩惱就是慧。", semanticTags:["付出","愛心","煩惱"], lines:["能付出愛心就是福；","能消除煩惱就是慧。"]},
+    {id:24, origId:24, content:"不能低頭的人，是因為一再回顧過去的成就。", semanticTags:["成就","謙虛","反省"], lines:["不能低頭的人，","是因為一再回顧過去的成就。"]},
+    {id:25, origId:25, content:"柔能調服眾生；剛能堅強己志。", semanticTags:["毅力","堅持","修養"], lines:["柔能調服眾生；","剛能堅強己志。"]},
+    {id:26, origId:26, content:"人能和，則是非不生。", semanticTags:["平靜","衝突","處事"], lines:["人能和，","則是非不生。"]},
+    {id:27, origId:27, content:"培養好自己的氣質，不要爭面子。爭來的是假的，養來的才是真的。", semanticTags:["修養","人格","反省"], lines:["培養好自己的氣質，","不要爭面子。","爭來的是假的，","養來的才是真的。"]},
+    {id:28, origId:28, content:"人事的艱難與琢磨，就是一種考驗。", semanticTags:["考驗","磨練","困難"], lines:["人事的艱難與琢磨，","就是一種考驗。"]},
+    {id:29, origId:29, content:"是非當教育，讚美作警惕，嫌棄當反省，錯誤作經驗。", semanticTags:["反省","讚美","教育"], lines:["是非當教育，","讚美作警惕，","嫌棄當反省，","錯誤作經驗。"]},
+    {id:30, origId:30, content:"任何批評都是寶貴的一課。", semanticTags:["批評","學習","反省"], lines:["任何批評都是寶貴的一課。"]},
+    {id:31, origId:31, content:"人如不知足，就永遠都在煩惱中。", semanticTags:["知足","煩惱","欲望"], lines:["人如不知足，","就永遠都在煩惱中。"]},
+    {id:32, origId:32, content:"人生的煩惱，是不分貧富貴賤的。透過煩惱轉成智慧，這個煩惱才有意義。", semanticTags:["智慧","煩惱","轉念"], lines:["人生的煩惱，","是不分貧富貴賤的。","透過煩惱轉成智慧，","這個煩惱才有意義。"]},
+    {id:33, origId:33, content:"有心就有福，有願就有力。", semanticTags:["堅持","信心","幸福"], lines:["有心就有福，","有願就有力。"]},
+    {id:34, origId:34, content:"脾氣嘴巴不好，心地再好，也不能算是好人。", semanticTags:["生氣","說話","修養","做人"], lines:["脾氣嘴巴不好，","心地再好，","也不能算是好人。"]},
+    {id:35, origId:35, content:"不要把能說話的嘴巴，用在搬弄是非上。", semanticTags:["說話","謹慎","修養"], lines:["不要把能說話的嘴巴，","用在搬弄是非上。"]},
+    {id:36, origId:36, content:"對人要寬心，講話要細心。", semanticTags:["說話","體諒","謹慎"], lines:["對人要寬心，","講話要細心。"]},
+    {id:37, origId:37, content:"原諒別人是美德，原諒自己是損德。", semanticTags:["原諒","反省","修養"], lines:["原諒別人是美德，","原諒自己是損德。"]},
+    {id:38, origId:38, content:"大錯誤容易反省，小習氣不易除掉。", semanticTags:["反省","改過","自律"], lines:["大錯誤容易反省，","小習氣不易除掉。"]},
+    {id:39, origId:39, content:"生氣是把別人的過錯拿來懲罰自己。", semanticTags:["生氣","轉念","包容"], lines:["生氣是把別人的過錯","拿來懲罰自己。"]},
+    {id:40, origId:40, content:"一般人常說要爭一口氣。其實真正有工夫的人，是把這口氣嚥下去。", semanticTags:["轉念","自律","修養"], lines:["一般人常說要爭一口氣。","其實真正有工夫的人，","是把這口氣嚥下去。"]},
+    {id:41, origId:41, content:"多做多得，少做多失。", semanticTags:["付出","行動","本份"], lines:["多做多得，","少做多失。"]},
+    {id:42, origId:42, content:"甘願做，歡喜受。", semanticTags:["歡喜","付出","態度"], lines:["甘願做，","歡喜受。"]},
+    {id:43, origId:43, content:"口說一句好話，如口出蓮花；口說一句壞話，如口出毒蛇。", semanticTags:["說話","讚美","謹慎"], lines:["口說一句好話，如口出蓮花；","口說一句壞話，如口出毒蛇。"]},
+    {id:44, origId:44, content:"一個人不怕錯，就怕不改過；改過並不難。", semanticTags:["改過","勇氣","反省"], lines:["一個人不怕錯，","就怕不改過；","改過並不難。"]},
+    {id:45, origId:45, content:"不經一事，不長一智。", semanticTags:["經驗","智慧","學習"], lines:["不經一事，","不長一智。"]},
+    {id:46, origId:46, content:"智慧是從人與事之間磨練出來的。", semanticTags:["智慧","磨練","經驗"], lines:["智慧是從人與事","之間磨練出來的。"]},
+    {id:47, origId:47, content:"吃苦了苦，苦盡甘來；享福了福，福盡悲來。", semanticTags:["磨練","得失","珍惜"], lines:["吃苦了苦，苦盡甘來；","享福了福，福盡悲來。"]},
+    {id:48, origId:48, content:"人因自覺而成長，因自滿而墮落。", semanticTags:["反省","謙虛","學習"], lines:["人因自覺而成長，","因自滿而墮落。"]},
+    {id:49, origId:49, content:"不要小看自己，因為人有無限的可能。", semanticTags:["信心","勇氣","自愛"], lines:["不要小看自己，","因為人有無限的可能。"]},
+    {id:50, origId:50, content:"做個手心向下的人，不要做手心向上的人。", semanticTags:["付出","大愛","做人"], lines:["做個手心向下的人，","不要做手心向上的人。"]},
+    {id:51, origId:51, content:"道德是提昇自我的明燈，不該是呵斥別人的鞭子。", semanticTags:["自律","反省","包容"], lines:["道德是提昇自我的明燈，","不該是呵斥別人的鞭子。"]},
+    {id:52, origId:52, content:"信心、毅力、勇氣三者具備，則天下沒有做不成的事。", semanticTags:["勇氣","信心","毅力","準備"], lines:["信心、毅力、勇氣三者具備，","則天下沒有做不成的事。"]},
+    {id:53, origId:53, content:"任何事都是從一個決心、一粒種子開始。", semanticTags:["堅持","信心","行動"], lines:["任何事都是從","一個決心、","一粒種子開始。"]},
+    {id:54, origId:54, content:"閒人無樂趣，忙人無是非。", semanticTags:["時間","工作","本份"], lines:["閒人無樂趣，","忙人無是非。"]},
+    {id:55, origId:55, content:"改變自己是自救，影響別人是救人。", semanticTags:["轉念","自愛","改變"], lines:["改變自己是自救，","影響別人是救人。"]},
+    {id:56, origId:56, content:"願要大，志要堅，氣要柔，心要細。", semanticTags:["毅力","修養","謹慎"], lines:["願要大，志要堅，","氣要柔，心要細。"]},
+    {id:57, origId:57, content:"一雙手健全卻不肯做事的人，等於沒手的人。", semanticTags:["行動","工作","本份"], lines:["一雙手健全卻不肯做事的人，","等於沒手的人。"]},
+    {id:58, origId:58, content:"弱者等待時機，強者創造時機。", semanticTags:["勇氣","行動","機會"], lines:["弱者等待時機，","強者創造時機。"]},
+    {id:59, origId:59, content:"發脾氣是無能的表現。", semanticTags:["生氣","修養","自律"], lines:["發脾氣是無能的表現。"]},
+    {id:60, origId:60, content:"看別人不順眼時，就要調整自己。", semanticTags:["轉念","反省","改變"], lines:["看別人不順眼時，","就要調整自己。"]},
+    {id:61, origId:61, content:"忍得過、看得透、提得起、放得下。", semanticTags:["解脫","轉念","包容"], lines:["忍得過、看得透、","提得起、放得下。"]},
+    {id:62, origId:62, content:"水滴雖微，漸盈大氣。", semanticTags:["堅持","毅力","時間"], lines:["水滴雖微，","漸盈大氣。"]},
+    {id:63, origId:63, content:"前腳踏出去，後腳要跟著放開。", semanticTags:["解脫","轉念","自由"], lines:["前腳踏出去，","後腳要跟著放開。"]},
+    {id:64, origId:64, content:"人的眼睛長在前面，只看到別人的缺點，絲毫看不到自己的缺點。", semanticTags:["反省","改過","批評"], lines:["人的眼睛長在前面，","只看到別人的缺點，","絲毫看不到自己的缺點。"]},
+    {id:65, origId:65, content:"施比受更有福。", semanticTags:["付出","歡喜","幸福"], lines:["施比受更有福。"]},
+    {id:66, origId:66, content:"真正的快樂是施捨後的那份清靜、安慰與喜悅。", semanticTags:["快樂","付出","平靜"], lines:["真正的快樂是","施捨後的那份","清靜、安慰與喜悅。"]},
+    {id:67, origId:67, content:"要做個受歡迎、被愛的人，必須先照顧好自己的聲和色、面容動作、言談舉止，都是在日常生活中修養忍辱得來。", semanticTags:["修養","態度","禮讓"], lines:["要做個受歡迎、被愛的人，","必須先照顧好自己的聲和色、","面容動作、言談舉止，","都是在日常生活中修養忍辱得來。"]},
+    {id:68, origId:68, content:"多一次原諒別人就多一次福，把量放大福就大。", semanticTags:["原諒","包容","大愛"], lines:["多一次原諒別人就多一次福，","把量放大福就大。"]},
+    {id:69, origId:69, content:"有心就有福，有願就有力；自造福田，自得福緣。", semanticTags:["自律","堅持","考驗","功德","付出","命運"], lines:["有心就有福，有願就有力；","自造福田，自得福緣。"]},
+    {id:70, origId:70, content:"說話要謹慎、委婉：面對知音，不必說就懂；不是知音，說得再露骨也沒用。", semanticTags:["謹慎","說話","溝通"], lines:["說話要謹慎、委婉：","面對知音，不必說就懂；","不是知音，說得再露骨也沒用。"]},
+    {id:71, origId:71, content:"轉一個角度來看世界，世界無限寬大；換一種立場來待人事，人事無不輕安。", semanticTags:["轉念","包容","處事"], lines:["轉一個角度來看世界，","世界無限寬大；","換一種立場來待人事，","人事無不輕安。"]},
+    {id:72, origId:72, content:"能忍而不計較，則再大的困難也能克服。", semanticTags:["克服","困難","包容"], lines:["能忍而不計較，","則再大的困難也能克服。"]},
+    {id:73, origId:73, content:"自己害自己，莫過於亂發脾氣。", semanticTags:["生氣","自律","反省"], lines:["自己害自己，","莫過於亂發脾氣。"]},
+    {id:74, origId:74, content:"凡夫迷失於當下，後悔於過去；聖人覺悟於當下，解脫於未來。", semanticTags:["選擇","解脫","時間"], lines:["凡夫迷失於當下，","後悔於過去；","聖人覺悟於當下，","解脫於未來。"]},
+    {id:75, origId:75, content:"擁有是負擔，不計較就自在；能放下煩惱才能快樂。", semanticTags:["快樂","煩惱","知足"], lines:["擁有是負擔，","不計較就自在；","能放下煩惱才能快樂。"]},
+    {id:76, origId:76, content:"君子為目標，小人為目的。", semanticTags:["做人","方向","修養"], lines:["君子為目標，","小人為目的。"]},
+    {id:77, origId:77, content:"一句不恰當的話，就會使人產生排斥的心。", semanticTags:["說話","溝通","謹慎"], lines:["一句不恰當的話，","就會使人產生排斥的心。"]},
+    {id:78, origId:78, content:"說話講得恰到好處，多一句少一句都不行。", semanticTags:["說話","處事","謹慎"], lines:["說話講得恰到好處，","多一句少一句都不行。"]},
+    {id:79, origId:79, content:"憤怒能剝奪一個人的洞察力及忍耐力，惹起一切的罪惡，吞服一切後果，像猛火一樣地毀滅一個玩火的人。", semanticTags:["生氣","平靜","自律"], lines:["憤怒能剝奪一個人的洞察力及忍耐力，","惹起一切的罪惡，吞服一切後果，","像猛火一樣地毀滅一個玩火的人。"]},
+    {id:80, origId:80, content:"孝順就是在父母需要你的時候，能歡喜付出。", semanticTags:["孝順","父母","付出","歡喜"], lines:["孝順就是在父母需要","你的時候，能歡喜付出。"]},
+    {id:81, origId:81, content:"一句溫暖的話，就像往別人身上灑香水，自己也會沾上兩三滴。", semanticTags:["說話","溫暖","讚美"], lines:["一句溫暖的話，就像","往別人身上灑香水，","自己也會沾上兩三滴。"]},
+    {id:82, origId:82, content:"教導別人也要分內外：對內要正，對外要柔。", semanticTags:["教育","溝通","態度"], lines:["教導別人也要分內外：","對內要正，對外要柔。"]},
+    {id:83, origId:83, content:"勇氣不可失，信心不可無，世間沒有不能與無能的事，只怕不肯。", semanticTags:["勇氣","信心","堅持"], lines:["勇氣不可失，信心不可無，","世間沒有不能與無能的事，","只怕不肯。"]},
+    {id:84, origId:84, content:"愈能忍受艱難的花，愈能有甜蜜的果。", semanticTags:["考驗","成就","磨練"], lines:["愈能忍受艱難的花，","愈能有甜蜜的果。"]},
+    {id:85, origId:85, content:"知識要用心體會，才能變成自己的智慧。", semanticTags:["智慧","專注","學習"], lines:["知識要用心體會，","才能變成自己的智慧。"]},
+    {id:86, origId:86, content:"能善用時間的人，必能掌握自己努力的方向。", semanticTags:["時間","方向","努力"], lines:["能善用時間的人，","必能掌握自己努力的方向。"]},
+    {id:87, origId:87, content:"每天無所事事，是人生的消費者；積極有用，才是人生的創造者。", semanticTags:["時間","本份","工作"], lines:["每天無所事事，","是人生的消費者；","積極有用，","才是人生的創造者。"]},
+    {id:88, origId:88, content:"一個人要點亮自己的心光，才能去引發別人。", semanticTags:["改變","希望","光明"], lines:["一個人要點亮自己的心光，","才能去引發別人。"]},
+    {id:89, origId:89, content:"把他人拿來做自己的鏡子。看他人的優點，自我鞭策；看別人的缺點，反省自己。", semanticTags:["反省","學習","讚美"], lines:["把他人拿來做自己的鏡子。","看他人的優點，自我鞭策；","看別人的缺點，反省自己。"]},
+    {id:90, origId:90, content:"愛不是要求對方，而是要由自身的付出，無條件的奉獻，做到事事圓滿。", semanticTags:["付出","愛心","無私"], lines:["愛不是要求對方，","而是要由自身的付出，","無條件的奉獻，","做到事事圓滿。"]},
+    {id:91, origId:91, content:"凡事往好的方面想，心中常存善念，遇事逢凶化。", semanticTags:["善念","轉念","樂觀"], lines:["凡事往好的方面想，","心中常存善念，","遇事逢凶化。"]},
+    {id:92, origId:92, content:"你好我也好，一個人不但要看重自己，也要懂得欣賞別人。", semanticTags:["欣賞","讚美","平等"], lines:["你好我也好，","一個人不但要看重自己，","也要懂得欣賞別人。"]},
+    {id:93, origId:93, content:"量才適性，終身不憂，取璞守直，終身不悔。", semanticTags:["知足","心情","態度"], lines:["量才適性，終身不憂，","取璞守直，終身不悔。"]},
+    {id:94, origId:94, content:"勤能補拙，將嘲笑視同啟發，把諷刺當作激勵。", semanticTags:["轉念","毅力","考驗"], lines:["勤能補拙，","將嘲笑視同啟發，","把諷刺當作激勵。"]},
+    {id:95, origId:95, content:"要得別人讚歎，就得先讚歎別人。", semanticTags:["讚美","尊重","態度"], lines:["要得別人讚歎，","就得先讚歎別人。"]},
+    {id:96, origId:96, content:"污穢的淤泥裡，也產生清蓮；荊棘叢中，也生百合花。", semanticTags:["光明","考驗","困難"], lines:["污穢的淤泥裡，也產生清蓮；","荊棘叢中，也生百合花。"]},
+    {id:97, origId:97, content:"人！不能忘形，更不能忘志。", semanticTags:["自律","堅持","方向"], lines:["人！不能忘形，","更不能忘志。"]},
+    {id:98, origId:98, content:"受苦的人，沒有悲觀的權利。", semanticTags:["勇氣","信心","困難"], lines:["受苦的人，","沒有悲觀的權利。"]},
+    {id:99, origId:99, content:"做學問要在不疑處有疑；待人要在疑處不疑。", semanticTags:["學習","真誠","包容"], lines:["做學問要在不疑處有疑；","待人要在疑處不疑。"]},
+    {id:100, origId:100, content:"受人點水之恩，須當湧泉以報。", semanticTags:["感恩","真誠","惜福"], lines:["受人點水之恩，","須當湧泉以報。"]},
+    {id:101, origId:101, content:"有願放在心裡，沒有身體力行，正如耕田而不播種，皆是空過因緣。", semanticTags:["行動","努力","時間","準備"], lines:["有願放在心裡，","沒有身體力行，","正如耕田而不播種，","皆是空過因緣。"]},
+    {id:102, origId:102, content:"勿輕言「挫折感」、「無力感」；縱然困難如石，也要鑽過去。", semanticTags:["克服","困難","毅力"], lines:["勿輕言「挫折感」、「無力感」；","縱然困難如石，也要鑽過去。"]},
+    {id:103, origId:103, content:"生命之美，莫過於誠。誠為一切善法之源。", semanticTags:["真誠","誠信","心情"], lines:["生命之美，莫過於誠。","誠為一切善法之源。"]},
+    {id:104, origId:104, content:"人生之貴，莫過於信。信乃人生立世之本。", semanticTags:["誠信","人格","尊嚴"], lines:["人生之貴，莫過於信。","信乃人生立世之本。"]},
+    {id:105, origId:105, content:"精神的病比身體上的病，更危險可怕。", semanticTags:["健康","平靜","轉念"], lines:["精神的病比身體上的病，","更危險可怕。"]},
+    {id:106, origId:106, content:"物質往下比；精神、品德、智慧往上比。", semanticTags:["智慧","修養","比較"], lines:["物質往下比；","精神、品德、智慧往上比。"]},
+    {id:107, origId:107, content:"人生如果不能忍辱，就無法成就事業、學業、道德。", semanticTags:["處事","事業","成就"], lines:["人生如果不能忍辱，","就無法成就","事業、學業、道德。"]},
+    {id:108, origId:108, content:"對人要誠心讚歎，而不是曲意承歡。", semanticTags:["真誠","尊重","讚美"], lines:["對人要誠心讚歎，","而不是曲意承歡。"]},
+    {id:109, origId:109, content:"給七分表現的孩子，十二分的讚美。", semanticTags:["讚美","教育","溝通"], lines:["給七分表現的孩子，","十二分的讚美。"]},
+    {id:110, origId:110, content:"草的堅強來自於它的無限謙卑、忍耐、柔軟，以及永不休止的生長與抗爭。", semanticTags:["謙虛","態度","克服"], lines:["草的堅強來自於它的","無限謙卑、忍耐、柔軟，","以及永不休止的生長與抗爭。"]},
+    {id:111, origId:111, content:"我們最強的對手不一定是別人，而可能是我們自己。", semanticTags:["反省","自律","克服"], lines:["我們最強的對手不一定是別人，","而可能是我們自己。"]},
+    {id:112, origId:112, content:"無心去往壞處想，則任何話都是好話。", semanticTags:["轉念","包容","說話"], lines:["無心去往壞處想，","則任何話都是好話。"]},
+    {id:113, origId:113, content:"人生如高空走索，要專心一意往前看、向前走；不要回頭空懊惱。", semanticTags:["專注","堅持","方向"], lines:["人生如高空走索，","要專心一意往前看、向前走；","不要回頭空懊惱。"]},
+    {id:114, origId:114, content:"人生最踏實的事，是今日此時有多少力量，就儘快付出，去做利益人群的事，造福社會的工作。", semanticTags:["付出","利益","工作"], lines:["人生最踏實的事，是今日此時","有多少力量，就儘快付出，","去做利益人群的事，造福社會的工作。"]},
+    {id:115, origId:115, content:"想成就事業，就先成就自己的品德，昇華自己的人格。", semanticTags:["事業","成就","人格"], lines:["想成就事業，","就先成就自己的品德，","昇華自己的人格。"]},
+    {id:116, origId:116, content:"身體污泥可以用水清除，心靈污泥則須用智慧之水消除。", semanticTags:["智慧","改過","修養"], lines:["身體污泥可以用水清除，","心靈污泥則須用智慧之水消除。"]},
+    {id:117, origId:117, content:"犯錯生出懺悔心，才能清淨無煩惱。", semanticTags:["改過","反省","煩惱"], lines:["犯錯生出懺悔心，","才能清淨無煩惱。"]},
+    {id:118, origId:118, content:"做該做的事是智慧，做不該做的事是愚痴。", semanticTags:["智慧","自律","選擇"], lines:["做該做的事是智慧，","做不該做的事是愚痴。"]},
+    {id:119, origId:119, content:"「誠」即是發自內心的一分自動自發的精神。", semanticTags:["真誠","行動","工作"], lines:["「誠」即是發自內心的","一分自動自發的精神。"]},
+    {id:120, origId:120, content:"熱心易發，恆心難持；光說不練，則無法體悟真理。", semanticTags:["堅持","毅力","行動"], lines:["熱心易發，恆心難持；","光說不練，則無法體悟真理。"]},
+    {id:121, origId:121, content:"人生的價值在功能，而不是在於形象，形象沒有價值。", semanticTags:["價值","付出","成就"], lines:["人生的價值在功能，","而不是在於形象，","形象沒有價值。"]},
+    {id:122, origId:122, content:"修養是從日常生活中點點滴滴累積而成。", semanticTags:["修養","時間","自律"], lines:["修養是從日常生活中","點點滴滴累積而成。"]},
+    {id:123, origId:123, content:"說人是非，傷人傷己；好話要多說，是非不要提；心若正，則行必端。", semanticTags:["說話","衝突","態度"], lines:["說人是非，傷人傷己；","好話要多說，是非不要提；","心若正，則行必端。"]},
+    {id:124, origId:124, content:"恆心就如滴水穿石，再大的困難與阻礙也能衝破。", semanticTags:["毅力","堅持","困難"], lines:["恆心就如滴水穿石，","再大的困難與阻礙也能衝破。"]},
+    {id:125, origId:125, content:"做好事不要為求功名，也不是為求功德；要抱持盡本分的心，以至誠無私的心去做善事。", semanticTags:["功德","本份","無私"], lines:["做好事不要為求功名，","也不是為求功德；","要抱持盡本分的心，","以至誠無私的心去做善事。"]},
+    {id:126, origId:126, content:"有人就有是非，要將是非當教育，凡事善解。", semanticTags:["教育","包容","衝突"], lines:["有人就有是非，","要將是非當教育，","凡事善解。"]},
+    {id:127, origId:127, content:"用智慧探討人生真義，用毅力安排人生時間。", semanticTags:["時間","毅力","專注"], lines:["用智慧探討人生真義，","用毅力安排人生時間。"]},
+    {id:128, origId:128, content:"慈悲沒有敵人，智慧不起煩惱；布施的人有福，行善的人快樂。", semanticTags:["智慧","快樂","煩惱"], lines:["慈悲沒有敵人，","智慧不起煩惱；","布施的人有福，","行善的人快樂。"]},
+    {id:129, origId:129, content:"布施如播種，以歡善心滋潤種子，才會發芽。", semanticTags:["歡喜","付出","態度"], lines:["布施如播種，","以歡善心滋潤種子，","才會發芽。"]},
+    {id:130, origId:130, content:"顧好自己的心念，才能真正愛人。", semanticTags:["自愛","心情","正念"], lines:["顧好自己的心念，","才能真正愛人。"]},
+    {id:131, origId:131, content:"彎個腰、伸個手，把別人不要的福撿回來，就是我的。", semanticTags:["謙虛","惜福","行動"], lines:["彎個腰、伸個手，","把別人不要的福","撿回來，就是我的。"]},
+    {id:132, origId:132, content:"福人居福地，並非福地福人居。", semanticTags:["修養","善念","幸福"], lines:["福人居福地，","並非福地福人居。"]},
+    {id:133, origId:133, content:"盡多少本分，就得多少本事。", semanticTags:["本份","盡責","責任"], lines:["盡多少本分，","就得多少本事。"]},
+    {id:134, origId:134, content:"心若開，運就通；運通，福就來。", semanticTags:["轉念","歡喜","幸福"], lines:["心若開，運就通；","運通，福就來。"]},
+    {id:135, origId:135, content:"內能自謙，縮小自己；外能忍讓，成就別人。", semanticTags:["成就","謙虛","禮讓"], lines:["內能自謙，縮小自己；","外能忍讓，成就別人。"]},
+    {id:136, origId:136, content:"人善人欺天不欺，人惡人怕天不怕。", semanticTags:["無愧","平靜","做人"], lines:["人善人欺天不欺，","人惡人怕天不怕。"]},
+    {id:137, origId:137, content:"任勞容易任怨難，耐勞容易耐煩難。", semanticTags:["修養","包容","抱怨"], lines:["任勞容易任怨難，","耐勞容易耐煩難。"]},
+    {id:138, origId:138, content:"滴水成河，粒米成籮；勿輕己靈，勿以善小而不為。", semanticTags:["善念","堅持","努力"], lines:["滴水成河，粒米成籮；","勿輕己靈，勿以善小而不為。"]},
+    {id:139, origId:139, content:"播下愛的種子，收穫的是快樂的果實。", semanticTags:["快樂","大愛","愛心"], lines:["播下愛的種子，","收穫的是快樂的果實。"]},
+    {id:140, origId:140, content:"與其擔心，不如化做耐心；加上信心，方可成就。", semanticTags:["信心","成就","克服"], lines:["與其擔心，不如化做耐心；","加上信心，方可成就。"]},
+    {id:141, origId:141, content:"心正邪魔不侵；自作自受，無可怨之天，無可尤之人。", semanticTags:["反省","平靜","抱怨"], lines:["心正邪魔不侵；自作自受，","無可怨之天，無可尤之人。"]},
+    {id:142, origId:142, content:"人往往很容易忘失東西，可是被人說幾句不中聽的話，卻丟不掉也忘不了，耿耿於懷。", semanticTags:["包容","說話","心情"], lines:["人往往很容易忘失東西，","可是被人說幾句不中聽的話，","卻丟不掉也忘不了，耿耿於懷。"]},
+    {id:143, origId:143, content:"能幹不幹，不如苦幹實幹。", semanticTags:["行動","盡責","工作"], lines:["能幹不幹，","不如苦幹實幹。"]},
+    {id:144, origId:144, content:"父母是堂上活菩薩，是真正能接受扶養，能讓我造福靈感的活佛。", semanticTags:["家庭","孝順","父母"], lines:["父母是堂上活菩薩，","是真正能接受扶養，","能讓我造福靈感的活佛。"]},
+    {id:145, origId:145, content:"真正的精進是發懺悔心，勇於改過。", semanticTags:["改過","反省","勇氣"], lines:["真正的精進是","發懺悔心，勇於改過。"]},
+    {id:146, origId:146, content:"人生好話要如海綿遇水，牢牢吸住；世間是非要如水泥地般堅固，水過則乾。", semanticTags:["包容","說話","智慧"], lines:["人生好話要如海綿遇水，","牢牢吸住；世間是非要如","水泥地般堅固，水過則乾。"]},
+    {id:147, origId:147, content:"努力去愛一個原本怨恨的人，是善待自己。", semanticTags:["原諒","包容","大愛"], lines:["努力去愛一個原本怨恨的人，","是善待自己。"]},
+    {id:148, origId:148, content:"歡喜心是良藥，不生氣是消業障。", semanticTags:["歡喜","生氣","健康"], lines:["歡喜心是良藥，","不生氣是消業障。"]},
+    {id:149, origId:149, content:"有智慧者，不見人過，但見己非。", semanticTags:["智慧","反省","包容"], lines:["有智慧者，","不見人過，","但見己非。"]},
+    {id:150, origId:150, content:"凡事都是從智慧學習中得來的。", semanticTags:["智慧","學習","經驗"], lines:["凡事都是從智慧","學習中得來的。"]},
+    {id:151, origId:151, content:"小事不做，大事難成。", semanticTags:["本份","行動","成就"], lines:["小事不做，","大事難成。"]},
+    {id:152, origId:152, content:"天上最美是星星，人生最美是溫情。", semanticTags:["溫情","感情","幸福"], lines:["天上最美是星星，","人生最美是溫情。"]},
+    {id:153, origId:153, content:"智慧當向恭敬中求，當向謙卑中求，當向無私中求。", semanticTags:["智慧","謙虛","無私"], lines:["智慧當向恭敬中求，","當向謙卑中求，","當向無私中求。"]},
+    {id:154, origId:154, content:"君子如水，隨方就圓，無處不自在。", semanticTags:["修養","處事","包容"], lines:["君子如水，","隨方就圓，","無處不自在。"]},
+    {id:155, origId:155, content:"稻穗結得越飽滿，越會往下垂；一個人越有成就，就要越有謙沖的胸襟。", semanticTags:["成就","謙虛","修養"], lines:["稻穗結得越飽滿，","越會往下垂；","一個人越有成就，","就要越有謙沖的胸襟。"]},
+    {id:156, origId:156, content:"「願」是成功的起點，人生最需要的就是「願」，也即是希望。", semanticTags:["成就","信心","希望"], lines:["「願」是成功的起點，","人生最需要的就是「願」，","也即是希望。"]},
+    {id:157, origId:157, content:"站在半路，比走到目標更辛苦。", semanticTags:["堅持","毅力","方向"], lines:["站在半路，","比走到目標更辛苦。"]},
+    {id:158, origId:158, content:"理直氣壯，得理不饒人，不僅惹是生非，傷人傷己，甚至永遠無法化解仇恨，圓融人事。", semanticTags:["包容","修養","原諒","處事","衝突"], lines:["理直氣壯，得理不饒人，","不僅惹是生非，傷人傷己，","甚至永遠無法化解仇恨，圓融人事。"]},
+    {id:159, origId:159, content:"職業易生比較心，事業易生功利心。而志業是啟發人人本具的愛心、良知，使人無所求的付出。", semanticTags:["付出","愛心","比較"], lines:["職業易生比較心，事業易生功利心。","而志業是啟發人人本具的","愛心、良知，使人無所求的付出。"]},
+    {id:160, origId:160, content:"服務人群是造福，從中學習是修慧；想造福修慧必須身體力行，才能有所收穫。", semanticTags:["學習","智慧","付出","行動","利益","協助"], lines:["服務人群是造福，","從中學習是修慧；","想造福修慧必須身體力行，","才能有所收穫。"]},
+    {id:161, origId:161, content:"最敏感的佛在心中，最有利的菩薩是我們的手和腳；付出我們的力量，做利益眾生的事。", semanticTags:["付出","利益","協助"], lines:["最敏感的佛在心中，","最有利的菩薩是我們的手和腳；","付出我們的力量，","做利益眾生的事。"]},
+    {id:162, origId:162, content:"心量大，才能付出關心與愛給天下眾生。", semanticTags:["付出","包容","關懷"], lines:["心量大，才能付出","關心與愛給天下眾生。"]},
+    {id:163, origId:163, content:"一滴水要想不乾，就設法投入浩渺的大海。", semanticTags:["大愛","團結","團隊"], lines:["一滴水要想不乾，","就設法投入浩渺的大海。"]},
+    {id:164, origId:164, content:"行為言語，顯現精神文化的內涵；培養寬大的心量，心量大才能發揮大愛，能原諒別人就是最有福的人。", semanticTags:["大愛","原諒","態度"], lines:["行為言語，顯現精神文化的","內涵；培養寬大的心量，","心量大才能發揮大愛，","能原諒別人就是最有福的人。"]},
+    {id:165, origId:165, content:"修行要繫緣修心，藉事練心，隨處養心。", semanticTags:["心情","平靜","修養"], lines:["修行要","繫緣修心，","藉事練心，","隨處養心。"]},
+    {id:166, origId:166, content:"人生的地位和名利都是虛假的，最重要的就是要有健康的身體。", semanticTags:["名利","健康","自由"], lines:["人生的地位和名利都是虛假的，","最重要的就是要有健康的身體。"]},
+    {id:167, origId:167, content:"命要自己用堅定的願心和恆心去轉化。", semanticTags:["堅持","轉念","命運"], lines:["命要自己用堅定的","願心和恆心去轉化。"]},
+    {id:168, origId:168, content:"只要腳踏實地，循序漸進的努力才能有收穫；絕不能妄想一步登天。", semanticTags:["努力","堅持","工作"], lines:["只要腳踏實地，","循序漸進的努力才能有收穫；","絕不能妄想一步登天。"]},
+    {id:169, origId:169, content:"有時當思無時苦，好天要積雨來糧。", semanticTags:["惜福","謹慎","準備"], lines:["有時當思無時苦，","好天要積雨來糧。"]},
+    {id:170, origId:170, content:"好事要提得起，是非要放得下，成就別人即是成就自己。", semanticTags:["解脫","成就","態度"], lines:["好事要提得起，","是非要放得下，","成就別人即是成就自己。"]},
+    {id:171, origId:171, content:"說人是非者，必是是非人；身處團體中，應多去發現別人的優點。", semanticTags:["讚美","團隊","說話"], lines:["說人是非者，","必是是非人；","身處團體中，","應多去發現別人的優點。"]},
+    {id:172, origId:172, content:"虛空有盡，我願無窮，發願容易行願難。", semanticTags:["行動","堅持","努力"], lines:["虛空有盡，我願無窮，","發願容易行願難。"]},
+    {id:173, origId:173, content:"有多少力量就做多少事，不要心存等待，等待才會落空。", semanticTags:["本份","工作","積極"], lines:["有多少力量就做多少事，","不要心存等待，","等待才會落空。"]},
+    {id:174, origId:174, content:"別人無心的一句話，不要有心的放在心裡。", semanticTags:["包容","說話","體諒"], lines:["別人無心的一句話，","不要有心的放在心裡。"]},
+    {id:175, origId:175, content:"別人罵我、不諒解我，我反而要感謝他們給我修行的境界。", semanticTags:["感恩","轉念","包容"], lines:["別人罵我、不諒解我，","我反而要感謝他們","給我修行的境界。"]},
+    {id:176, origId:176, content:"人往往不是沒有力量去做事；而是不肯去做。", semanticTags:["信心","行動","工作"], lines:["人往往不是沒有力量去做事；","而是不肯去做。"]},
+    {id:177, origId:177, content:"人都以為「我」很大，其實他的人往往最狹窄。", semanticTags:["謙虛","包容","反省"], lines:["人都以為「我」很大，","其實他的人往往最狹窄。"]},
+    {id:178, origId:178, content:"不要把能行善的身體，用在吃喝玩樂上，應該身行好事。", semanticTags:["行動","健康","本份"], lines:["不要把能行善的身體，","用在吃喝玩樂上，","應該身行好事。"]},
+    {id:179, origId:179, content:"不要把能說話的嘴巴用在搬弄是非上，要口說好話。", semanticTags:["說話","讚美","謹慎"], lines:["不要把能說話的嘴巴","用在搬弄是非上，","要口說好話。"]},
+    {id:180, origId:180, content:"人人如果都能除去自私與小我，自然就會擴大心胸，培養出誠與正，大公無私的心態。", semanticTags:["包容","大愛","無私","修養"], lines:["人人如果都能除去自私與小我，","自然就會擴大心胸，","培養出誠與正，","大公無私的心態。"]},
+    {id:181, origId:181, content:"「慈」是一種最清淨的智慧所發揮出來的功用。", semanticTags:["平靜","智慧","大愛"], lines:["「慈」是一種最清淨的","智慧所發揮出來的功用。"]},
+    {id:182, origId:182, content:"每個人心裡都有一股清流，都有一塊福田，隱藏著豐沛的泉源。", semanticTags:["善念","平靜","心情"], lines:["每個人心裡都有一股清流，","都有一塊福田，","隱藏著豐沛的泉源。"]},
+    {id:183, origId:183, content:"人生多一分感恩，就多一分美化。", semanticTags:["感恩","知足","歡喜"], lines:["人生多一分感恩，","就多一分美化。"]},
+    {id:184, origId:184, content:"一個不能緩和憤怒之火的人，會喪失他所有的名譽。", semanticTags:["生氣","自律","態度"], lines:["一個不能緩和憤怒之火的人，","會喪失他所有的名譽。"]},
+    {id:185, origId:185, content:"要用心、細心，不要操心、煩心。", semanticTags:["專注","平靜"], lines:["要用心、細心，","不要操心、煩心。"]},
+    {id:186, origId:186, content:"每一天都是做人的開始，每一個時刻都是自己的警惕。", semanticTags:["做人","反省","謹慎"], lines:["每一天都是做人的開始，","每一個時刻都是自己的警惕。"]},
+    {id:187, origId:187, content:"時間對一個有智慧的人來說，就如鑽石般的珍貴；對愚人來說，卻像泥土，一點也沒有價值。", semanticTags:["智慧","時間","專注"], lines:["時間對一個有智慧的人來說，","就如鑽石般的珍貴；","對愚人來說，卻像泥土，","一點也沒有價值。"]},
+    {id:188, origId:188, content:"為自己找藉口逃避的人，永遠不會進步。", semanticTags:["改過","自律","反省"], lines:["為自己找藉口逃避的人，","永遠不會進步。"]},
+    {id:189, origId:189, content:"心中常存善念；遇事逢凶化吉。", semanticTags:["善念","轉念","樂觀"], lines:["心中常存善念；","遇事逢凶化吉。"]},
+    {id:190, origId:190, content:"不要怕人家說你傻，要擔心人家說你太聰明，太聰明就是狡猾。", semanticTags:["真誠","謙虛","本份"], lines:["不要怕人家說你傻，","要擔心人家說你太聰明，","太聰明就是狡猾。"]},
+    {id:191, origId:191, content:"人不能忘形，更不能喪志；寧願被毀滅，不願被擊敗。", semanticTags:["勇氣","克服","失敗"], lines:["人不能忘形，更不能喪志；","寧願被毀滅，不願被擊敗。"]},
+    {id:192, origId:192, content:"為人處事要小心，但不要小心眼。", semanticTags:["謹慎","包容","處事"], lines:["為人處事要小心，","但不要小心眼。"]},
+    {id:193, origId:193, content:"人多力大，福就大。", semanticTags:["協助","團隊","團結"], lines:["人多力大，","福就大。"]},
+    {id:194, origId:194, content:"凡事善解，能忍自安。", semanticTags:["平靜","安定","轉念"], lines:["凡事善解，","能忍自安。"]},
+    {id:195, origId:195, content:"哭泣不能消除昨日的哀傷，只能消減明日的銳氣。", semanticTags:["轉念","勇氣","樂觀"], lines:["哭泣不能消除昨日的哀傷，","只能消減明日的銳氣。"]},
+    {id:196, origId:196, content:"君子立恆志，小人恆立志。", semanticTags:["堅持","方向","毅力"], lines:["君子立恆志，","小人恆立志。"]},
+    {id:197, origId:197, content:"順境的美德是節制；逆境的美德是忍耐。", semanticTags:["自律","考驗","修養"], lines:["順境的美德是節制；","逆境的美德是忍耐。"]},
+    {id:198, origId:198, content:"人真正的財富在行善。", semanticTags:["付出","功德","善念"], lines:["人真正的財富在行善。"]},
+    {id:199, origId:199, content:"靜坐常思己過，閒談莫論人非。", semanticTags:["反省","說話","修養"], lines:["靜坐常思己過，","閒談莫論人非。"]},
+    {id:200, origId:200, content:"並非有錢就快樂，問心無愧最心安。", semanticTags:["快樂","無愧","安定"], lines:["並非有錢就快樂，","問心無愧最心安。"]},
+    {id:201, origId:201, content:"欣賞別人就是莊嚴自己。", semanticTags:["欣賞","尊重","謙虛"], lines:["欣賞別人就是莊嚴自己。"]},
+    {id:202, origId:202, content:"成功是優點的發揮，失敗是缺點的累積。", semanticTags:["失敗","成就","反省"], lines:["成功是優點的發揮，","失敗是缺點的累積。"]},
+    {id:203, origId:203, content:"心美，看什麼都順眼。", semanticTags:["轉念","歡喜","心情"], lines:["心美，","看什麼都順眼。"]},
+    {id:204, origId:204, content:"要批評別人時，先想想自己是否完美無缺。", semanticTags:["批評","反省","謙虛"], lines:["要批評別人時，","先想想自己是否完美無缺。"]},
+    {id:205, origId:205, content:"犯錯生出懺悔心，才能清淨無煩惱。", semanticTags:["改過","反省","煩惱"], lines:["犯錯生出懺悔心，","才能清淨無煩惱。"]},
+    {id:206, origId:206, content:"抱著盡本分的心去做好事，才是真正的好事，才是至誠無私的善事。", semanticTags:["本份","真誠","付出","無私"], lines:["抱著盡本分的心去做好事，","才是真正的好事，","才是至誠無私的善事。"]},
+    {id:207, origId:207, content:"自造福田，自得福緣。", semanticTags:["付出","行動","功德"], lines:["自造福田，","自得福緣。"]},
+    {id:208, origId:208, content:"人生要為善競爭，分秒必爭。", semanticTags:["時間","積極","善念"], lines:["人生要為善競爭，","分秒必爭。"]},
+    {id:209, origId:209, content:"有人扯後腿要心存感激。沒有人扯，練不出腿勁。", semanticTags:["感恩","轉念","考驗"], lines:["有人扯後腿要心存感激。","沒有人扯，練不出腿勁。"]},
+    {id:210, origId:210, content:"要適應他人，不要要求他人。", semanticTags:["包容","體諒","處事"], lines:["要適應他人，","不要要求他人。"]},
+    {id:211, origId:211, content:"不怕事多，只怕多事。", semanticTags:["本份","工作","說話"], lines:["不怕事多，","只怕多事。"]},
+    {id:212, origId:212, content:"別人因為「沒有」才要佔我便宜，我因為「有」才有便宜讓人家佔。", semanticTags:["包容","知足","付出"], lines:["別人因為「沒有」才要佔我便宜，","我因為「有」才有便宜讓人家佔。"]},
+    {id:213, origId:213, content:"要改變別人先改變自己，因為要求自己比要求別人容易。", semanticTags:["自律","轉念","改變"], lines:["要改變別人先改變自己，","因為要求自己比要求別人容易。"]},
+    {id:214, origId:214, content:"每天無所事事，是人生的消費者；積極有用才是人生的創造者。", semanticTags:["時間","本份","工作"], lines:["每天無所事事，","是人生的消費者；","積極有用才是","人生的創造者。"]},
+    {id:215, origId:215, content:"有人點燈求光明，其實真正的光明在我們的心裡；佛前的燈不要刻意去點，要緊的是點燃我們的心燈。", semanticTags:["智慧","心情","光明"], lines:["有人點燈求光明，其實","真正的光明在我們的心裡；","佛前的燈不要刻意去點，","要緊的是點燃我們的心燈。"]},
+    {id:216, origId:216, content:"不想過去，放棄雜念；不想未來，放棄妄念；把握當下，並提引正念。", semanticTags:["正念","平靜","安定"], lines:["不想過去，放棄雜念；","不想未來，放棄妄念；","把握當下，並提引正念。"]},
+    {id:217, origId:217, content:"做好事不是有錢人的專利，而是有心人的參與。", semanticTags:["付出","行動","平等"], lines:["做好事不是有錢人的專利，","而是有心人的參與。"]},
+    {id:218, origId:218, content:"種如是因，結如是緣，得如是果。", semanticTags:["選擇","改過","經驗"], lines:["種如是因，","結如是緣，","得如是果。"]},
+    {id:219, origId:219, content:"多一分踏實，少一分空虛；多一分清淨，少一分煩惱。", semanticTags:["平靜","煩惱","工作"], lines:["多一分踏實，","少一分空虛；","多一分清淨，","少一分煩惱。"]},
+    {id:220, origId:220, content:"再不愛吃的東西也要吃完，再不愛聽的話也要聽完。", semanticTags:["包容","惜福","修養"], lines:["再不愛吃的東西也要吃完，","再不愛聽的話也要聽完。"]},
+    {id:221, origId:221, content:"忘功不忘過，忘怨不忘恩。", semanticTags:["感恩","謙虛","改過"], lines:["忘功不忘過，","忘怨不忘恩。"]},
+    {id:222, origId:222, content:"臨事須替別人想，論人先向自己想。", semanticTags:["包容","反省","體諒"], lines:["臨事須替別人想，","論人先向自己想。"]},
+    {id:223, origId:223, content:"白紙黑字唸再多，不如身體力行做一遍。", semanticTags:["行動","努力","工作","學習"], lines:["白紙黑字唸再多，","不如身體力行做一遍。"]},
+    {id:224, origId:224, content:"君子如水，隨方就圓，無處不自在。", semanticTags:["修養","處事","包容"], lines:["君子如水，","隨方就圓，","無處不自在。"]},
+    {id:225, origId:225, content:"少年要求好學業，青年要求好職業；但人的一生不能沒有「好志業、好道業、好德業」。", semanticTags:["學習","工作","方向"], lines:["少年要求好學業，","青年要求好職業；","但人的一生不能沒有","「好志業、好道業、好德業」。"]},
+    {id:226, origId:226, content:"寧做一個「盡力做事而被批評的人」，也不要做一個「不做事，只會批評的人」。", semanticTags:["批評","盡責","工作"], lines:["寧做一個","「盡力做事而被批評的人」，","也不要做一個","「不做事，只會批評的人」。"]},
+    {id:227, origId:227, content:"用菩薩的智慧，教育我們的孩子；用媽媽的愛心，愛我們的學生。", semanticTags:["智慧","教育","愛心","父母","孝順"], lines:["用菩薩的智慧，","教育我們的孩子；","用媽媽的愛心，","愛我們的學生。"]},
+    {id:228, origId:228, content:"「得」的後面是「失」，「利」的後面是「害」。", semanticTags:["得失","名利","解脫"], lines:["「得」的後面是「失」，","「利」的後面是「害」。"]},
+    {id:229, origId:229, content:"物質慾望往下比，精神道德往上比。", semanticTags:["欲望","知足","修養"], lines:["物質慾望往下比，","精神道德往上比。"]},
+    {id:230, origId:230, content:"手心向下是助人，手心向上是求人；助人快樂，求人痛苦。", semanticTags:["快樂","付出","合作"], lines:["手心向下是助人，","手心向上是求人；","助人快樂，求人痛苦。"]},
+    {id:231, origId:231, content:"樹大會招風，要時時修剪。", semanticTags:["謙虛","自律","反省"], lines:["樹大會招風，","要時時修剪。"]},
+    {id:232, origId:232, content:"凡夫有兩個大煩惱：做好事怕別人不知道；做壞事怕別人知道。", semanticTags:["煩惱","反省","無愧"], lines:["凡夫有兩個大煩惱：","做好事怕別人不知道；","做壞事怕別人知道。"]},
+    {id:233, origId:233, content:"菩薩有隱惡揚善的美德，凡夫有妒賢嫉能的心理。", semanticTags:["包容","修養","讚美"], lines:["菩薩有隱惡揚善的美德，","凡夫有妒賢嫉能的心理。"]},
+    {id:234, origId:234, content:"多一分善念，少一個惡念；多一分良知，少一個痴迷。", semanticTags:["善念","自律","正念"], lines:["多一分善念，少一個惡念；","多一分良知，少一個痴迷。"]},
+    {id:235, origId:235, content:"邀功令人討厭，諉過令人痛恨。", semanticTags:["盡責","謙虛","誠信"], lines:["邀功令人討厭，","諉過令人痛恨。"]},
+    {id:236, origId:236, content:"對別人不要計較，對自己要好好檢討。", semanticTags:["反省","包容","處事"], lines:["對別人不要計較，","對自己要好好檢討。"]},
+    {id:237, origId:237, content:"看別人不順眼，是自己修養不夠。", semanticTags:["修養","轉念","反省"], lines:["看別人不順眼，","是自己修養不夠。"]},
+    {id:238, origId:238, content:"能忍而不計較，則再大的困難也能克服。", semanticTags:["克服","困難","包容"], lines:["能忍而不計較，","則再大的困難也能克服。"]},
+    {id:239, origId:239, content:"自己害自己，莫過於亂發脾氣。", semanticTags:["生氣","自律","反省"], lines:["自己害自己，","莫過於亂發脾氣。"]},
+    {id:240, origId:240, content:"無求品自高，無欲則剛。", semanticTags:["知足","欲望","解脫"], lines:["無求品自高，","無欲則剛。"]},
+    {id:241, origId:241, content:"地上種了菜，就不易長草；心中有善，就不易生惡。", semanticTags:["善念","修養","心情"], lines:["地上種了菜，就不易長草；","心中有善，就不易生惡。"]},
+    {id:242, origId:242, content:"起步了就要往前走，不怕慢，只怕站。", semanticTags:["堅持","行動","方向"], lines:["起步了就要往前走，","不怕慢，只怕站。"]},
+    {id:243, origId:243, content:"一個缺口的杯子，如果換一個角度看它，它仍然是圓的。", semanticTags:["轉念","包容","樂觀"], lines:["一個缺口的杯子，","如果換一個角度看它，","它仍然是圓的。"]},
+    {id:244, origId:244, content:"心中有愛，白雪都溶化；大家有愛，黑暗變光明。", semanticTags:["大愛","光明","團結"], lines:["心中有愛，白雪都溶化；","大家有愛，黑暗變光明。"]},
+    {id:245, origId:245, content:"寧靜最美，安定最樂。", semanticTags:["安定","平靜","快樂"], lines:["寧靜最美，","安定最樂。"]},
+    {id:246, origId:246, content:"以修行的心境，累積遇境，自轉智慧。", semanticTags:["智慧","轉念","考驗"], lines:["以修行的心境，","累積遇境，自轉智慧。"]},
+    {id:247, origId:247, content:"環境的髒亂不可怕，最可怕的是任由心地屯積塵埃，而不知清除汙垢，去除惡習。", semanticTags:["反省","改過","自律"], lines:["環境的髒亂不可怕，","最可怕的是任由心地屯積塵埃，","而不知清除汙垢，去除惡習。"]},
+    {id:248, origId:248, content:"不要把陰影覆藏在心裡，要散發光和熱，生命才有意義。", semanticTags:["解脫","轉念","光明"], lines:["不要把陰影覆藏在心裡，","要散發光和熱，","生命才有意義。"]},
+    {id:249, origId:249, content:"把慈悲形象化，付諸於具體的行動中。", semanticTags:["行動","大愛","付出"], lines:["把慈悲形象化，","付諸於具體的行動中。"]},
+    {id:250, origId:250, content:"不要總是要求別人給我什麼，要想我能為別人做什麼。", semanticTags:["付出","大愛","處事"], lines:["不要總是要求別人給我什麼，","要想我能為別人做什麼。"]},
+    {id:251, origId:251, content:"凡夫只看到別人外在的汙點，卻看不到自己內心的垃圾。", semanticTags:["反省","改過","謙虛"], lines:["凡夫只看到別人外在的汙點，","卻看不到自己內心的垃圾。"]},
+    {id:252, origId:252, content:"要從聲色調習自己的一舉一動，任何時候都要和顏悅色，柔聲細語。", semanticTags:["修養","態度","說話"], lines:["要從聲色調習自己的一舉一動，","任何時候都要和顏悅色，柔聲細語。"]},
+    {id:253, origId:253, content:"人生不一定球球是好球，但是有歷練的強打者，隨時都可以揮棒。", semanticTags:["考驗","勇氣","積極"], lines:["人生不一定球球是好球，","但是有歷練的強打者，","隨時都可以揮棒。"]},
+    {id:254, origId:254, content:"佛心看人，人人是佛。", semanticTags:["平等","尊重","包容"], lines:["佛心看人，","人人是佛。"]},
+    {id:255, origId:255, content:"逆境，是非來源，心中要持一寬字。", semanticTags:["包容","轉念","處事"], lines:["逆境，是非來源，","心中要持一寬字。"]},
+    {id:256, origId:256, content:"人生都是向外求，其實最重要的是內心的追求。", semanticTags:["平靜","反省","心情"], lines:["人生都是向外求，","其實最重要的是內心的追求。"]},
+    {id:257, origId:257, content:"生命無常，慧命永久；愛心無涯，精神常在。", semanticTags:["愛心","珍惜","生命"], lines:["生命無常，慧命永久；","愛心無涯，精神常在。"]},
+    {id:258, origId:258, content:"人生沒有所有權，只有生命的使用權。", semanticTags:["時間","珍惜","生命"], lines:["人生沒有所有權，","只有生命的使用權。"]},
+    {id:259, origId:259, content:"開口傷神氣，舌動惹是非。", semanticTags:["說話","修養","謹慎"], lines:["開口傷神氣，","舌動惹是非。"]},
+    {id:260, origId:260, content:"心安茅屋穩，心定菜根香。", semanticTags:["平靜","知足","安定"], lines:["心安茅屋穩，","心定菜根香。"]},
+    {id:261, origId:261, content:"縮小自己，反求諸己，包容別人。", semanticTags:["包容","謙虛","反省"], lines:["縮小自己，","反求諸己，","包容別人。"]},
+    {id:262, origId:262, content:"在順境時，要使生活有風采；逆境時，要不散亂，保持靜心。", semanticTags:["平靜","自律","考驗"], lines:["在順境時，要使生活有風采；","逆境時，要不散亂，保持靜心。"]},
+    {id:263, origId:263, content:"今天的工作，將是明天的文章，後天的歷史。", semanticTags:["盡責","工作","時間"], lines:["今天的工作，將是","明天的文章，","後天的歷史。"]},
+    {id:264, origId:264, content:"每一天都是我們的一張紙；每天經歷的人與事，都是我們的一篇文章。", semanticTags:["學習","珍惜","時間"], lines:["每一天都是我們的一張紙；","每天經歷的人與事，","都是我們的一篇文章。"]},
+    {id:265, origId:265, content:"心中常存善解、包容、感恩、知足、惜福。", semanticTags:["包容","知足","感恩"], lines:["心中常存善解、包容、","感恩、知足、惜福。"]},
+    {id:266, origId:266, content:"心中有愛，有善念，而能身體力行者，即是菩薩。", semanticTags:["善念","行動","愛心"], lines:["心中有愛，有善念，","而能身體力行者，即是菩薩。"]},
+    {id:267, origId:267, content:"世間如烘樓，要禁得起鍛鍊，才能將百鍊鋼化為繞指柔。", semanticTags:["考驗","磨練","堅持"], lines:["世間如烘樓，要禁得起鍛鍊，","才能將百鍊鋼化為繞指柔。"]},
+    {id:268, origId:268, content:"真正的智慧是要保持謙虛的態度，有智慧才能明辨是非、善惡，有謙虛才能建立美滿人生。", semanticTags:["智慧","謙虛","態度"], lines:["真正的智慧是要","保持謙虛的態度，","有智慧才能明辨是非、善惡，","有謙虛才能建立美滿人生。"]},
+    {id:269, origId:269, content:"善用時間者，就能成就事功。", semanticTags:["時間","成就","專注"], lines:["善用時間者，","就能成就事功。"]},
+    {id:270, origId:270, content:"行為言語顯現精神文化的內涵。培養寬大的心量，才能發揮大愛。", semanticTags:["大愛","修養","包容","態度"], lines:["行為言語顯現精神文化的內涵。","培養寬大的心量，才能發揮大愛。"]},
+    {id:271, origId:271, content:"做好事是本分事，並不是為求名，也不是為求利。", semanticTags:["本份","名利","付出"], lines:["做好事是本分事，","並不是為求名，","也不是為求利。"]},
+    {id:272, origId:272, content:"人生的行為繫乎觀念；觀念正確，人生道路的方向就不會偏差。", semanticTags:["方向","選擇","正念"], lines:["人生的行為繫乎觀念；","觀念正確，人生道路的","方向就不會偏差。"]},
+    {id:273, origId:273, content:"得人尊重，必先自我尊重，啟發自我良知，發揮在人生最需要的地方。", semanticTags:["尊嚴","自愛","人格","做人"], lines:["得人尊重，必先自我尊重，","啟發自我良知，發揮在","人生最需要的地方。"]},
+    {id:274, origId:274, content:"智慧是從生活人事的磨練而得來。", semanticTags:["智慧","考驗","經驗"], lines:["智慧是從生活人事的","磨練而得來。"]},
+    {id:275, origId:275, content:"人之大患在於自以為是，自以為了不起，甚至自我膨脹。", semanticTags:["謙虛","反省","修養"], lines:["人之大患在於","自以為是，","自以為了不起，","甚至自我膨脹。"]},
+    {id:276, origId:276, content:"愚痴者，常在心地築起堅固之牆，禁錮自己；智慧者，卻能拆掉這堵牆，解放裡面的人。", semanticTags:["智慧","解脫","自由","轉念"], lines:["愚痴者，常在心地築起","堅固之牆，禁錮自己；","智慧者，卻能拆掉","這堵牆，解放裡面的人。"]},
+    {id:277, origId:277, content:"謊言像一朵盛開的鮮花，外表美麗，生命短暫。", semanticTags:["誠信","真誠","說話"], lines:["謊言像一朵盛開的鮮花，","外表美麗，生命短暫。"]},
+    {id:278, origId:278, content:"從感恩、善解中，可以學習到愛的真諦。", semanticTags:["感恩","學習","愛心"], lines:["從感恩、善解中，","可以學習到愛的真諦。"]},
+    {id:279, origId:279, content:"控制不了自己的情緒，而大發脾氣，和精神病的差別，只在發作時間的長短而已。", semanticTags:["時間","生氣","自律"], lines:["控制不了自己的情緒，","而大發脾氣，","和精神病的差別，","只在發作時間的長短而已。"]},
+    {id:280, origId:280, content:"得先調整自己的腳步，做好自己的本分事，有端正誠懇的形象，才能真正以身、行去影響他人。", semanticTags:["本份","自律","盡責","做人"], lines:["得先調整自己的腳步，","做好自己的本分事，","有端正誠懇的形象，","才能真正以身、行去影響他人。"]},
+    {id:281, origId:281, content:"不要隨心所欲，要隨心教育自己。", semanticTags:["教育","自律","改過"], lines:["不要隨心所欲，","要隨心教育自己。"]},
+    {id:282, origId:282, content:"面對惡言惡語，也是一種修行。", semanticTags:["包容","修養","說話"], lines:["面對惡言惡語，","也是一種修行。"]},
+    {id:283, origId:283, content:"人間壽命因為短暫，才更顯得珍貴。", semanticTags:["時間","珍惜","生命"], lines:["人間壽命因為短暫，","才更顯得珍貴。"]},
+    {id:284, origId:284, content:"聰明的人得失心重；有智慧的人勇於捨得。", semanticTags:["智慧","得失","解脫"], lines:["聰明的人得失心重；","有智慧的人勇於捨得。"]},
+    {id:285, origId:285, content:"看淡自己是般若，看重自己是執著。", semanticTags:["解脫","反省","謙虛"], lines:["看淡自己是般若，","看重自己是執著。"]},
+    {id:286, origId:286, content:"能受天魔是鐵漢；不遭人妒是庸才。", semanticTags:["毅力","考驗","堅持"], lines:["能受天魔是鐵漢；","不遭人妒是庸才。"]},
+    {id:287, origId:287, content:"只有在平心靜氣的時候，才會比較容易發現自己的缺點。", semanticTags:["平靜","反省","改過"], lines:["只有在平心靜氣的時候，","才會比較容易發現自己的缺點。"]},
+    {id:288, origId:288, content:"寧靜致遠，淡泊明志。", semanticTags:["平靜","知足","方向"], lines:["寧靜致遠，","淡泊明志。"]},
+    {id:289, origId:289, content:"步行在人生的道路上，若能用心看路，便知每一步程皆是「道」。", semanticTags:["專注","選擇","經驗"], lines:["步行在人生的道路上，","若能用心看路，","便知每一步程皆是「道」。"]},
+    {id:290, origId:290, content:"調服自己的心，要順境依勢，不能一味地嚴管強求，也不能完全放肆，任由他去。", semanticTags:["自律","平靜","心情"], lines:["調服自己的心，要順境依勢，","不能一味地嚴管強求，","也不能完全放肆，任由他去。"]},
+    {id:291, origId:291, content:"身是菩提樹，心如明鏡台，時時勤拂拭，勿使惹塵埃。", semanticTags:["自律","反省","平靜"], lines:["身是菩提樹，心如明鏡台，","時時勤拂拭，勿使惹塵埃。"]},
+    {id:292, origId:292, content:"事是從心做，念是從心起，報也會從心得。", semanticTags:["工作","心情","選擇"], lines:["事是從心做，","念是從心起，","報也會從心得。"]},
+    {id:293, origId:293, content:"我們若能時時照顧好自心，行為必定端正，所言所行必能利益人群。", semanticTags:["利益","行動","態度"], lines:["我們若能時時照顧好自心，","行為必定端正，","所言所行必能利益人群。"]},
+    {id:294, origId:294, content:"人生世間，最苦的莫過於心病，病在不知足，在相互比較，在不知「人外有人，天外有天」，須知不滿足的心是最痛苦的心。", semanticTags:["知足","比較","修養"], lines:["人生世間，最苦的莫過於心病，","病在不知足，在相互比較，","在不知「人外有人，天外有天」，","須知不滿足的心是最痛苦的心。"]},
+    {id:295, origId:295, content:"能知足就能常樂，能感恩就能惜福。", semanticTags:["知足","感恩","惜福"], lines:["能知足就能常樂，","能感恩就能惜福。"]},
+    {id:296, origId:296, content:"人應互相勉勵，互相關懷，彼此提醒。那怕舉手投足，開口動念，都要時刻謹慎，勿讓心念偏差，導致行為乖繆。", semanticTags:["謹慎","自律","關懷","修養"], lines:["人應互相勉勵，互相關懷，","彼此提醒。那怕舉手投足，","開口動念，都要時刻謹慎，","勿讓心念偏差，導致行為乖繆。"]},
+    {id:297, origId:297, content:"人若常存善解心，便可結歡喜緣，生歡喜心；縱使極複雜的煩惱，亦能從善解中斷除。", semanticTags:["歡喜","煩惱","轉念"], lines:["人若常存善解心，","便可結歡喜緣，生歡喜心；","縱使極複雜的煩惱，","亦能從善解中斷除。"]},
+    {id:298, origId:298, content:"煩惱由心生，有時僅是一個笑容或一句良語，即能化解衝突，避免彼此的煩惱。", semanticTags:["煩惱","溝通","衝突"], lines:["煩惱由心生，有時僅是","一個笑容或一句良語，","即能化解衝突，避免彼此的煩惱。"]},
+    {id:299, origId:299, content:"好善的人，不是短時的行善；偏惡的人，也不是現前一念。向善向惡是長期深藏在內心的觀念。", semanticTags:["堅持","善念","修養"], lines:["好善的人，不是短時的行善；","偏惡的人，也不是現前一念。","向善向惡是長期深藏在內心的觀念。"]},
+    {id:300, origId:300, content:"真正的幸福是無所求而為，是付出之後的感覺。", semanticTags:["付出","歡喜","幸福"], lines:["真正的幸福是無所求而為，","是付出之後的感覺。"]},
+    {id:301, origId:301, content:"心靈的和平，須從教育開始；人受了教育才知道愛和福，才懂得發揮人生最寶貴的功能。", semanticTags:["教育","平靜","態度","愛心"], lines:["心靈的和平，須從教育開始；","人受了教育才知道愛和福，","才懂得發揮人生最寶貴的功能。"]},
+    {id:302, origId:302, content:"愛就要付出去造福，智慧就要用心去教育。", semanticTags:["智慧","教育","付出"], lines:["愛就要付出去造福，","智慧就要用心去教育。"]},
+    {id:303, origId:303, content:"付出後看到成就的歡喜心叫智慧。", semanticTags:["智慧","歡喜","付出"], lines:["付出後看到成就的","歡喜心叫智慧。"]},
+    {id:304, origId:304, content:"莫道人身容易得，電光石火剎那間。", semanticTags:["時間","珍惜","生命"], lines:["莫道人身容易得，","電光石火剎那間。"]},
+    {id:305, origId:305, content:"是非不必爭人我，好歹何須論長短。", semanticTags:["包容","解脫","溝通"], lines:["是非不必爭人我，","好歹何須論長短。"]},
+    {id:306, origId:306, content:"悟心容易，息心難息，得心緣到處閒。", semanticTags:["平靜","解脫","心情"], lines:["悟心容易，息心難息，","得心緣到處閒。"]},
+    {id:307, origId:307, content:"人無妄念是禪，坐中見性為定。", semanticTags:["平靜","專注","心情"], lines:["人無妄念是禪，","坐中見性為定。"]},
+    {id:308, origId:308, content:"手把青秧插滿田，低頭便見水中央，心地清淨方為道，退步原來是向前。", semanticTags:["平靜","謙虛","轉念"], lines:["手把青秧插滿田，","低頭便見水中央，","心地清淨方為道，","退步原來是向前。"]},
+    {id:309, origId:309, content:"說錯了話，擋了自己又踢到別人。", semanticTags:["說話","處事","修養"], lines:["說錯了話，","擋了自己又踢到別人。"]},
+    {id:310, origId:310, content:"懂理不懂事，能知不能行，此「理」與「知」就如空花水月，要「理事」相應「知行合一」，才是真理與真知。", semanticTags:["行動","努力","工作"], lines:["懂理不懂事，能知不能行，","此「理」與「知」就如空花水月，","要「理事」相應「知行合一」，","才是真理與真知。"]},
+    {id:311, origId:311, content:"多為自己祝福就是往好處想；逆境即是增上緣。", semanticTags:["考驗","轉念","感恩"], lines:["多為自己祝福就是往好處想；","逆境即是增上緣。"]},
+    {id:312, origId:312, content:"不再自我教育者，才是真正的文盲。", semanticTags:["教育","反省","學習"], lines:["不再自我教育者，","才是真正的文盲。"]},
+    {id:313, origId:313, content:"聰明即是耳朵很聰，專聽別人是非；眼睛很明，專看別人缺點。", semanticTags:["反省","說話","處事"], lines:["聰明即是耳朵很聰，","專聽別人是非；","眼睛很明，","專看別人缺點。"]},
+    {id:314, origId:314, content:"懺悔是心靈的告白，也可說是精神污染的大掃除。", semanticTags:["改過","反省","真誠"], lines:["懺悔是心靈的告白，","也可說是精神污染的大掃除。"]},
+    {id:315, origId:315, content:"做一切好事要把握時機，也要把握因緣，因緣消逝才想做就來不及了。", semanticTags:["機會","時間","行動"], lines:["做一切好事要把握時機，","也要把握因緣，","因緣消逝才想做就來不及了。"]},
+    {id:316, origId:316, content:"把他人拿來做自己的鏡子：看他人的優點，自我鞭策；看他人的缺點，反省自己。", semanticTags:["反省","學習","讚美"], lines:["把他人拿來做自己的鏡子：","看他人的優點，自我鞭策；","看他人的缺點，反省自己。"]},
+    {id:317, origId:317, content:"恆心就如滴水穿石，再大的困難與阻礙也能衝破。", semanticTags:["毅力","堅持","困難"], lines:["恆心就如滴水穿石，","再大的困難與阻礙也能衝破。"]},
+    {id:318, origId:318, content:"心不專，念不一，做事則難以成就。", semanticTags:["成就","專注","工作"], lines:["心不專，念不一，","做事則難以成就。"]},
+    {id:319, origId:319, content:"什麼人都可以原諒，唯有不誠實的人不可原諒。", semanticTags:["原諒","誠信","真誠"], lines:["什麼人都可以原諒，","唯有不誠實的人不可原諒。"]},
+    {id:320, origId:320, content:"心量狹小則多煩惱，心量廣大則智慧豐饒。", semanticTags:["智慧","煩惱","包容"], lines:["心量狹小則多煩惱，","心量廣大則智慧豐饒。"]},
+    {id:321, origId:321, content:"盡責任的人生才有踏實感。", semanticTags:["盡責","本份","責任"], lines:["盡責任的人生才有踏實感。"]},
+    {id:322, origId:322, content:"要使人相信你，不在於言詞的巧辯，而在於行為的實踐。", semanticTags:["行動","誠信","真誠"], lines:["要使人相信你，","不在於言詞的巧辯，","而在於行為的實踐。"]},
+    {id:323, origId:323, content:"日常生活中，即使幾千萬日的安全，也彌補不了剎那間的疏忽。", semanticTags:["謹慎","專注","時間"], lines:["日常生活中，","即使幾千萬日的安全，","也彌補不了剎那間的疏忽。"]},
+    {id:324, origId:324, content:"人的心念意境，如能保持開朗清明，則展現於周遭的環境都是美和善的。", semanticTags:["轉念","善念","心情"], lines:["人的心念意境，如能保持開朗清明，","則展現於周遭的環境都是美和善的。"]},
+    {id:325, origId:325, content:"將氣憤的境，轉為柔和的心境，再轉換為友愛，這個世間將愈益完美。", semanticTags:["轉念","愛心","溫暖"], lines:["將氣憤的境，","轉為柔和的心境，","再轉換為友愛，","這個世間將愈益完美。"]},
+    {id:326, origId:326, content:"無論環境如何困難，都能保持奮鬥勇氣的人，才能突破困境，掌握有利形勢。", semanticTags:["勇氣","毅力","困難","積極"], lines:["無論環境如何困難，","都能保持奮鬥勇氣的人，","才能突破困境，","掌握有利形勢。"]},
+    {id:327, origId:327, content:"煩惱是因別人無心的一句話，自己卻有意的接受。", semanticTags:["煩惱","包容","轉念"], lines:["煩惱是因別人無心的一句話，","自己卻有意的接受。"]},
+    {id:328, origId:328, content:"歡喜心是一種涵養，能令周圍的人都有如沐春風的喜悅感。", semanticTags:["歡喜","修養","溫暖"], lines:["歡喜心是一種涵養，","能令周圍的人都有如沐春風的喜悅感。"]},
+    {id:329, origId:329, content:"任何挫折困難，對有志學習的人而言，正是磨練的好機會。", semanticTags:["學習","磨練","困難"], lines:["任何挫折困難，","對有志學習的人而言，","正是磨練的好機會。"]},
+    {id:330, origId:330, content:"好的領導者，必須心胸開闊，在應對進退中，以知足、感恩、善解、包容看待一人、事、物。", semanticTags:["知足","包容","感恩"], lines:["好的領導者，必須心胸開闊，","在應對進退中，以","知足、感恩、善解、包容","看待一人、事、物。"]},
+    {id:331, origId:331, content:"以清淨感恩的心，付出心中的愛，時時長養內心的善念。", semanticTags:["善念","感恩","付出"], lines:["以清淨感恩的心，","付出心中的愛，","時時長養內心的善念。"]},
+    {id:332, origId:332, content:"真正的人生要樂中能知苦，在苦中也能體會樂的甘美；不知苦的人，會因對苦難缺乏敏銳的感受力，而變得沒有人情味。", semanticTags:["感恩","困難","幸福"], lines:["真正的人生要樂中能知苦，","在苦中也能體會樂的甘美；","不知苦的人，會因對苦難缺乏","敏銳的感受力，而變得沒有人情味。"]},
+    {id:333, origId:333, content:"要做事，不要怕人事，事是人做出來的。", semanticTags:["勇氣","處事","工作"], lines:["要做事，不要怕人事，","事是人做出來的。"]},
+    {id:334, origId:334, content:"用有形的教育轉化無形的心念，用無形的精神啟發力量，展現於有形的行動上。", semanticTags:["教育","行動","學習"], lines:["用有形的教育轉化無形的心念，","用無形的精神啟發力量，","展現於有形的行動上。"]},
+    {id:335, origId:335, content:"再好的機會福報，如不能把握因緣，一樣會溜走。", semanticTags:["機會","選擇","珍惜"], lines:["再好的機會福報，","如不能把握因緣，","一樣會溜走。"]},
+    {id:336, origId:336, content:"遺失現在就會後悔過去。", semanticTags:["珍惜","時間","方向"], lines:["遺失現在就會後悔過去。"]},
+    {id:337, origId:337, content:"真正自愛的人，不會與人計較。", semanticTags:["自愛","包容","心情"], lines:["真正自愛的人，","不會與人計較。"]},
+    {id:338, origId:338, content:"對自己要有信心，對他人要信任。", semanticTags:["信心","誠信","尊重"], lines:["對自己要有信心，","對他人要信任。"]},
+    {id:339, origId:339, content:"「路」必須走方能到達；「事」必須做才能完成；「苦」必須受才可消除。", semanticTags:["行動","工作","磨練"], lines:["「路」必須走方能到達；","「事」必須做才能完成；","「苦」必須受才可消除。"]},
+    {id:340, origId:340, content:"世間的海可以填平，但是人的鼻下橫，小小的一個嘴巴卻永遠填不滿。", semanticTags:["欲望","知足","說話"], lines:["世間的海可以填平，","但是人的鼻下橫，","小小的一個嘴巴","卻永遠填不滿。"]},
+    {id:341, origId:341, content:"要想改造世界適合自己是過分要求，如我們不能稱心，或許可以知足。", semanticTags:["知足","包容","改變"], lines:["要想改造世界適合自己是過分要求，","如我們不能稱心，或許可以知足。"]},
+    {id:342, origId:342, content:"遇到困境，一定要用更大的鬥志面對，惟有勇敢迎敵，才有機會致勝。", semanticTags:["勇氣","困難","積極"], lines:["遇到困境，一定要用更大的鬥志面對，","惟有勇敢迎敵，才有機會致勝。"]},
+    {id:343, origId:343, content:"做事像做數學應用題，只會加減乘除，不會靈活應用，等於不會做。", semanticTags:["智慧","工作","處事"], lines:["做事像做數學應用題，","只會加減乘除，","不會靈活應用，","等於不會做。"]},
+    {id:344, origId:344, content:"理直氣壯，得理不饒人者，不僅惹事生非，傷人傷己，甚至永遠無法化解仇恨，圓融人事。", semanticTags:["包容","修養","原諒","處事","衝突"], lines:["理直氣壯，得理不饒人者，","不僅惹事生非，傷人傷己，","甚至永遠無法化解仇恨，圓融人事。"]},
+    {id:345, origId:345, content:"有多少力量，就做多少事，切莫等待，等待常會落空。", semanticTags:["本份","工作","積極"], lines:["有多少力量，就做多少事，","切莫等待，等待常會落空。"]},
+    {id:346, origId:346, content:"路是人走出來的，千里之遙始於初步。", semanticTags:["行動","堅持","努力"], lines:["路是人走出來的，","千里之遙始於初步。"]},
+    {id:347, origId:347, content:"人人若能彼此溝通，就能相安無事。假如多心、猜疑即成是非。", semanticTags:["溝通","平靜","衝突"], lines:["人人若能彼此溝通，","就能相安無事。","假如多心、猜疑即成是非。"]},
+    {id:348, origId:348, content:"人常在什麼都可自由的時候，卻被這種隨心所欲的自由蒙蔽，虛擲時光而不覺。", semanticTags:["自由","自律","選擇","時間"], lines:["人常在什麼都可自由的時候，","卻被這種隨心所欲的自由蒙蔽，","虛擲時光而不覺。"]},
+    {id:349, origId:349, content:"只要緣深，不怕緣來得遲；只要找到路，就不怕路遙遠。", semanticTags:["堅持","機會","方向"], lines:["只要緣深，不怕緣來得遲；","只要找到路，就不怕路遙遠。"]},
+    {id:350, origId:350, content:"人生如蠟燭，即使有心，也要點燃，方能造福。", semanticTags:["付出","希望","光明"], lines:["人生如蠟燭，即使有心，","也要點燃，方能造福。"]},
+    {id:351, origId:351, content:"存於心中自有的光明就是慧命。", semanticTags:["智慧","心情","光明"], lines:["存於心中自有的","光明就是慧命。"]},
+    {id:352, origId:352, content:"付出愛心後要懂得感恩，懂得縮小自己。", semanticTags:["感恩","付出","愛心"], lines:["付出愛心後要","懂得感恩，","懂得縮小自己。"]},
+    {id:353, origId:353, content:"愛心是每個人都有的，只是在觀念的開啟。", semanticTags:["愛心","善念","改變"], lines:["愛心是每個人都有的，","只是在觀念的開啟。"]},
+    {id:354, origId:354, content:"對他人付出，會感到生命更踏實，更有意義，人生沒有絲毫的空虛。", semanticTags:["付出","生命","工作"], lines:["對他人付出，會感到","生命更踏實，更有意義，","人生沒有絲毫的空虛。"]},
+    {id:355, origId:355, content:"沒有智慧，無法修福；在付出愛的同時，更感恩那些讓我們有機會付出的人。", semanticTags:["智慧","感恩","付出"], lines:["沒有智慧，無法修福；","在付出愛的同時，更感恩那些","讓我們有機會付出的人。"]},
+    {id:356, origId:356, content:"修行要在人群中相互磨鍊，藉事鍊心；慈悲喜捨也是要從力行中，才能真正有所領悟。", semanticTags:["磨練","處事","行動"], lines:["修行要在人群中","相互磨鍊，藉事鍊心；","慈悲喜捨也是要從力行中，","才能真正有所領悟。"]},
+    {id:357, origId:357, content:"人真的要能忍，不能忍耐的結果就是星火燎原。", semanticTags:["包容","修養","自律"], lines:["人真的要能忍，","不能忍耐的結果","就是星火燎原。"]},
+    {id:358, origId:358, content:"內隨願，外隨緣，才能自在如願。", semanticTags:["平靜","解脫","自由"], lines:["內隨願，外隨緣，","才能自在如願。"]},
+    {id:359, origId:359, content:"以親子之心教導學生，付出無限的關懷與愛心，教育不要只停留在知識的言教，除身教外，最重要是心教。", semanticTags:["付出","愛心","關懷","教育","父母","孝順"], lines:["以親子之心教導學生，","付出無限的關懷與愛心，","教育不要只停留在知識的言教，","除身教外，最重要是心教。"]},
+    {id:360, origId:360, content:"應走而不走，非智；難行而能行，是勇；勇者但知「行所當行，為所應為」。", semanticTags:["勇氣","本份","行動"], lines:["應走而不走，非智；","難行而能行，是勇；","勇者但知「行所當行，為所應為」。"]},
+    {id:361, origId:361, content:"正語就是要說真正的話、實在的話、誠懇的話。", semanticTags:["真誠","誠信","說話"], lines:["正語就是要說","真正的話、","實在的話、","誠懇的話。"]},
+    {id:362, origId:362, content:"人之所以會痛苦是因為不滿足，對別人要求太多，而且不肯輕易原諒別人。", semanticTags:["原諒","知足","包容"], lines:["人之所以會痛苦","是因為不滿足，","對別人要求太多，","而且不肯輕易原諒別人。"]},
+    {id:363, origId:363, content:"真正的智慧，在於坦誠的愛和彼此間的信賴，而不涉及任何利害關係。", semanticTags:["智慧","誠信","感情"], lines:["真正的智慧，在於","坦誠的愛和彼此間的信賴，","而不涉及任何利害關係。"]},
+    {id:364, origId:364, content:"人生為人群付出多少，就得多少踏實感。", semanticTags:["付出","工作","生命"], lines:["人生為人群付出多少，","就得多少踏實感。"]},
+    {id:365, origId:365, content:"生命的蠟燭要點滴不漏，充分發揮光明照耀人間。", semanticTags:["珍惜","大愛","光明"], lines:["生命的蠟燭要點滴不漏，","充分發揮光明照耀人間。"]},
+    {id:366, origId:366, content:"愛的教育是愛他；教育他的同時，也要啟發他愛人的心。", semanticTags:["教育","愛心","付出"], lines:["愛的教育是愛他；","教育他的同時，","也要啟發他愛人的心。"]},
+    {id:367, origId:367, content:"是非從人事中來，要把複雜的人事單純化，成為自我的教育。", semanticTags:["教育","轉念","衝突"], lines:["是非從人事中來，","要把複雜的人事單純化，","成為自我的教育。"]},
+    {id:368, origId:368, content:"對人事的紛擾要如「手畫虛空，畫過無痕」。", semanticTags:["解脫","包容","平靜"], lines:["對人事的紛擾要如","「手畫虛空，畫過無痕」。"]},
+    {id:369, origId:369, content:"生命如蠟燭，雖然點燃後生命不斷減損，但點燃自己才能照亮別人，生命也才有意義。", semanticTags:["大愛","希望","光明","價值"], lines:["生命如蠟燭，雖然點燃後","生命不斷減損，但點燃自己","才能照亮別人，生命也才有意義。"]},
+    {id:370, origId:370, content:"人生的價值，不在於生命的長短，而在於能否發揮功能。", semanticTags:["價值","生命","付出","本份"], lines:["人生的價值，","不在於生命的長短，","而在於能否發揮功能。"]},
+    {id:371, origId:371, content:"每個人心底都有一股清流，都有一塊福田，隱藏著豐沛的泉源。", semanticTags:["善念","平靜","心情"], lines:["每個人心底都有一股清流，","都有一塊福田，","隱藏著豐沛的泉源。"]},
+    {id:372, origId:372, content:"義務的付出，在工作中會產生一種享受犧牲的快樂。", semanticTags:["快樂","付出","工作"], lines:["義務的付出，在工作中","會產生一種享受犧牲的快樂。"]},
+    {id:373, origId:373, content:"人如果沒有得的心理，就不會有失的煩惱。", semanticTags:["煩惱","得失","解脫"], lines:["人如果沒有得的心理，","就不會有失的煩惱。"]},
+    {id:374, origId:374, content:"不知足的人，即使享有人間最豐富的物質生活，也難遣心靈空虛之苦。", semanticTags:["知足","欲望","解脫"], lines:["不知足的人，即使享有","人間最豐富的物質生活，","也難遣心靈空虛之苦。"]},
+    {id:375, origId:375, content:"愛慾愈熾，貪念愈多。", semanticTags:["欲望","自律","解脫"], lines:["愛慾愈熾，","貪念愈多。"]},
+    {id:376, origId:376, content:"一切的法是用來修心，一切的物質是用來幫助生活。", semanticTags:["修養","心情","知足"], lines:["一切的法是用來修心，","一切的物質是用來幫助生活。"]},
+    {id:377, origId:377, content:"方向正確即不再迷失，而心中自然產生一股永無休止不斷精進的意念。", semanticTags:["方向","堅持","正念"], lines:["方向正確即不再迷失，","而心中自然產生一股","永無休止不斷精進的意念。"]},
+    {id:378, origId:378, content:"人心所起的喜怒哀樂即是煩惱，皆由心、口、意而來。", semanticTags:["煩惱","心情","自律"], lines:["人心所起的喜怒哀樂即是煩惱，","皆由心、口、意而來。"]},
+    {id:379, origId:379, content:"人生的意義與價值，不在於存活世間的久長，而在於自己為世間付出多少。", semanticTags:["價值","生命","付出","本份"], lines:["人生的意義與價值，","不在於存活世間的久長，","而在於自己為世間付出多少。"]},
+    {id:380, origId:380, content:"克盡做人的本分，在工作中得到快樂喜悅，就是最踏實、最幸福的人生。", semanticTags:["快樂","做人","工作"], lines:["克盡做人的本分，","在工作中得到快樂喜悅，","就是最踏實、最幸福的人生。"]},
+    {id:381, origId:381, content:"命是可以改變的，掌握在自己手裡。", semanticTags:["轉念","行動","改變","命運"], lines:["命是可以改變的，","掌握在自己手裡。"]},
+    {id:382, origId:382, content:"人應靜思反省，以撥開心靈的波瀾，發掘智慧的泉源。", semanticTags:["智慧","平靜","反省"], lines:["人應靜思反省，","以撥開心靈的波瀾，","發掘智慧的泉源。"]},
+    {id:383, origId:383, content:"聰明不一定具備智慧，但是智慧一定包括聰明；聰明只是一種計量利弊得失的能力，貪婪詭詐也是聰明的象徵。", semanticTags:["智慧","解脫","修養","得失"], lines:["聰明不一定具備智慧，","但是智慧一定包括聰明；","聰明只是一種計量利弊得失的能力，","貪婪詭詐也是聰明的象徵。"]},
+    {id:384, origId:384, content:"做事要保持三個原則：赤子的真心、駱駝的耐心、獅子的勇猛心。", semanticTags:["真誠","堅持","勇氣"], lines:["做事要保持三個原則：","赤子的真心、","駱駝的耐心、","獅子的勇猛心。"]},
+    {id:385, origId:385, content:"人要祝福自己，祝福自己就不要唉聲嘆氣。", semanticTags:["轉念","歡喜","抱怨"], lines:["人要祝福自己，","祝福自己就不要唉聲嘆氣。"]},
+    {id:386, origId:386, content:"別人罵我、不諒解我、毀謗我，我反而應興起一分感謝的心理，感謝他們給我修行的境界。", semanticTags:["感恩","轉念","包容"], lines:["別人罵我、不諒解我、毀謗我，","我反而應興起一分感謝的心理，","感謝他們給我修行的境界。"]},
+    {id:387, origId:387, content:"讚嘆別人就是莊嚴自己，批評別人就是作賤自己。", semanticTags:["批評","讚美","尊重"], lines:["讚嘆別人就是莊嚴自己，","批評別人就是作賤自己。"]},
+    {id:388, origId:388, content:"師長的責任，只是教導；實踐的道路，必須自己去走。", semanticTags:["責任","教育","行動"], lines:["師長的責任，只是教導；","實踐的道路，必須自己去走。"]},
+    {id:389, origId:389, content:"微笑是世界共通的語言，愛的表現。", semanticTags:["態度","愛心","溫暖"], lines:["微笑是世界共通的語言，","愛的表現。"]},
+    {id:390, origId:390, content:"凡夫都是因為心量太小，所以無法容納其他的人。", semanticTags:["包容","修養","謙虛"], lines:["凡夫都是因為心量太小，","所以無法容納其他的人。"]},
+    {id:391, origId:391, content:"只怕力量不夠，不怕做的工作太多。", semanticTags:["工作","責任","努力"], lines:["只怕力量不夠，","不怕做的工作太多。"]},
+    {id:392, origId:392, content:"面對紛雜的氣氛，只要抱持感恩心，就不會感覺煩躁。尤其是愈感恩，就會愈覺得做好。", semanticTags:["感恩","平靜","轉念"], lines:["面對紛雜的氣氛，","只要抱持感恩心，","就不會感覺煩躁。","尤其是愈感恩，","就會愈覺得做好。"]},
+    {id:393, origId:393, content:"在人事歷練中不求聰明，但求智慧；智慧是人心最清淨、最完美的一念。本性、智慧具足，就能分辨人事體會真理。", semanticTags:["智慧","修養","考驗"], lines:["在人事歷練中不求聰明，但求智慧；","智慧是人心最清淨、最完美的一念。","本性、智慧具足，就能分辨人事體會真理。"]},
+    {id:394, origId:394, content:"能懂得適時適機運用所得，利益人群，廣結善緣，才是成功圓滿的人生。", semanticTags:["利益","成就","處事"], lines:["能懂得適時適機運用所得，","利益人群，廣結善緣，","才是成功圓滿的人生。"]},
+    {id:395, origId:395, content:"內能自謙是功，外能禮讓是德。", semanticTags:["謙虛","禮讓","修養"], lines:["內能自謙是功，","外能禮讓是德。"]},
+    {id:396, origId:396, content:"只有享受不是福氣，有能力為他人付出，才是真正恆常的福。", semanticTags:["付出","惜福","幸福"], lines:["只有享受不是福氣。","有能力為他人付出，","才是真正恆常的福。"]},
+    {id:397, origId:397, content:"開口動舌，舉手投足，無不是業。", semanticTags:["謹慎","自律","修養"], lines:["開口動舌，","舉手投足，","無不是業。"]},
+    {id:398, origId:398, content:"要讓心中常保餘地，切莫自滿而有所溢。", semanticTags:["謙虛","包容","反省"], lines:["要讓心中常保餘地，","切莫自滿而有所溢。"]},
+    {id:399, origId:399, content:"對自己有幻想的人叫愚，對別人有幻想的人叫痴。", semanticTags:["反省","智慧","改過"], lines:["對自己有幻想的人叫愚，","對別人有幻想的人叫痴。"]},
+    {id:400, origId:400, content:"心地空時，宇宙虛空都可容納；心地滿時，容不了一滴水、一粒沙。", semanticTags:["包容","謙虛","平靜"], lines:["心地空時，宇宙虛空都可容納；","心地滿時，容不了一滴水、一粒沙。"]},
+    {id:401, origId:401, content:"人命呼吸間，唯有在分秒間警惕自己毋怠毋懈，方能不斷向前邁進。", semanticTags:["時間","珍惜","自律","堅持"], lines:["人命呼吸間，","唯有在分秒間","警惕自己毋怠毋懈，","方能不斷向前邁進。"]},
+    {id:402, origId:402, content:"過去的努力有現在的成就；未來的展望是現在的動作。", semanticTags:["努力","成就","方向","時間"], lines:["過去的努力有現在的成就；","未來的展望是現在的動作。"]},
+    {id:403, origId:403, content:"人生無常，要趕緊行善修行。", semanticTags:["時間","珍惜","生命","善念"], lines:["人生無常，","要趕緊行善修行。"]},
+    {id:404, origId:404, content:"做人要有踏實感，不要只有成就感；踏實的人，心中多舒服。", semanticTags:["做人","態度","心情"], lines:["做人要有踏實感，不要只有成就感；","踏實的人，心中多舒服。"]},
+    {id:405, origId:405, content:"做人要做到三不靠：不靠權力，不靠地位，不靠金錢。", semanticTags:["做人","自律","尊嚴"], lines:["做人要做到三不靠：","不靠權力，","不靠地位，","不靠金錢。"]},
+    {id:406, origId:406, content:"難行能行、難捨能捨、難為能為，才能昇華自我的人格。", semanticTags:["努力","堅持","修養","人格"], lines:["難行能行、難捨能捨、","難為能為，才能","昇華自我的人格。"]},
+    {id:407, origId:407, content:"不要把陰影覆藏在心裡，要散發光和熱，生命才有意義。", semanticTags:["解脫","轉念","光明"], lines:["不要把陰影覆藏在心裡，","要散發光和熱，","生命才有意義。"]}
+];
+
+for (var i = 0; i < aphorismsData.length; i++) {
+    aphorismShowCounts[aphorismsData[i].id] = 0;
+}
+
+var currentDisplayKeywords = []; 
+var selectedUserTags = []; 
+var currentGeneratedAphorismText = "";
+var currentGeneratedAphorismLines = [];
+
+// 🌸 自創結緣語可用的正面詞（美德類）
+var aiPosWordList = posTagList.filter(function(t) { return t !== "克服"; }).concat([
+    "專注", "原諒", "付出", "合作", "謹慎", "堅持", "學習", "毅力", "努力", "團結", "信心", "勇氣", "積極",
+    "行動", "盡責", "尊重", "改過", "孝順", "欣賞", "體諒", "關懷", "禮讓", "珍惜", "責任", "溝通", "平等"
+]);
+
+// 🌸 負面詞分類：情緒類、貪執類、人際類、逆境類
+var aiNegCategories = {
+    "情": ["煩惱", "生氣", "抱怨"],
+    "貪": ["欲望", "名利", "得失", "比較"],
+    "人": ["衝突", "批評"],
+    "逆": ["困難", "考驗", "磨練", "失敗"]
+};
+function aiNegCategoryOf(word) {
+    for (var key in aiNegCategories) {
+        if (aiNegCategories[key].indexOf(word) !== -1) return key;
+    }
+    return '情';
+}
+
+// 🌸 自創結緣語句型：t＝句型（「｜」是問候圖換行位置）、neg＝適用的負面詞類別、th＝主題標籤
+var aiTemplates = [
+    {t:"心常懷【POS1】與【POS2】，｜能化【NEG1】於無形；｜持守正見，自得安樂。", neg:["情","貪","人"], th:["平靜","正念","安定"]},
+    {t:"【POS1】是修身之本，｜【POS2】為待人之妙方；｜以柔制剛，化解【NEG1】。", neg:["情","人"], th:["修養","處事","態度"]},
+    {t:"當面對【NEG1】之際，｜若能升起【POS1】與【POS2】，｜危機即是轉機。", neg:["情","人","逆"], th:["轉念","勇氣","困難"]},
+    {t:"轉一個角度看【NEG1】，｜內心便生【POS1】；｜用【POS2】待人，處處皆吉祥。", neg:["情","貪","人","逆"], th:["轉念","樂觀","處事"]},
+    {t:"【NEG1】乃心靈之枷鎖，｜唯有發揮【POS1】與【POS2】，｜始能獲得真自在。", neg:["情","貪"], th:["解脫","自由","心情"]},
+    {t:"以【POS1】寬待他人之【NEG1】，｜以【POS2】嚴律自己，｜人生自然明亮。", neg:["情","人"], th:["包容","自律","原諒"]},
+    {t:"萬事皆有因緣，｜遇【NEG1】莫唉聲嘆氣，｜持【POS1】方能見【POS2】之境。", neg:["人","逆"], th:["抱怨","樂觀","轉念"]},
+    {t:"苦難是鍛鍊【POS1】的石階，｜【NEG1】是滋養【POS2】的沃土，｜勇者無懼。", neg:["人","逆"], th:["磨練","勇氣","考驗"]},
+    {t:"給自己一份【POS1】的定力，｜化解外界【NEG1】的紛擾，｜擁抱【POS2】。", neg:["貪","人"], th:["平靜","安定","專注"]},
+    {t:"【POS1】如清風，｜【POS2】似朗月；｜拂去內心【NEG1】，｜自性清淨顯現。", neg:["情","貪"], th:["平靜","心情","修養"]},
+    {t:"莫被【NEG1】蒙蔽雙眼，｜莫讓【NEG2】困住心靈；｜及時醒悟，重拾【POS1】。", neg:["情","貪"], th:["反省","智慧","解脫"]},
+    {t:"埋怨只會加深【NEG1】，｜動怒只會毀滅【POS1】；｜唯有自省，始得【POS2】。", neg:["人","逆"], th:["反省","生氣","抱怨"]},
+    {t:"貪求【NEG1】終成空，｜計較輸贏只添苦；｜放下執著，方知【POS1】之貴。", neg:["貪"], th:["知足","欲望","解脫"]},
+    {t:"指責他人，不如檢討自身【NEG1】；｜要求外界，不如涵養【POS1】與【POS2】。", neg:["情","貪"], th:["反省","批評","修養"]},
+    {t:"【NEG1】由心生，｜清明由【POS1】起；｜轉個彎看待境遇，｜處處皆【POS2】。", neg:["情","貪"], th:["轉念","心情","智慧"]},
+    {t:"將【NEG1】轉為【POS1】，｜將爭執化為【POS2】；｜心境一變，天地無限寬。", neg:["情","人","逆"], th:["轉念","包容","衝突"]},
+    {t:"缺口的杯子換個角度｜依然圓滿，放下【NEG1】，｜自能看見人生中的【POS1】。", neg:["情","貪","人"], th:["轉念","知足","樂觀"]},
+    {t:"痛苦源於對【NEG1】的執著，｜自在源於對【POS1】的實踐，｜靜心即是【POS2】。", neg:["情","貪"], th:["解脫","平靜","正念"]},
+    {t:"把嫌棄當作【POS1】的契機，｜將【NEG1】視為修行的道場，｜自得【POS2】。", neg:["情","人","逆"], th:["考驗","磨練","修養"]},
+    {t:"【POS1】是內心的明燈，｜【POS2】是處世的階梯；｜遠離【NEG1】，便無恐懼。", neg:["情","貪","人"], th:["光明","方向","勇氣"]},
+    {t:"行事以【POS1】為先，｜待人以【POS2】為本；｜遠離【NEG1】，自然通達無礙。", neg:["情","貪","人"], th:["處事","做人","溝通"]},
+    {t:"為人當如飽滿稻穗，｜越懂得【POS1】，｜越不隨【NEG1】起舞，｜此乃【POS2】。", neg:["情","貪","人"], th:["謙虛","做人","修養"]},
+    {t:"將【POS1】融入職場，｜把【POS2】帶入生活；｜遠離【NEG1】，踏實即是福。", neg:["情","貪","人"], th:["工作","本份","幸福"]},
+    {t:"人生如應用題，｜靈活運用【POS1】與【POS2】，｜方能解開【NEG1】的結。", neg:["情","人"], th:["智慧","處事","溝通"]},
+    {t:"多一分【POS1】就多一分福，｜少一分計較就少一分【NEG1】，｜心安即【POS2】。", neg:["情","人"], th:["知足","比較","幸福"]},
+    {t:"福樂不在於征服【NEG1】，｜而在於懂得【POS1】；｜把握當下，便具足【POS2】。", neg:["情","貪","逆"], th:["幸福","珍惜","知足"]},
+    {t:"飲水當思【POS1】，｜遇【NEG1】常懷感念；｜懂得知福，｜生活處處皆【POS2】。", neg:["人","逆"], th:["感恩","惜福","知足"]},
+    {t:"心心念念為【POS1】，｜時時刻刻化解【NEG1】；｜忘我奉獻，體會【POS2】真義。", neg:["情","人"], th:["付出","無私","愛心"]},
+    {t:"聚【POS1】之力，｜發【POS2】之光；｜同心互助，｜必能化解一切【NEG1】。", neg:["情","人"], th:["團結","合作","團隊"]},
+    {t:"施比受更有福，｜奉獻比索取更喜悅；｜以【POS1】消弭【NEG1】，｜收穫【POS2】。", neg:["情","人"], th:["付出","歡喜","利益"]},
+    {t:"以慈悲寬待【NEG1】，｜用暖意化解【NEG2】；｜造福人群，即是圓滿【POS1】。", neg:["情","人"], th:["大愛","包容","利益"]},
+    {t:"不因【NEG1】而動搖【POS1】，｜不因挫折而放棄【POS2】；｜守住初心，前路自明。", neg:["情","貪","人","逆"], th:["堅持","毅力","信心"]},
+    {t:"弱者等待時機，｜強者化【NEG1】為力量；｜唯有【POS1】，能成全【POS2】。", neg:["情","人","逆"], th:["勇氣","積極","機會"]},
+    {t:"站立半路比目標更辛苦；｜化解【NEG1】，發揮【POS1】，｜必獲【POS2】碩果。", neg:["情","人"], th:["堅持","努力","成就"]},
+    {t:"一念【POS1】開萬花，｜一念【NEG1】落千障；｜修心養性，終能得【POS2】。", neg:["情","貪"], th:["善念","正念","修養"]},
+    {t:"迷時執著於【NEG1】，｜悟時輕安於【POS1】；｜一念之間，隨處皆是【POS2】。", neg:["情","貪"], th:["轉念","解脫","智慧"]},
+    {t:"言語留【POS1】之餘地，｜做事持【POS2】之原則；｜遠離【NEG1】，莊嚴自己。", neg:["情","貪","人"], th:["說話","處事","尊嚴"]},
+    {t:"【POS1】能生定靜，｜【POS2】能啟慧心；｜在日常中化解【NEG1】，｜心隨遇而安。", neg:["情","人"], th:["平靜","安定","心情"]},
+    {t:"能以【POS1】處逆境，｜用【POS2】待他人，｜【NEG1】便能在慧光中消融。", neg:["情","貪","人"], th:["考驗","包容","智慧"]},
+    {t:"心若充滿【POS1】，｜【NEG1】無處安放；｜行若化為【POS2】，｜福德自然無量。", neg:["情","貪","人"], th:["善念","功德","行動"]},
+    {t:"內能自謙是【POS1】，｜外能忍讓是【POS2】；｜不起【NEG1】，涵養綿長。", neg:["情","貪","人"], th:["謙虛","禮讓","修養"]},
+    {t:"謙遜退讓非懦弱，｜而是涵養【POS1】；｜縮小自己，才能化解【NEG1】。", neg:["情","人"], th:["謙虛","包容","修養"]},
+    {t:"傲慢源於【NEG1】的無知，｜謙遜源於【POS1】的覺醒；｜心靜方顯【POS2】。", neg:["貪"], th:["謙虛","名利","平靜"]},
+    {t:"靜心調伏【NEG1】，｜和顏悅色對待他人；｜持守【POS1】，展現【POS2】風範。", neg:["情","貪"], th:["平靜","態度","生氣"]},
+    {t:"人生無常當把握，｜慧命永久需【POS1】；｜放下【NEG1】，活出當下【POS2】。", neg:["情","貪","人"], th:["生命","珍惜","時間"]},
+    {t:"光陰是【POS1】的資糧，｜歲月是歷練的過程；｜擺脫【NEG1】，發揮【POS2】。", neg:["情","貪","人"], th:["時間","經驗","磨練"]},
+    {t:"今日不留【NEG1】之遺憾，｜明日迎來【POS1】之曙光；｜活在當下即【POS2】。", neg:["人","逆"], th:["時間","希望","珍惜"]},
+    {t:"點燃【POS1】之心燈，｜照亮【NEG1】之暗角；｜燃燒自己，成全【POS2】人生。", neg:["情","貪"], th:["光明","付出","大愛"]},
+    {t:"人生沒有所有權，｜只有使用權；｜善用【POS1】化解【NEG1】，｜締造【POS2】。", neg:["情","人"], th:["生命","珍惜","價值"]},
+    {t:"給自己一分【POS1】的膽識，｜許世界一份【POS2】的暖意；｜化【NEG1】為慈悲。", neg:["情","人"], th:["勇氣","溫暖","大愛"]},
+    {t:"以【POS1】為舟，｜以【POS2】為槳，｜必能渡過【NEG1】之河。", neg:["情","貪","人","逆"], th:["困難","毅力","智慧"]},
+    {t:"【NEG1】來時莫慌張，｜先以【POS1】安住心，｜再用【POS2】化因緣。", neg:["情","人","逆"], th:["平靜","安定","處事"]},
+    {t:"心田種下【POS1】，｜日日澆灌【POS2】，｜【NEG1】自然難生根。", neg:["情","貪","人"], th:["善念","堅持","修養"]},
+    {t:"遇事先問【POS1】，｜待人常存【POS2】，｜【NEG1】便無處可藏。", neg:["情","貪"], th:["處事","做人","態度"]},
+    {t:"莫讓【NEG1】佔據心房，｜留一角給【POS1】，｜留一角給【POS2】。", neg:["情","貪"], th:["心情","煩惱","平靜"]},
+    {t:"把【NEG1】當作功課，｜把【POS1】當作答案，｜把【POS2】當作老師。", neg:["情","人","逆"], th:["學習","考驗","經驗"]},
+    {t:"早起一念【POS1】，｜日間一份【POS2】，｜夜來心中無【NEG1】。", neg:["情","貪","人"], th:["時間","平靜","自律"]},
+    {t:"【POS1】是暗夜的燈，｜【POS2】是遠行的路；｜有燈有路，｜何懼【NEG1】。", neg:["人","逆"], th:["光明","方向","勇氣"]},
+    {t:"少一分【NEG1】，｜多一分【POS1】，｜人生處處有【POS2】。", neg:["情","貪","人"], th:["知足","幸福","樂觀"]},
+    {t:"一念【POS1】天地變寬，｜一念【POS2】眼界自開，｜一念放下【NEG1】盡消。", neg:["情","貪","人"], th:["轉念","包容","解脫"]},
+    {t:"心存【POS1】，行有【POS2】，｜日日皆是好時節。", neg:[], th:["善念","行動","幸福"]},
+    {t:"【POS1】是種子，【POS2】是陽光，｜用心灌溉，福田自然豐收。", neg:[], th:["善念","付出","功德"]},
+    {t:"多一分【POS1】，添一分【POS2】，｜人間處處有溫馨。", neg:[], th:["溫暖","愛心","幸福"]},
+    {t:"以【POS1】立身，｜以【POS2】待人，｜以【POS3】處世。", neg:[], th:["做人","處事","修養"]},
+    {t:"【POS1】、【POS2】與【POS3】，｜是人生最好的三份禮物。", neg:[], th:["感恩","珍惜","幸福"]},
+    {t:"家中有【POS1】，處處有【POS2】，｜一家和樂最是福。", neg:[], th:["家庭","父母","孝順"]},
+    {t:"把【POS1】說出口，｜把【POS2】做到底，｜溫暖就在身邊。", neg:[], th:["說話","行動","溫暖"]},
+    {t:"今天多一點【POS1】，｜明天多一點【POS2】，｜日子自然更美好。", neg:[], th:["希望","樂觀","時間"]},
+    {t:"一份【POS1】，一份【POS2】，｜點亮自己，也溫暖別人。", neg:[], th:["光明","溫暖","付出"]}
+];
+
+var currentAspectMode = 'portrait'; 
+var currentSelectedCardId = null;   
+
+function checkLineLimitOnKeyDown(event, textareaElem) {
+    if (event.key === 'Enter') {
+        var lines = textareaElem.value.split('\n');
+        if (lines.length >= 3) {
+            event.preventDefault();
+        }
+    }
+}
+
+function enforceMaxCharsPerLine(textareaElem) {
+    if (!textareaElem) return;
+    var lines = textareaElem.value.split('\n');
+    var modified = false;
+
+    if (lines.length > 3) {
+        lines = lines.slice(0, 3);
+        modified = true;
+    }
+
+    for (var i = 0; i < lines.length; i++) {
+        if (lines[i].length > 11) {
+            lines[i] = lines[i].substring(0, 11);
+            modified = true;
+        }
+    }
+
+    if (modified) {
+        textareaElem.value = lines.join('\n');
+    }
+}
+
+function speakInputText(btnElement) {
+    var inputElem = document.getElementById('userPrompt');
+    var textToSpeak = inputElem ? inputElem.value.trim() : "";
+    if (!textToSpeak) {
+        alert("請先在輸入框中寫下內容再進行朗讀");
+        return;
+    }
+    speakText(textToSpeak, btnElement);
+}
+
+function speakText(text, btnElement) {
+    if (!('speechSynthesis' in window)) {
+        alert('您的裝置不支援語音朗讀功能');
+        return;
+    }
+    var synth = window.speechSynthesis;
+    if (synth.paused) synth.resume();
+    synth.cancel();
+
+    var allSpeakBtns = document.querySelectorAll('.btn-speak');
+    allSpeakBtns.forEach(function(b) { b.classList.remove('speaking'); });
+
+    var utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-TW';
+    utterance.rate = 0.9;
+
+    btnElement.classList.add('speaking');
+    utterance.onend = function() { btnElement.classList.remove('speaking'); };
+    utterance.onerror = function() { btnElement.classList.remove('speaking'); };
+    setTimeout(function() { synth.speak(utterance); }, 50);
+}
+
+function copyToClipboard(text, btnElement) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            showCopyTooltip(btnElement);
+        }).catch(function() {
+            fallbackCopyText(text, btnElement);
+        });
+    } else {
+        fallbackCopyText(text, btnElement);
+    }
+}
+
+function fallbackCopyText(text, btnElement) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showCopyTooltip(btnElement);
+    } catch (err) {
+        alert('複製失敗，請手動複製');
+    }
+    document.body.removeChild(textArea);
+}
+
+function showCopyTooltip(btnElement) {
+    btnElement.innerHTML = checkSvg;
+    btnElement.classList.add('copied');
+    setTimeout(function() { 
+        btnElement.innerHTML = copySvg; 
+        btnElement.classList.remove('copied');
+    }, 1200);
+}
+
+function extractKeywordsFromText(text) {
+    var detected = [];
+    if (!text) return detected;
+    for (var i = 0; i < text.length - 1; i++) {
+        var bigram = text.substring(i, i + 2);
+        if (allSystemTags.indexOf(bigram) !== -1 && detected.indexOf(bigram) === -1) {
+            detected.push(bigram);
+        }
+    }
+    return detected;
+}
+
+function calculateSemanticScore(content, inputText) {
+    if (!inputText || !content) return 0;
+    var score = 0;
+    
+    if (content.indexOf(inputText) !== -1) {
+        score += 50;
+    }
+    
+    for (var len = 2; len <= 4; len++) {
+        for (var i = 0; i <= inputText.length - len; i++) {
+            var gram = inputText.substring(i, i + len);
+            if (content.indexOf(gram) !== -1) {
+                score += (len * 5); 
+            }
+        }
+    }
+    
+    var conceptMap = [
+        { keys: ["睡", "睡覺", "累", "失眠", "不飽", "疲憊"], mappedTags: ["平靜", "健康", "安定", "煩惱", "自律"] },
+        { keys: ["吃", "飯", "飽", "餓", "食物", "菜"], mappedTags: ["知足", "惜福", "感恩", "健康"] },
+        { keys: ["罵", "生氣", "吵架", "老闆", "衝突", "討厭"], mappedTags: ["包容", "原諒", "轉念", "忍辱", "生氣"] },
+        { keys: ["錢", "沒中", "發票", "窮", "買"], mappedTags: ["知足", "得失", "欲望", "快樂"] },
+        { keys: ["孝順", "父母", "爸", "媽", "長輩", "奉養"], mappedTags: ["父母", "孝順", "感恩", "家庭", "尊嚴"] }
+    ];
+
+    conceptMap.forEach(function(group) {
+        var hitKey = group.keys.some(function(k) { return inputText.indexOf(k) !== -1; });
+        if (hitKey) {
+            group.mappedTags.forEach(function(mt) {
+                if (content.indexOf(mt) !== -1) score += 15;
+            });
+        }
+    });
+
+    return score;
+}
+
+function buildTopKeywordsByRules(cards, activeInputText, hitTagsFromInput) {
+    var resultTags = [];
+
+    function addTag(tag) {
+        if (tag && resultTags.indexOf(tag) === -1) {
+            resultTags.push(tag);
+        }
+    }
+
+    if (hitTagsFromInput && hitTagsFromInput.length > 0) {
+        hitTagsFromInput.forEach(addTag);
+    }
+
+    if (selectedUserTags && selectedUserTags.length > 0) {
+        selectedUserTags.forEach(addTag);
+    }
+
+    var cardTags = [];
+    if (cards && cards.length > 0) {
+        cards.forEach(function(cardItem) {
+            cardItem.semanticTags.forEach(function(t) {
+                if (cardTags.indexOf(t) === -1) cardTags.push(t);
+            });
+        });
+    }
+    cardTags.forEach(addTag);
+
+    var leastExposedPool = allSystemTags.slice().sort(function(a, b) {
+        var countA = tagShowCounts[a] || 0;
+        var countB = tagShowCounts[b] || 0;
+        if (countA === countB) return 0.5 - Math.random();
+        return countA - countB;
+    });
+
+    for (var i = 0; i < leastExposedPool.length; i++) {
+        if (resultTags.length >= 40) break;
+        addTag(leastExposedPool[i]);
+    }
+
+    resultTags.forEach(function(t) {
+        tagShowCounts[t] = (tagShowCounts[t] || 0) + 1;
+    });
+
+    currentDisplayKeywords = resultTags.slice(0, 40);
+}
+
+function refreshCoreKeywords() {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    selectedUserTags = []; 
+    var inputElem = document.getElementById('userPrompt');
+    if (inputElem) { inputElem.placeholder = defaultPlaceholderText; inputElem.value = ""; }
+
+    ensureButtonsInDefaultPos();
+
+    var aiBox = document.getElementById('aiResultBox');
+    if (aiBox) aiBox.innerHTML = '';
+
+    renderUI(false, [], true, true, null);
+}
+
+function ensureButtonsInDefaultPos() {
+    var morningBtn = document.getElementById('morningImageBtn');
+    var aiBtn = document.getElementById('aiGenerateBtn');
+    var btnRow = document.getElementById('buttonsRow');
+    if (morningBtn && aiBtn && btnRow) {
+        btnRow.appendChild(aiBtn);
+        btnRow.appendChild(morningBtn);
+    }
+}
+
+function toggleTagSelection(tag) {
+    var idx = selectedUserTags.indexOf(tag);
+    if (idx === -1) {
+        selectedUserTags.push(tag); 
+    } else {
+        selectedUserTags.splice(idx, 1); 
+    }
+
+    var allTagBtns = document.querySelectorAll('.keyword-badge, .card-tag-btn');
+    allTagBtns.forEach(function(btn) {
+        if (btn.textContent === tag) {
+            if (selectedUserTags.indexOf(tag) !== -1) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
+}
+
+function renderKeywordsHeader() {
+    var kwBox = document.getElementById('keywordsContainer');
+    if (!kwBox) return;
+    kwBox.innerHTML = '';
+
+    for (var j = 0; j < currentDisplayKeywords.length; j++) {
+        (function(tag){
+            var b = document.createElement('button');
+            b.className = 'keyword-badge';
+            if (selectedUserTags.indexOf(tag) !== -1) {
+                b.classList.add('active');
+            }
+            b.textContent = tag;
+            b.type = 'button';
+            b.onclick = function() { toggleTagSelection(tag); };
+            kwBox.appendChild(b);
+        })(currentDisplayKeywords[j]);
+    }
+}
+
+// 🌸 #N 專屬獨立直出渲染通道（優先比對原廠編號 origId，若無則自動跳到下一個原廠編號）
+function handleNumberDirectSearch(targetNum, inputElem) {
+    var targetCard = aphorismsData.find(function(item) {
+        return parseInt(item.origId, 10) === targetNum;
+    });
+
+    if (!targetCard) {
+        var nextList = aphorismsData.filter(function(item) {
+            return parseInt(item.origId, 10) > targetNum;
+        }).sort(function(a, b) {
+            return parseInt(a.origId, 10) - parseInt(b.origId, 10);
+        });
+        targetCard = (nextList.length > 0) ? nextList[0] : aphorismsData[0];
+    }
+
+    var selected = [targetCard];
+    var usedMap = {};
+    usedMap[targetCard.id] = true;
+
+    var relatedTags = targetCard.semanticTags || [];
+    var poolCards = aphorismsData.filter(function(item) {
+        if (usedMap[item.id]) return false;
+        return relatedTags.some(function(t) { return item.semanticTags && item.semanticTags.indexOf(t) !== -1; });
+    });
+
+    for (var r = 0; r < poolCards.length && selected.length < 3; r++) {
+        selected.push(poolCards[r]);
+        usedMap[poolCards[r].id] = true;
+    }
+
+    for (var g = 0; g < aphorismsData.length && selected.length < 3; g++) {
+        if (!usedMap[aphorismsData[g].id]) {
+            selected.push(aphorismsData[g]);
+            usedMap[aphorismsData[g].id] = true;
+        }
+    }
+
+    renderCardsDirectly(selected, targetCard);
+
+    inputElem.placeholder = "#" + targetCard.origId;
+    inputElem.value = "";
+}
+
+function renderCardsDirectly(selected, primaryCard) {
+    var list = document.getElementById('resultsList');
+    if (!list) return;
+
+    currentDisplayedCards = selected.slice();
+    lastDisplayedIds = selected.map(function(item) { return item.id; });
+
+    selected.forEach(function(item) {
+        aphorismShowCounts[item.id] = (aphorismShowCounts[item.id] || 0) + 1;
+    });
+
+    buildTopKeywordsByRules(selected, "", primaryCard.semanticTags || []);
+    renderKeywordsHeader();
+
+    list.innerHTML = '';
+
+    for (var s = 0; s < selected.length; s++) {
+        var item = selected[s];
+
+        var card = document.createElement('div'); card.className = 'card';
+        var mainBody = document.createElement('div'); mainBody.className = 'card-main-body';
+
+        var contentP = document.createElement('p'); contentP.className = 'card-content'; contentP.textContent = item.content;
+        
+        var rightSide = document.createElement('div'); rightSide.className = 'card-right-side';
+
+        var speakBtn = document.createElement('button');
+        speakBtn.className = 'btn-speak'; speakBtn.innerHTML = '🔊'; speakBtn.type = 'button'; speakBtn.title = '點擊朗讀';
+        (function(textToSpeak, btn){ speakBtn.onclick = function() { speakText(textToSpeak, btn); }; })(item.content, speakBtn);
+
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'card-checkbox';
+        checkbox.setAttribute('data-card-id', item.id);
+        checkbox.onchange = function() {
+            var customCb = document.getElementById('customInputCheckbox');
+            if (customCb && customCb.checked) customCb.checked = false;
+            var aiCheckbox = document.querySelector('.ai-card .card-checkbox');
+            if (aiCheckbox && aiCheckbox.checked) aiCheckbox.checked = false;
+            updateAiButtonState();
+        };
+
+        rightSide.appendChild(speakBtn); 
+        rightSide.appendChild(checkbox);
+
+        mainBody.appendChild(contentP); 
+        mainBody.appendChild(rightSide);
+
+        var metaDiv = document.createElement('div'); metaDiv.className = 'card-meta';
+        var idSpan = document.createElement('span'); idSpan.textContent = '原 #' + item.origId;
+        var tagContainer = document.createElement('div'); tagContainer.className = 'tag-list-container';
+
+        var displayCardTags = item.semanticTags || [];
+        for (var t = 0; t < displayCardTags.length; t++) {
+            (function(tag){
+                var tb = document.createElement('button'); tb.className = 'card-tag-btn';
+                if (selectedUserTags.indexOf(tag) !== -1) tb.classList.add('active');
+                tb.textContent = tag; tb.type = 'button';
+                tb.onclick = function() { toggleTagSelection(tag); };
+                tagContainer.appendChild(tb);
+            })(displayCardTags[t]);
+        }
+
+        metaDiv.appendChild(tagContainer); metaDiv.appendChild(idSpan);
+        card.appendChild(mainBody); card.appendChild(metaDiv);
+        list.appendChild(card);
+    }
+
+    ensureButtonsInDefaultPos();
+    updateAiButtonState();
+}
+
+// 🌸 主搜尋點擊事件
+window.doSearch = function() {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    var inputElem = document.getElementById('userPrompt');
+    var rawInputText = inputElem ? inputElem.value : "";
+
+    ensureButtonsInDefaultPos();
+
+    var aiBox = document.getElementById('aiResultBox');
+    if (aiBox) aiBox.innerHTML = '';
+
+    var trimmed = rawInputText.trim();
+    var isPureNumberSearch = /^([#＃]?\s*\d+)$/.test(trimmed);
+
+    if (isPureNumberSearch) {
+        var numMatches = trimmed.match(/\d+/);
+        if (numMatches) {
+            var targetNum = parseInt(numMatches[0], 10);
+            if (targetNum > 0) {
+                handleNumberDirectSearch(targetNum, inputElem);
+                return;
+            }
+        }
+    }
+
+    if (trimmed !== "") {
+        selectedUserTags = [];
+        renderUI(false, [], false, false, trimmed);
+        inputElem.placeholder = trimmed;
+        inputElem.value = "";
+    } else {
+        if (selectedUserTags.length === 0) {
+            renderUI(false, [], true, false, null);
+        } else {
+            inputElem.placeholder = defaultPlaceholderText;
+            renderUI(false, selectedUserTags.slice(), false, true, null);
+        }
+    }
+};
+
+function cardHasExactTag(item, tag) {
+    if (!tag) return true;
+    return item.semanticTags && item.semanticTags.indexOf(tag) !== -1;
+}
+
+function pushUniqueCard(targetArr, item, usedMap) {
+    if (item && !usedMap[item.id] && targetArr.length < 3) {
+        targetArr.push(item);
+        usedMap[item.id] = true;
+        return true;
+    }
+    return false;
+}
+
+function getExactHitsCount(item, tagsArr) {
+    var count = 0;
+    for (var i = 0; i < tagsArr.length; i++) {
+        if (cardHasExactTag(item, tagsArr[i])) count++;
+    }
+    return count;
+}
+
+function sortByExposureAndRandom(pool) {
+    return pool.slice().sort(function(a, b) {
+        var cA = aphorismShowCounts[a.id] || 0;
+        var cB = aphorismShowCounts[b.id] || 0;
+        if (cA === cB) return 0.5 - Math.random();
+        return cA - cB;
+    });
+}
+
+function getCardsByTags(targetTags, limitCount, usedIdMap) {
+    var result = [];
+    if (!targetTags || targetTags.length === 0) {
+        var fallback = sortByExposureAndRandom(aphorismsData);
+        for (var i = 0; i < fallback.length && result.length < limitCount; i++) {
+            pushUniqueCard(result, fallback[i], usedIdMap);
+        }
+        return result;
+    }
+
+    var matched = sortByExposureAndRandom(aphorismsData.filter(function(item) {
+        return !usedIdMap[item.id] && targetTags.some(function(t) { return cardHasExactTag(item, t); });
+    }));
+
+    for (var m = 0; m < matched.length && result.length < limitCount; m++) {
+        pushUniqueCard(result, matched[m], usedIdMap);
+    }
+
+    if (result.length < limitCount) {
+        var globalFb = sortByExposureAndRandom(aphorismsData);
+        for (var g = 0; g < globalFb.length && result.length < limitCount; g++) {
+            pushUniqueCard(result, globalFb[g], usedIdMap);
+        }
+    }
+
+    return result;
+}
+
+function handleCustomCheckboxChange(customCb) {
+    if (customCb && customCb.checked) {
+        var allCheckboxes = document.querySelectorAll('.card-checkbox');
+        allCheckboxes.forEach(function(cb) {
+            if (cb !== customCb) cb.checked = false;
+        });
+    }
+    updateAiButtonState();
+}
+
+function handleAiCheckboxClick(aiCb) {
+    if (aiCb && aiCb.checked) {
+        var resultCheckboxes = document.querySelectorAll('#resultsList .card-checkbox');
+        resultCheckboxes.forEach(function(cb) {
+            cb.checked = false;
+        });
+    }
+    updateAiButtonState();
+}
+
+function updateAiButtonState() {
+    var selectedCheckboxes = document.querySelectorAll('.card-checkbox:checked');
+    var aiBtn = document.getElementById('aiGenerateBtn');
+    var morningBtn = document.getElementById('morningImageBtn');
+    
+    var allCards = document.querySelectorAll('.cards-grid .card, .ai-card');
+    allCards.forEach(function(cardElem) {
+        var cb = cardElem.querySelector('.card-checkbox');
+        if (cb && cb.checked) {
+            cardElem.classList.add('selected-card');
+        } else {
+            cardElem.classList.remove('selected-card');
+        }
+    });
+
+    var count = selectedCheckboxes.length;
+
+    if (morningBtn) {
+        if (count === 1) {
+            morningBtn.disabled = false;
+            morningBtn.classList.add('active');
+            morningBtn.textContent = '🌸 生成自創問候圖';
+        } else {
+            morningBtn.disabled = true;
+            morningBtn.classList.remove('active');
+            morningBtn.textContent = '🌸 勾選一句生成自創問候圖';
+        }
+    }
+
+    if (aiBtn) {
+        var isCustomChecked = document.getElementById('customInputCheckbox').checked;
+        if (count >= 2 && !isCustomChecked) {
+            aiBtn.disabled = false;
+            aiBtn.classList.add('active');
+            var numText = (count === 2) ? '兩' : '三';
+            aiBtn.textContent = '✨ 融合所選' + numText + '金句生成自創結緣語';
+        } else {
+            aiBtn.disabled = true;
+            aiBtn.classList.remove('active');
+            aiBtn.textContent = '✨ 勾選多個金句自創結緣語';
+        }
+    }
+}
+
+function triggerMorningModalFromSelected() {
+    var selectedCb = document.querySelector('.card-checkbox:checked');
+    if (!selectedCb) return;
+
+    var targetText = "";
+    var cardId = selectedCb.getAttribute('data-card-id');
+    currentSelectedCardId = cardId; 
+
+    if (cardId === 'custom_input') {
+        var inputElem = document.getElementById('userPrompt');
+        targetText = inputElem ? inputElem.value.trim() : "";
+    } else if (cardId === '9999') {
+        targetText = currentGeneratedAphorismText;
+    } else {
+        var parentCard = selectedCb.closest('.card, .ai-card');
+        if (parentCard) {
+            var contentElem = parentCard.querySelector('.card-content');
+            if (contentElem) {
+                targetText = contentElem.textContent.trim();
+            }
+        }
+        if (!targetText) {
+            var foundCard = aphorismsData.find(function(item) { return item.id === parseInt(cardId, 10); });
+            if (foundCard) targetText = foundCard.content;
+        }
+    }
+
+    currentModalText = targetText;
+    currentAspectMode = 'portrait'; 
+    currentSelectedGreeting = '';
+    openMorningModal(targetText, currentAspectMode, cardId);
+}
+
+function generateAiAphorism() {
+    var selectedCheckboxes = document.querySelectorAll('.card-checkbox:checked');
+    if (selectedCheckboxes.length < 2) return;
+
+    var chosenCards = [];
+    selectedCheckboxes.forEach(function(cb) {
+        var cardId = parseInt(cb.getAttribute('data-card-id'), 10);
+        var found = aphorismsData.find(function(item) { return item.id === cardId; });
+        if (found) chosenCards.push(found);
+    });
+
+    var collectedTags = [];
+    chosenCards.forEach(function(c) {
+        c.semanticTags.forEach(function(t) {
+            if (collectedTags.indexOf(t) === -1) collectedTags.push(t);
+        });
+    });
+
+    // 🌸 智慧挑選句型：依負面詞類別篩選，再依主題與勾選金句標籤的重疊程度打分數
+    var selectedNegs = collectedTags.filter(function(t) { return negTagList.indexOf(t) !== -1; });
+    var negCategory = selectedNegs.length > 0 ? aiNegCategoryOf(selectedNegs[0]) : null;
+    var availablePos = collectedTags.filter(function(t) { return aiPosWordList.indexOf(t) !== -1; });
+
+    var candidates = [];
+    aiTemplates.forEach(function(tp, idx) {
+        if (negCategory) {
+            if (tp.neg.indexOf(negCategory) !== -1) candidates.push(idx);
+        } else {
+            if (tp.neg.length === 0 || tp.neg.indexOf('情') !== -1) candidates.push(idx);
+        }
+    });
+
+    var freshCandidates = candidates.filter(function(idx) { return recentTemplateIndices.indexOf(idx) === -1; });
+    if (freshCandidates.length === 0) {
+        recentTemplateIndices = [];
+        freshCandidates = candidates.slice();
+    }
+
+    var scored = freshCandidates.map(function(idx) {
+        var tp = aiTemplates[idx];
+        var score = 0;
+        tp.th.forEach(function(th) { if (collectedTags.indexOf(th) !== -1) score += 1; });
+        if (!negCategory && tp.neg.length === 0) score += 2;
+        if (tp.t.indexOf('【POS3】') !== -1) {
+            if (chosenCards.length >= 3 && availablePos.length >= 3) score += 2;
+            else score -= 1;
+        }
+        return { idx: idx, score: score };
+    });
+    var maxScore = Math.max.apply(null, scored.map(function(x) { return x.score; }));
+    var pool = scored.filter(function(x) { return x.score >= maxScore; });
+    if (pool.length < 3) pool = scored.filter(function(x) { return x.score >= maxScore - 1; });
+
+    var chosenIndex = pool[Math.floor(Math.random() * pool.length)].idx;
+    recentTemplateIndices.push(chosenIndex);
+    if (recentTemplateIndices.length > 10) {
+        recentTemplateIndices.shift();
+    }
+
+    var randomTemplate = aiTemplates[chosenIndex].t;
+
+    // 🌸 只挑美德類正面詞，並避開句型裡已經出現的字，避免「以包容包容」這類重複
+    var templatePlainText = randomTemplate.replace(/【(POS|NEG)\d】/g, '').replace(/｜/g, '');
+    function notInTemplate(t) { return templatePlainText.indexOf(t) === -1; }
+
+    var posPool = availablePos.filter(notInTemplate);
+    var useCategory = negCategory || '情';
+    var negPool = selectedNegs.filter(function(t) { return aiNegCategoryOf(t) === useCategory && notInTemplate(t); });
+
+    ["智慧", "平靜", "感恩", "包容", "知足", "善念"].forEach(function(t) {
+        if (posPool.length < 3 && posPool.indexOf(t) === -1 && notInTemplate(t)) posPool.push(t);
+    });
+    aiNegCategories[useCategory].forEach(function(t) {
+        if (negPool.length < 2 && negPool.indexOf(t) === -1 && notInTemplate(t)) negPool.push(t);
+    });
+
+    var pos1 = posPool[0];
+    var pos2 = posPool[1];
+    var pos3 = posPool[2];
+    var neg1 = negPool[0];
+    var neg2 = negPool[1];
+
+    var filledTemplate = randomTemplate
+        .replace(/【POS1】/g, pos1)
+        .replace(/【POS2】/g, pos2)
+        .replace(/【POS3】/g, pos3)
+        .replace(/【NEG1】/g, neg1)
+        .replace(/【NEG2】/g, neg2);
+
+    var generatedText = filledTemplate.replace(/｜/g, '');
+    currentGeneratedAphorismLines = filledTemplate.split('｜');
+
+    currentGeneratedAphorismText = generatedText;
+
+    var aiResultBox = document.getElementById('aiResultBox');
+    if (!aiResultBox) return;
+
+    aiResultBox.innerHTML = '';
+    
+    var aiCard = document.createElement('div');
+    aiCard.className = 'ai-card';
+
+    var mainBody = document.createElement('div');
+    mainBody.className = 'card-main-body';
+
+    var contentP = document.createElement('p');
+    contentP.className = 'card-content';
+    contentP.style.color = '#334155';
+    contentP.style.fontWeight = 'bold';
+    contentP.textContent = generatedText;
+
+    var rightSide = document.createElement('div');
+    rightSide.className = 'card-right-side';
+
+    var topBtnsDiv = document.createElement('div');
+    topBtnsDiv.className = 'ai-card-top-btns';
+
+    var speakBtn = document.createElement('button');
+    speakBtn.className = 'btn-speak';
+    speakBtn.innerHTML = '🔊';
+    speakBtn.type = 'button';
+    speakBtn.title = '點擊朗讀';
+    speakBtn.onclick = function() { speakText(generatedText, speakBtn); };
+
+    var aiCheckbox = document.createElement('input');
+    aiCheckbox.type = 'checkbox';
+    aiCheckbox.className = 'card-checkbox';
+    aiCheckbox.setAttribute('data-card-id', '9999'); 
+    aiCheckbox.onchange = function() { handleAiCheckboxClick(this); };
+
+    topBtnsDiv.appendChild(speakBtn);
+    topBtnsDiv.appendChild(aiCheckbox);
+
+    var copyBtn = document.createElement('button');
+    copyBtn.className = 'btn-copy';
+    copyBtn.innerHTML = copySvg;
+    copyBtn.type = 'button';
+    copyBtn.title = '複製結緣語';
+    copyBtn.onclick = function() { copyToClipboard(generatedText, copyBtn); };
+
+    rightSide.appendChild(topBtnsDiv);
+    rightSide.appendChild(copyBtn);
+
+    mainBody.appendChild(contentP);
+    mainBody.appendChild(rightSide);
+
+    var metaDiv = document.createElement('div');
+    metaDiv.className = 'card-meta';
+    metaDiv.style.paddingBottom = '2px';
+
+    var tagContainer = document.createElement('div');
+    tagContainer.className = 'tag-list-container';
+
+    collectedTags.forEach(function(tag) {
+        var tb = document.createElement('button');
+        tb.className = 'card-tag-btn';
+        if (selectedUserTags.indexOf(tag) !== -1) tb.classList.add('active');
+        tb.textContent = tag;
+        tb.type = 'button';
+        tb.onclick = function() { toggleTagSelection(tag); };
+        tagContainer.appendChild(tb);
+    });
+
+    metaDiv.appendChild(tagContainer);
+    aiCard.appendChild(mainBody);
+    aiCard.appendChild(metaDiv);
+
+    var morningBtn = document.getElementById('morningImageBtn');
+    var aiBtn = document.getElementById('aiGenerateBtn');
+    var cardBtnRow = document.createElement('div');
+    cardBtnRow.className = 'bottom-buttons-row';
+    cardBtnRow.appendChild(aiBtn);
+    cardBtnRow.appendChild(morningBtn);
+    aiCard.appendChild(cardBtnRow);
+
+    aiResultBox.appendChild(aiCard);
+
+    updateAiButtonState();
+    ensureButtonsInDefaultPos();
+
+    aiCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function drawLandscapeBackground(ctx, width, height, callback) {
+    function imagesFor(uses) {
+        return backgroundImages.filter(function(b) { return uses.indexOf(b.use) !== -1; });
+    }
+
+    var candidates = [];
+    if (currentSelectedGreeting === '早安') {
+        candidates = imagesFor(['早安', '白天']);
+    } else if (currentSelectedGreeting === '日安') {
+        candidates = imagesFor(['白天', '不選']);
+    } else if (currentSelectedGreeting === '晚安') {
+        candidates = imagesFor(['晚安']);
+    } else {
+        var noGreetingImages = imagesFor(['不選']);
+        candidates = noGreetingImages;
+
+        var numericId = currentSelectedCardId ? parseInt(currentSelectedCardId, 10) : null;
+        var foundCard = numericId ? aphorismsData.find(function(item){ return item.id === numericId; }) : null;
+
+        if (foundCard && foundCard.semanticTags) {
+            var tags = foundCard.semanticTags;
+            for (var g = 0; g < backgroundThemeGroups.length; g++) {
+                var group = backgroundThemeGroups[g];
+                var hit = group.tags.some(function(t) { return tags.indexOf(t) !== -1; });
+                if (hit) {
+                    var themed = noGreetingImages.filter(function(b) { return group.nos.indexOf(b.no) !== -1; });
+                    if (themed.length >= 3) candidates = themed;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (candidates.length === 0) candidates = backgroundImages;
+    var randomImgUrl = candidates[Math.floor(Math.random() * candidates.length)].url;
+    var img = new Image();
+    img.crossOrigin = 'Anonymous';
+
+    var hasResponded = false;
+    var loadTimeout = setTimeout(function() {
+        if (!hasResponded) {
+            hasResponded = true;
+            drawFallbackCanvasBackground(ctx, width, height, callback);
+        }
+    }, 1200);
+
+    img.onload = function() {
+        if (hasResponded) return;
+        hasResponded = true;
+        clearTimeout(loadTimeout);
+
+        var imgAspect = img.width / img.height;
+        var canvasAspect = width / height;
+        var renderW, renderH, offsetX, offsetY;
+
+        if (imgAspect > canvasAspect) {
+            renderH = height;
+            renderW = height * imgAspect;
+            offsetX = (width - renderW) / 2;
+            offsetY = 0;
+        } else {
+            renderW = width;
+            renderH = width / imgAspect;
+            offsetX = 0;
+            offsetY = (height - renderH) / 2;
+        }
+
+        ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
+
+        ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+        ctx.fillRect(0, 0, width, height);
+
+        if (callback) callback();
+    };
+
+    img.onerror = function() {
+        if (hasResponded) return;
+        hasResponded = true;
+        clearTimeout(loadTimeout);
+        drawFallbackCanvasBackground(ctx, width, height, callback);
+    };
+
+    img.src = randomImgUrl;
+}
+
+function drawFallbackCanvasBackground(ctx, width, height, callback) {
+    var themes = ['ocean', 'mountain', 'bamboo', 'sunset', 'cherry_night'];
+    var chosen = themes[Math.floor(Math.random() * themes.length)];
+
+    if (chosen === 'ocean') { 
+        var sky = ctx.createLinearGradient(0, 0, 0, height * 0.45);
+        sky.addColorStop(0, '#4a90e2'); sky.addColorStop(1, '#d0e5f2');
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, width, height * 0.45);
+
+        var sea = ctx.createLinearGradient(0, height * 0.45, 0, height);
+        sea.addColorStop(0, '#1f6f8b'); sea.addColorStop(1, '#0e313d');
+        ctx.fillStyle = sea; ctx.fillRect(0, height * 0.45, width, height * 0.55);
+    } else if (chosen === 'mountain') { 
+        var bg = ctx.createLinearGradient(0, 0, 0, height);
+        bg.addColorStop(0, '#2b5876'); bg.addColorStop(1, '#4e4376');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
+
+        ctx.fillStyle = 'rgba(20, 30, 48, 0.85)';
+        ctx.beginPath();
+        ctx.moveTo(0, height * 0.7);
+        ctx.lineTo(width * 0.35, height * 0.52);
+        ctx.lineTo(width * 0.7, height * 0.72);
+        ctx.lineTo(width, height * 0.58);
+        ctx.lineTo(width, height); ctx.lineTo(0, height);
+        ctx.closePath(); ctx.fill();
+    } else if (chosen === 'bamboo') { 
+        var bg = ctx.createLinearGradient(0, 0, 0, height);
+        bg.addColorStop(0, '#134e5e'); bg.addColorStop(1, '#71b280');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
+    } else if (chosen === 'sunset') { 
+        var bg = ctx.createLinearGradient(0, 0, 0, height);
+        bg.addColorStop(0, '#f83600'); bg.addColorStop(0.6, '#fe8c00'); bg.addColorStop(1, '#f7b733');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
+    } else { 
+        var bg = ctx.createLinearGradient(0, 0, 0, height);
+        bg.addColorStop(0, '#0f2027'); bg.addColorStop(0.5, '#203a43'); bg.addColorStop(1, '#2c5364');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
+
+        ctx.fillStyle = '#fffdf0';
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; ctx.shadowBlur = 30;
+        ctx.beginPath(); ctx.arc(width * 0.5, height * 0.2, 50, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+    ctx.fillRect(0, 0, width, height);
+
+    if (callback) callback();
+}
+
+// 🌸 金句畫布斷句：依「新的版本」為每句指定的斷句（lines）
+function splitTextSmartRhythm(text, cardId) {
+    if (!text) return [];
+
+    if (cardId === 'custom_input') {
+        var cleanStr = text.trim();
+        return cleanStr.split(/\r?\n/).filter(function(p){ return p.trim().length > 0; }).slice(0, 3);
+    }
+
+    if (cardId === '9999' && text === currentGeneratedAphorismText && currentGeneratedAphorismLines.length > 0) {
+        return currentGeneratedAphorismLines.slice();
+    }
+
+    if (cardId === '9999') {
+        var matchThreePart = text.match(/^(.+?[，；])(.+?[，；])(.+)$/);
+        if (matchThreePart) {
+            return [
+                matchThreePart[1].trim(),
+                matchThreePart[2].trim(),
+                matchThreePart[3].trim()
+            ];
+        }
+    }
+
+    var numericId = parseInt(cardId, 10);
+    var found = null;
+    if (!isNaN(numericId)) {
+        found = aphorismsData.find(function(item) { return item.id === numericId; });
+    }
+    if (!found) {
+        found = aphorismsData.find(function(item) { return item.content === text; });
+    }
+    if (found && found.lines && found.lines.length > 0) {
+        return found.lines.slice();
+    }
+
+    var semiIdx = text.indexOf("；");
+    if (semiIdx !== -1 && semiIdx > 3 && semiIdx < text.length - 3) {
+        return [text.substring(0, semiIdx + 1).trim(), text.substring(semiIdx + 1).trim()];
+    }
+
+    var commaIndices = [];
+    for (var c = 0; c < text.length; c++) {
+        if (text[c] === '，') commaIndices.push(c);
+    }
+
+    if (commaIndices.length > 0) {
+        var mid = text.length / 2;
+        var bestIdx = commaIndices[0];
+        var minDiff = Math.abs(commaIndices[0] - mid);
+        for (var k = 1; k < commaIndices.length; k++) {
+            var diff = Math.abs(commaIndices[k] - mid);
+            if (diff < minDiff) {
+                minDiff = diff;
+                bestIdx = commaIndices[k];
+            }
+        }
+        var line1 = text.substring(0, bestIdx + 1).trim();
+        var line2 = text.substring(bestIdx + 1).trim();
+        if (line1.length > 0 && line2.length > 0) {
+            return [line1, line2];
+        }
+    }
+
+    if (text.length > 12) {
+        var half = Math.ceil(text.length / 2);
+        return [text.substring(0, half), text.substring(half)];
+    }
+
+    return [text];
+}
+
+function adaptQuotationMarks(text, aspectMode) {
+    if (!text) return text;
+    if (aspectMode === 'portrait') {
+        return text
+            .replace(/「/g, "﹁")
+            .replace(/」/g, "﹂")
+            .replace(/"([^"]*)"/g, "﹁$1﹂");
+    }
+    return text;
+}
+
+// 🌸 畫問候圖前，先讓瀏覽器下載霞鶩文楷（只抓用得到的字，最多等 3 秒，逾時改用系統字體）
+function ensureKaiFontLoaded(sampleText) {
+    if (!document.fonts || !document.fonts.load) return Promise.resolve();
+    var sample = (sampleText || '') + '靜思語錄早安晚安!~' + daytimeGreetingsPool.join('');
+    var loadPromise = document.fonts.load('bold 36px "LXGW WenKai TC"', sample).catch(function() {});
+    var timeoutPromise = new Promise(function(resolve) { setTimeout(resolve, 3000); });
+    return Promise.race([loadPromise, timeoutPromise]);
+}
+
+function selectGreetingText(greetingCategory) {
+    if (currentSelectedGreeting === greetingCategory) {
+        currentSelectedGreeting = ""; 
+    } else {
+        currentSelectedGreeting = greetingCategory;
+    }
+
+    updateGreetingButtonsUI();
+    openMorningModal(currentModalText, currentAspectMode, currentSelectedCardId);
+}
+
+function updateGreetingButtonsUI() {
+    var btnM = document.getElementById('btnGreetMorning');
+    var btnA = document.getElementById('btnGreetAfternoon');
+    var btnN = document.getElementById('btnGreetNight');
+
+    if (btnM) btnM.classList.toggle('active', currentSelectedGreeting === '早安');
+    if (btnA) btnA.classList.toggle('active', currentSelectedGreeting === '日安');
+    if (btnN) btnN.classList.toggle('active', currentSelectedGreeting === '晚安');
+}
+
+function toggleImageAspectMode() {
+    currentAspectMode = (currentAspectMode === 'portrait') ? 'landscape' : 'portrait';
+    var toggleBtn = document.getElementById('toggleAspectBtn');
+    
+    if (toggleBtn) {
+        if (currentAspectMode === 'portrait') {
+            toggleBtn.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="1.5" stroke-width="2.2"></rect><path d="M12 17v3" stroke-width="2.2"></path><path d="M6 21c3-0.8 9-0.8 12 0" stroke-width="2.2"></path></svg><span>橫幅</span>';
+        } else {
+            toggleBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5" stroke-width="2.2"></rect><line x1="10" y1="4" x2="14" y2="4" stroke-width="2"></line><circle cx="12" cy="19" r="1" fill="currentColor"></circle></svg><span>直式</span>';
+        }
+    }
+    
+    openMorningModal(currentModalText, currentAspectMode, currentSelectedCardId);
+}
+
+function openMorningModal(aphorismText, aspectMode, cardId) {
+    currentModalText = aphorismText;
+    currentAspectMode = aspectMode || 'portrait'; 
+
+    updateGreetingButtonsUI();
+
+    var toggleBtn = document.getElementById('toggleAspectBtn');
+    if (toggleBtn) {
+        if (currentAspectMode === 'portrait') {
+            toggleBtn.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="1.5" stroke-width="2.2"></rect><path d="M12 17v3" stroke-width="2.2"></path><path d="M6 21c3-0.8 9-0.8 12 0" stroke-width="2.2"></path></svg><span>橫幅</span>';
+        } else {
+            toggleBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5" stroke-width="2.2"></rect><line x1="10" y1="4" x2="14" y2="4" stroke-width="2"></line><circle cx="12" cy="19" r="1" fill="currentColor"></circle></svg><span>直式</span>';
+        }
+    }
+
+    var lineBtn = document.getElementById('btnLineShare');
+    if (lineBtn) {
+        if (currentSelectedCardId === '9999' || currentSelectedCardId === 'custom_input') {
+            lineBtn.title = "用 LINE 傳送問候語";
+        } else {
+            lineBtn.title = "用 LINE 傳送金句";
+        }
+    }
+
+    var modal = document.getElementById('morningModal');
+    var canvas = document.getElementById('morningCanvas');
+    var imgOverlay = document.getElementById('morningImgOverlay');
+    var ctx = canvas.getContext('2d');
+
+    var canvasW = (currentAspectMode === 'landscape') ? 800 : 450;
+    var canvasH = (currentAspectMode === 'landscape') ? 450 : 800;
+    
+    canvas.width = canvasW;
+    canvas.height = canvasH;
+
+    ctx.clearRect(0, 0, canvasW, canvasH);
+
+    var rawLines = (aphorismText && aphorismText.trim() !== "") ? splitTextSmartRhythm(aphorismText, cardId) : [];
+    var lines = rawLines.map(function(line) {
+        return adaptQuotationMarks(line, currentAspectMode);
+    });
+
+    ensureKaiFontLoaded(lines.join('')).then(function() {
+    drawLandscapeBackground(ctx, canvasW, canvasH, function() {
+        var fontKai = '"DFKai-SB", "Microsoft DFKai-SB", "標楷體", "BiauKai", "Kaiti TC", "Kaiti SC", "LXGW WenKai TC", "楷體", serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.95)'; 
+        ctx.shadowBlur = 18;
+
+        var finalFontSize = 36; 
+
+        if (lines.length > 0) {
+            if (currentAspectMode === 'landscape') {
+                var startTop = canvasH * (2 / 5); 
+                var endMax = canvasH * (3 / 5);   
+                var availableZoneH = endMax - startTop; 
+
+                var maxCharCount = 0;
+                for (var m = 0; m < lines.length; m++) {
+                    if (lines[m].length > maxCharCount) {
+                        maxCharCount = lines[m].length;
+                    }
+                }
+
+                var targetWidth = canvasW * 0.70; 
+                var unifiedFontSize = Math.floor(targetWidth / (maxCharCount || 1));
+
+                var maxFontLimit = 64;
+                if (aphorismText.indexOf("行為言語") !== -1 || aphorismText.indexOf("在人事歷練中不求聰明") !== -1) {
+                    unifiedFontSize = Math.floor(unifiedFontSize * 1.15);
+                    maxFontLimit = 72;
+                }
+
+                if (aphorismText.indexOf("面對紛雜的氣氛") !== -1) {
+                    unifiedFontSize = Math.floor(unifiedFontSize * 0.68);
+                }
+
+                if (unifiedFontSize > maxFontLimit) unifiedFontSize = maxFontLimit;
+                if (unifiedFontSize < 28) unifiedFontSize = 28;
+
+                finalFontSize = unifiedFontSize;
+                var lineHeight = Math.floor(unifiedFontSize * 1.22);
+                ctx.font = 'bold ' + unifiedFontSize + 'px ' + fontKai;
+
+                if (cardId === 'custom_input') {
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    var totalBlockH = lines.length * lineHeight;
+                    var startY = (canvasH - totalBlockH) / 2;
+
+                    for (var i = 0; i < lines.length; i++) {
+                        ctx.fillText(lines[i], canvasW / 2, startY + (i * lineHeight) + (lineHeight / 2));
+                    }
+                } else {
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+
+                    var totalBlockH = lines.length * lineHeight;
+                    var startY = startTop + (availableZoneH - totalBlockH) / 2;
+                    var startX = canvasW * 0.15;
+
+                    for (var i = 0; i < lines.length; i++) {
+                        ctx.fillText(lines[i], startX, startY + (i * lineHeight));
+                    }
+                }
+            } else {
+                var topPadding = 60;                        
+                var bottomPadding = 60;                     
+                var availableH = canvasH - topPadding - bottomPadding;
+
+                var maxCharCountInLines = 0;
+                for (var k = 0; k < lines.length; k++) {
+                    if (lines[k].length > maxCharCountInLines) {
+                        maxCharCountInLines = lines[k].length;
+                    }
+                }
+
+                var unifiedFontSize = Math.floor(availableH / maxCharCountInLines);
+                if (unifiedFontSize > 72) unifiedFontSize = 72; 
+                if (unifiedFontSize < 32) unifiedFontSize = 32; 
+
+                if (aphorismText.indexOf("面對紛雜的氣氛") !== -1) {
+                    unifiedFontSize = Math.floor(unifiedFontSize * 0.72);
+                }
+
+                finalFontSize = unifiedFontSize;
+                ctx.font = 'bold ' + unifiedFontSize + 'px ' + fontKai;
+
+                if (cardId === 'custom_input') {
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    var lineCount = lines.length;
+                    var colWidth = unifiedFontSize * 1.35;
+                    var totalW = lineCount * colWidth;
+                    var startX = (canvasW + totalW) / 2 - (colWidth / 2);
+
+                    for (var lineIdx = 0; lineIdx < lineCount; lineIdx++) {
+                        var lineText = lines[lineIdx];
+                        var charCount = lineText.length;
+                        if (charCount === 0) continue;
+
+                        var currentX = startX - (lineIdx * colWidth);
+                        var totalH = charCount * unifiedFontSize * 1.08;
+                        var startY = (canvasH - totalH) / 2;
+                        if (startY < topPadding) startY = topPadding;
+
+                        for (var charIdx = 0; charIdx < charCount; charIdx++) {
+                            var singleChar = lineText[charIdx];
+                            var currentY = startY + (charIdx * unifiedFontSize * 1.08);
+
+                            ctx.fillText(singleChar, currentX, currentY);
+                        }
+                    }
+                } else {
+                    var rightStart = 50;                       
+                    var leftBoundary = canvasW * (2 / 3);       
+                    var availableW = leftBoundary - rightStart; 
+
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+
+                    var colSpacing = (lines.length > 1) ? Math.floor(availableW / (lines.length - 1)) : availableW;
+                    if (colSpacing > 85) colSpacing = 85;
+
+                    for (var lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+                        var lineText = lines[lineIdx];
+                        var charCount = lineText.length;
+                        if (charCount === 0) continue;
+
+                        var currentX = canvasW - rightStart - (lineIdx * colSpacing);
+                        
+                        for (var charIdx = 0; charIdx < charCount; charIdx++) {
+                            var singleChar = lineText[charIdx];
+                            var currentY = topPadding + (charIdx * unifiedFontSize * 1.08);
+
+                            ctx.fillText(singleChar, currentX, currentY);
+                        }
+                    }
+                }
+            }
+        }
+
+        var isSingleAphorism = (currentSelectedCardId !== '9999' && currentSelectedCardId !== 'custom_input' && currentSelectedCardId !== null && lines.length > 0);
+
+        if (isSingleAphorism) {
+            var tagX = 45;
+            var tagFontSize = Math.floor(finalFontSize * 0.65);
+            if (tagFontSize < 18) tagFontSize = 18;
+
+            var tagText = "靜思語錄";
+
+            ctx.font = 'bold ' + tagFontSize + 'px ' + fontKai;
+            ctx.fillStyle = '#ffffff';
+
+            if (currentAspectMode === 'landscape') {
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                var marginX = 45;
+                var marginY = 35;
+                ctx.fillText(tagText, canvasW - marginX, canvasH - marginY);
+            } else {
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                var tagStartY = canvasH - 50 - (tagText.length * tagFontSize * 1.1); 
+
+                for (var tIdx = 0; tIdx < tagText.length; tIdx++) {
+                    var tChar = tagText[tIdx];
+                    var tY = tagStartY + (tIdx * tagFontSize * 1.1);
+                    ctx.fillText(tChar, tagX, tY);
+                }
+            }
+        }
+
+        if (currentSelectedGreeting !== "") {
+            var greetingFontSize = Math.floor(finalFontSize * 1.25);
+            if (greetingFontSize < 40) greetingFontSize = 40;
+
+            var renderGreetingStr = "";
+
+            if (currentSelectedGreeting === '日安') {
+                var randomDaytimeWord = daytimeGreetingsPool[Math.floor(Math.random() * daytimeGreetingsPool.length)];
+                renderGreetingStr = randomDaytimeWord;
+                if (currentAspectMode === 'landscape') {
+                    renderGreetingStr += '~';
+                }
+            } else if (currentSelectedGreeting === '早安') {
+                renderGreetingStr = (currentAspectMode === 'landscape') ? '早安!' : '早安';
+            } else if (currentSelectedGreeting === '晚安') {
+                renderGreetingStr = '晚安';
+            }
+
+            if (lines.length === 0) {
+                greetingFontSize = (currentAspectMode === 'landscape') ? 64 : 56;
+            }
+
+            ctx.font = 'bold ' + greetingFontSize + 'px ' + fontKai;
+            ctx.fillStyle = '#ffffff';
+
+            if (lines.length === 0) {
+                if (currentAspectMode === 'landscape') {
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(renderGreetingStr, canvasW / 2, canvasH / 2);
+                } else {
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    var gLen = renderGreetingStr.length;
+                    var totalGH = gLen * greetingFontSize * 1.1;
+                    var centerStartY = (canvasH - totalGH) / 2;
+
+                    for (var gIdx = 0; gIdx < renderGreetingStr.length; gIdx++) {
+                        var gChar = renderGreetingStr[gIdx];
+                        var gY = centerStartY + (gIdx * greetingFontSize * 1.1);
+                        ctx.fillText(gChar, canvasW / 2, gY);
+                    }
+                }
+            } else {
+                if (currentAspectMode === 'landscape') {
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    var gX = 30;
+                    var gY = 18;
+                    ctx.fillText(renderGreetingStr, gX, gY);
+                } else {
+                    ctx.textAlign = 'left'; 
+                    ctx.textBaseline = 'top';
+                    var tagX = 45;
+                    var tagFontSize = Math.floor(finalFontSize * 0.65);
+                    var gX = tagX - tagFontSize + 3; 
+                    var gStartY = topPadding;
+
+                    for (var gIdx = 0; gIdx < renderGreetingStr.length; gIdx++) {
+                        var gChar = renderGreetingStr[gIdx];
+                        var gY = gStartY + (gIdx * greetingFontSize * 1.1);
+                        ctx.fillText(gChar, gX, gY);
+                    }
+                }
+            }
+        }
+        
+        ctx.shadowBlur = 0; 
+        
+        if (imgOverlay) {
+            imgOverlay.src = canvas.toDataURL('image/jpeg', 0.92);
+        }
+
+        modal.style.display = 'flex';
+    });
+    });
+}
+
+function closeMorningModal() {
+    document.getElementById('morningModal').style.display = 'none';
+}
+
+function downloadCurrentMorningImage() {
+    if (!currentModalText && currentSelectedGreeting === "") return;
+    
+    var canvas = document.getElementById('morningCanvas');
+    var link = document.createElement('a');
+    var fileName = "";
+
+    if (currentSelectedCardId === 'custom_input') {
+        fileName = '自訂問候圖.jpg';
+    } else if (currentSelectedCardId === '9999') {
+        aiImageDownloadCounter++;
+        fileName = '自創語錄圖' + aiImageDownloadCounter + '.jpg';
+    } else {
+        var numericId = currentSelectedCardId ? parseInt(currentSelectedCardId, 10) : null;
+        var foundCard = numericId ? aphorismsData.find(function(item){ return item.id === numericId || item.origId === numericId; }) : null;
+        var nValue = foundCard ? foundCard.origId : (numericId || 1);
+        fileName = '靜思語錄圖' + nValue + '.jpg';
+    }
+    
+    link.download = fileName;
+    link.href = canvas.toDataURL('image/jpeg', 0.92);
+    link.click();
+}
+
+// 🌸 按 LINE 鈕：只傳文字，開啟 LINE 後可選擇要傳給的好友或群組
+function shareToLine() {
+    var bodyText = currentModalText ? currentModalText.trim() : "";
+    if (!bodyText) return;
+
+    var shareMessage;
+    if (currentSelectedCardId === '9999') {
+        shareMessage = "開示金句: " + bodyText;          // 自創金句
+    } else if (currentSelectedCardId === 'custom_input') {
+        shareMessage = bodyText;                          // 自己輸入的文字，原樣傳送
+    } else {
+        shareMessage = "靜思語錄: " + bodyText;          // 靜思語錄原句
+    }
+
+    var lineUrl = "https://line.me/R/msg/text/?" + encodeURIComponent(shareMessage);
+    window.open(lineUrl, '_blank');
+}
+
+function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlaceholderToDefault, activeInputText) {
+    var list = document.getElementById('resultsList');
+    if (!list) return;
+
+    var inputElem = document.getElementById('userPrompt');
+    if (resetPlaceholderToDefault && inputElem) {
+        inputElem.placeholder = defaultPlaceholderText;
+    }
+
+    var selected = [];
+    var usedIdMap = {};
+    var hitTagsFromInput = []; 
+
+    if (isInitial) {
+        var shuffledPool = aphorismsData.slice().sort(function() { return 0.5 - Math.random(); });
+        for (var i = 0; i < shuffledPool.length; i++) {
+            if (selected.length >= 3) break;
+            pushUniqueCard(selected, shuffledPool[i], usedIdMap);
+        }
+    } else {
+        var hasInput = (activeInputText && activeInputText !== "");
+        var handTags = explicitPickedTags.slice();
+
+        if (isLeastShowMode) {
+            var leastExposedCards = sortByExposureAndRandom(aphorismsData);
+            for (var lc = 0; lc < leastExposedCards.length && selected.length < 3; lc++) {
+                pushUniqueCard(selected, leastExposedCards[lc], usedIdMap);
+            }
+        } else if (!hasInput) {
+            selected = getCardsByTags(handTags, 3, usedIdMap);
+        } else {
+            hitTagsFromInput = extractKeywordsFromText(activeInputText);
+
+            var prefixMatched = sortByExposureAndRandom(aphorismsData.filter(function(item) {
+                return !usedIdMap[item.id] && item.content.indexOf(activeInputText) === 0;
+            }));
+            prefixMatched.forEach(function(c) { pushUniqueCard(selected, c, usedIdMap); });
+
+            if (selected.length < 3) {
+                var contentMatched = sortByExposureAndRandom(aphorismsData.filter(function(item) {
+                    return !usedIdMap[item.id] && item.content.indexOf(activeInputText) !== -1;
+                }));
+                contentMatched.forEach(function(c) { pushUniqueCard(selected, c, usedIdMap); });
+            }
+
+            if (selected.length < 3 && hitTagsFromInput.length > 0) {
+                var tier1Cards = getCardsByTags(hitTagsFromInput, 3 - selected.length, usedIdMap);
+                tier1Cards.forEach(function(c) { pushUniqueCard(selected, c, usedIdMap); });
+            }
+
+            if (selected.length < 3) {
+                var scoredCards = aphorismsData.map(function(item) {
+                    return {
+                        item: item,
+                        score: calculateSemanticScore(item.content, activeInputText)
+                    };
+                }).filter(function(o) {
+                    return o.score > 0 && !usedIdMap[o.item.id];
+                });
+
+                scoredCards.sort(function(a, b) {
+                    if (b.score !== a.score) return b.score - a.score;
+                    var cA = aphorismShowCounts[a.item.id] || 0;
+                    var cB = aphorismShowCounts[b.item.id] || 0;
+                    if (cA === cB) return 0.5 - Math.random();
+                    return cA - cB;
+                });
+
+                for (var sc = 0; sc < scoredCards.length && selected.length < 3; sc++) {
+                    pushUniqueCard(selected, scoredCards[sc].item, usedIdMap);
+                }
+            }
+
+            if (selected.length < 3 && handTags.length > 0) {
+                var tier3Cards = getCardsByTags(handTags, 3 - selected.length, usedIdMap);
+                tier3Cards.forEach(function(c) { pushUniqueCard(selected, c, usedIdMap); });
+            }
+
+            if (selected.length < 3) {
+                var globalFb = sortByExposureAndRandom(aphorismsData);
+                for (var gf = 0; gf < globalFb.length && selected.length < 3; gf++) {
+                    pushUniqueCard(selected, globalFb[gf], usedIdMap);
+                }
+            }
+        }
+    }
+
+    var currentIds = selected.map(function(item) { return item.id; });
+    if (currentIds.length === 3 && lastDisplayedIds.length === 3) {
+        var isSameSet = currentIds.every(function(id) { return lastDisplayedIds.indexOf(id) !== -1; });
+        if (isSameSet) {
+            selected.sort(function() { return 0.5 - Math.random(); });
+        }
+    }
+    lastDisplayedIds = selected.map(function(item) { return item.id; });
+    currentDisplayedCards = selected.slice();
+
+    selected.forEach(function(item) {
+        aphorismShowCounts[item.id] = (aphorismShowCounts[item.id] || 0) + 1;
+    });
+
+    buildTopKeywordsByRules(selected, activeInputText, hitTagsFromInput);
+    renderKeywordsHeader();
+
+    list.innerHTML = '';
+
+    for (var s = 0; s < selected.length; s++) {
+        var item = selected[s];
+
+        var card = document.createElement('div'); card.className = 'card';
+        var mainBody = document.createElement('div'); mainBody.className = 'card-main-body';
+
+        var contentP = document.createElement('p'); contentP.className = 'card-content'; contentP.textContent = item.content;
+        
+        var rightSide = document.createElement('div'); rightSide.className = 'card-right-side';
+
+        var speakBtn = document.createElement('button');
+        speakBtn.className = 'btn-speak'; speakBtn.innerHTML = '🔊'; speakBtn.type = 'button'; speakBtn.title = '點擊朗讀';
+        (function(textToSpeak, btn){ speakBtn.onclick = function() { speakText(textToSpeak, btn); }; })(item.content, speakBtn);
+
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'card-checkbox';
+        checkbox.setAttribute('data-card-id', item.id);
+        checkbox.onchange = function() {
+            var customCb = document.getElementById('customInputCheckbox');
+            if (customCb && customCb.checked) customCb.checked = false;
+            var aiCheckbox = document.querySelector('.ai-card .card-checkbox');
+            if (aiCheckbox && aiCheckbox.checked) aiCheckbox.checked = false;
+            updateAiButtonState();
+        };
+
+        rightSide.appendChild(speakBtn); 
+        rightSide.appendChild(checkbox);
+
+        mainBody.appendChild(contentP); 
+        mainBody.appendChild(rightSide);
+
+        var metaDiv = document.createElement('div'); metaDiv.className = 'card-meta';
+        var idSpan = document.createElement('span'); idSpan.textContent = '原 #' + item.origId;
+        var tagContainer = document.createElement('div'); tagContainer.className = 'tag-list-container';
+
+        var orderedCardTags = [];
+        if (selectedUserTags && selectedUserTags.length > 0) {
+            for (var st = 0; st < selectedUserTags.length; st++) {
+                var userTag = selectedUserTags[st];
+                if (cardHasExactTag(item, userTag) && orderedCardTags.indexOf(userTag) === -1) {
+                    orderedCardTags.push(userTag);
+                }
+            }
+        }
+        for (var mt = 0; mt < item.semanticTags.length; mt++) {
+            var origT = item.semanticTags[mt];
+            if (orderedCardTags.indexOf(origT) === -1) {
+                orderedCardTags.push(origT);
+            }
+        }
+
+        var displayCardTags = orderedCardTags;
+        for (var t = 0; t < displayCardTags.length; t++) {
+            (function(tag){
+                var tb = document.createElement('button'); tb.className = 'card-tag-btn';
+                if (selectedUserTags.indexOf(tag) !== -1) tb.classList.add('active');
+                tb.textContent = tag; tb.type = 'button';
+                tb.onclick = function() { toggleTagSelection(tag); };
+                tagContainer.appendChild(tb);
+            })(displayCardTags[t]);
+        }
+
+        metaDiv.appendChild(tagContainer); metaDiv.appendChild(idSpan);
+        card.appendChild(mainBody); card.appendChild(metaDiv);
+        list.appendChild(card);
+    }
+
+    ensureButtonsInDefaultPos();
+    updateAiButtonState();
+}
+
+renderUI(true);
+</script>
+
+</body>
+</html>
