@@ -429,6 +429,12 @@
         .card .btn-speak, .ai-card .btn-speak { grid-column: 2; grid-row: 2; align-self: center; justify-self: center; }
         .card .card-checkbox, .ai-card .card-checkbox { grid-column: 3; grid-row: 2; align-self: center; justify-self: center; }
 
+        /* 自創語卡片左右各有 1px 邊框，右內距少 1px，讓喇叭、方塊和其他卡片切齊 */
+        .ai-card { padding-right: 7px; }
+        @media (max-width: 680px) {
+            .ai-card { padding-right: 5px; }
+        }
+
         /* 自創語卡片下方的按鈕列佔滿整寬 */
         .ai-card .bottom-buttons-row { grid-column: 1 / -1; grid-row: 3; }
         .ai-card .bottom-buttons-row:empty { display: none; }
@@ -447,7 +453,7 @@
         .input-action-tools {
             display: grid !important; grid-template-columns: 28px 22px; column-gap: 2px;
             justify-content: end; justify-items: center; align-items: center;
-            padding-right: 8px; box-sizing: border-box; width: 100%;
+            padding-right: 8px; box-sizing: border-box; width: 100%; margin: 0; gap: 0 2px;
         }
         @media (max-width: 680px) {
             .input-action-tools { padding-right: 6px; }
@@ -1744,7 +1750,7 @@ function updateAiButtonState() {
             aiBtn.disabled = false;
             aiBtn.classList.add('active');
             var numText = (count === 2) ? '兩' : '三';
-            aiBtn.textContent = '✨ 融合所選' + numText + '金句生成自創結緣語';
+            aiBtn.textContent = '✨ 融合所選' + numText + '句自創結緣語';
         } else {
             aiBtn.disabled = true;
             aiBtn.classList.remove('active');
@@ -1768,9 +1774,27 @@ function fitTextToButton(btn, maxPx, minPx) {
     }
 }
 
+// 🌸 依灰底時的文字決定字體大小，按下後（反白）的文字也用同樣大小
+function fitButtonUsingLabel(btn, baseLabel, maxPx, minPx) {
+    if (!btn || !btn.style) return;
+    var actualLabel = btn.textContent;
+    btn.textContent = baseLabel;
+    fitTextToButton(btn, maxPx, minPx);
+    var size = parseFloat(btn.style.fontSize) || maxPx;
+    btn.textContent = actualLabel;
+    btn.style.fontSize = size + 'px';
+    // 保險：萬一反白文字比灰底長，才再縮小到剛好放得下
+    var guard = 0;
+    while (btn.scrollWidth > btn.clientWidth && size > minPx && guard < 40) {
+        size -= 0.5;
+        btn.style.fontSize = size + 'px';
+        guard++;
+    }
+}
+
 function fitBottomButtonText() {
-    fitTextToButton(document.getElementById('aiGenerateBtn'), 15, 10);
-    fitTextToButton(document.getElementById('morningImageBtn'), 15, 10);
+    fitButtonUsingLabel(document.getElementById('aiGenerateBtn'), '✨ 勾選多個金句自創結緣語', 15, 10);
+    fitButtonUsingLabel(document.getElementById('morningImageBtn'), '🌸 勾選一句生成自創問候圖', 15, 10);
 }
 
 function triggerMorningModalFromSelected() {
@@ -2056,6 +2080,8 @@ function drawLandscapeBackground(ctx, width, height, callback) {
             offsetY = (height - renderH) / 2;
         }
 
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
 
         ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
@@ -2078,8 +2104,10 @@ function drawLandscapeBackground(ctx, width, height, callback) {
         drawFallbackCanvasBackground(ctx, width, height, callback);
     };
 
-    // 🌸 向雲端硬碟要求較大尺寸的圖片（寬 1600 像素），畫質較清晰
-    img.src = randomImgUrl + '=w1600';
+    // 🌸 向雲端硬碟要求較大尺寸的圖片（最長邊 2400 像素）
+    //    直式問候圖需要圖片高度至少 1600、橫式需要寬度至少 1600，
+    //    用「最長邊」來要求，橫圖、直圖裁切後都不會被放大而變糊
+    img.src = randomImgUrl + '=s2400';
 }
 
 function drawFallbackCanvasBackground(ctx, width, height, callback) {
