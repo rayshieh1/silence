@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>靜思語錄產生器</title>
     <!-- 引入開源霞鶩文楷體作為跨平台字型備援 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -351,11 +351,64 @@
             .btn-toggle-aspect { height: 34px; font-size: 0.75rem; }
             .modal-actions { gap: 2px; }
         }
+
+        /* ===== 🌸 長輩友善：放大文字與按鈕（等比例放大，版面不變形） ===== */
+        textarea { height: 68px; font-size: 16px; line-height: 1.2; padding: 4px 6px; }
+        textarea::placeholder { font-size: 11px; line-height: 1.25; }
+        .input-right-control {
+            height: 68px; width: 76px !important; min-width: 76px !important; max-width: 76px !important;
+        }
+        .input-action-tools { height: 28px; gap: 8px; }
+        .btn-submit {
+            height: 32px !important; width: 76px !important; min-width: 76px !important; max-width: 76px !important;
+            font-size: 14px; border-radius: 8px;
+        }
+        .btn-next-page {
+            height: 28px !important; width: 76px !important; min-width: 76px !important; max-width: 76px !important;
+        }
+        .btn-next-page svg { width: 18px; height: 18px; }
+        .subtitle { font-size: 0.78rem; }
+        #keywordsContainer { height: 32px; gap: 5px; }
+        .tag-list-container { gap: 4px; }
+        .keyword-badge, .card-tag-btn { font-size: 0.8rem; height: 26px; line-height: 20px; padding: 2px 7px; }
+        .card-content { font-size: 1.12rem; line-height: 1.35; }
+        .card-meta { font-size: 0.78rem; gap: 6px; }
+        .card-right-side, .ai-card-top-btns { gap: 8px; }
+        .card-checkbox { width: 22px; height: 22px; border-radius: 5px; }
+        .card-checkbox:checked::after { width: 6px; height: 11px; top: 2px; }
+        .btn-speak, .btn-copy { width: 28px; height: 28px; font-size: 1.15rem; }
+        .btn-copy svg { width: 18px; height: 18px; }
+        .quote-link { cursor: pointer; color: #1b365d; white-space: nowrap; padding: 4px 2px; }
+        .quote-link:active { opacity: 0.6; }
+
+        @media (max-width: 680px) {
+            textarea::placeholder { font-size: 11px; }
+            .keyword-badge, .card-tag-btn { font-size: 0.8rem; padding: 2px 6px; }
+            .card-content { font-size: 1.05rem; line-height: 1.3; }
+        }
+
+        /* ===== 🌸 在 LINE 內建瀏覽器開啟時的提示列 ===== */
+        .line-iab-banner {
+            display: none; background: #fff7e0; border: 1px solid #f0d68a; color: #5c4400;
+            border-radius: 8px; padding: 8px 10px; margin: 2px 0 6px 0; font-size: 0.85rem; line-height: 1.45;
+            position: relative;
+        }
+        .line-iab-banner a { color: #1b365d; font-weight: bold; }
+        .line-iab-close {
+            position: absolute; top: 2px; right: 6px; background: none; border: none; font-size: 1.1rem;
+            color: #8a6d1d; cursor: pointer; padding: 4px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div class="line-iab-banner" id="lineIabBanner">
+        目前在 LINE 內開啟，按 LINE 鈕只能傳文字。<br>
+        想直接傳問候圖，請點右上角「⋮」或「…」，選「以預設瀏覽器開啟」，
+        或<a id="lineIabOpenLink" href="#">點這裡改用瀏覽器開啟</a>。
+        <button class="line-iab-close" type="button" onclick="document.getElementById('lineIabBanner').style.display='none'" title="關閉">✕</button>
+    </div>
     <div class="header-area">
         <div class="header-text">
             <h1>靜思語錄產生器</h1>
@@ -1384,6 +1437,10 @@ function handleNumberDirectSearch(targetNum, inputElem) {
 
     renderCardsDirectly(selected, targetCard);
 
+    if (window.history && history.replaceState) {
+        history.replaceState(null, '', location.pathname + location.search + '#' + targetCard.origId);
+    }
+
     inputElem.placeholder = "#" + targetCard.origId;
     inputElem.value = "";
 }
@@ -1437,7 +1494,7 @@ function renderCardsDirectly(selected, primaryCard) {
         mainBody.appendChild(rightSide);
 
         var metaDiv = document.createElement('div'); metaDiv.className = 'card-meta';
-        var idSpan = document.createElement('span'); idSpan.textContent = '原 #' + item.origId;
+        var idSpan = createQuoteLinkSpan(item.origId);
         var tagContainer = document.createElement('div'); tagContainer.className = 'tag-list-container';
 
         var displayCardTags = item.semanticTags || [];
@@ -2482,7 +2539,7 @@ function copyMorningImageToClipboard() {
         });
         navigator.clipboard.write([new ClipboardItem({ 'image/png': pngPromise })])
             .then(function() {
-                showToast('圖片已複製! 可到電腦版 LINE 的聊天視窗輸入格裡直接按 ' + pasteKey + ' 貼上後傳送。', 5000);
+                showToast('圖片已複製! 可到電腦版 LINE 的聊天視窗輸入格裡直接按鍵 ' + pasteKey + ' 貼上後傳送。', 5000);
             })
             .catch(function() { fallbackDownload(); });
     } catch (e) {
@@ -2494,6 +2551,11 @@ function copyMorningImageToClipboard() {
 //    手機 → 跳出分享選單，選 LINE → 選好友，直接傳出問候圖
 //    電腦 → 把問候圖複製到剪貼簿，到電腦版 LINE 貼上
 function shareToLine() {
+    if (isLineInAppBrowser()) {
+        var goText = confirm('LINE 內建瀏覽器無法直接分享圖片。\n\n按「確定」：改傳文字\n按「取消」：可先改用瀏覽器開啟，再分享圖片');
+        if (goText) shareTextToLine();
+        return;
+    }
     if (!isMobileDevice()) {
         copyMorningImageToClipboard();
         return;
@@ -2666,7 +2728,7 @@ function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlacehold
         mainBody.appendChild(rightSide);
 
         var metaDiv = document.createElement('div'); metaDiv.className = 'card-meta';
-        var idSpan = document.createElement('span'); idSpan.textContent = '原 #' + item.origId;
+        var idSpan = createQuoteLinkSpan(item.origId);
         var tagContainer = document.createElement('div'); tagContainer.className = 'tag-list-container';
 
         var orderedCardTags = [];
@@ -2705,7 +2767,65 @@ function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlacehold
     updateAiButtonState();
 }
 
-renderUI(true);
+// 🌸 是否在 LINE 內建瀏覽器中開啟
+function isLineInAppBrowser() {
+    return /\bLine\//i.test(navigator.userAgent || '');
+}
+
+// 🌸 這句金句的分享網址，例如 https://s.rayshieh.com/?openExternalBrowser=1#158
+function buildQuoteUrl(num) {
+    return location.origin + location.pathname + '?openExternalBrowser=1#' + num;
+}
+
+// 🌸 卡片右下角的「#編號 🔗」：點一下複製這句金句的分享網址
+function createQuoteLinkSpan(num) {
+    var span = document.createElement('span');
+    span.className = 'quote-link';
+    span.textContent = '#' + num + ' 🔗';
+    span.title = '複製這句金句的分享網址';
+    span.onclick = function() {
+        var url = buildQuoteUrl(num);
+        var done = function() { showToast('已複製這句金句的網址，可貼到 LINE 分享給朋友。', 3500); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done).catch(function() { legacyCopy(url); done(); });
+        } else {
+            legacyCopy(url); done();
+        }
+    };
+    return span;
+}
+
+function legacyCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+}
+
+// 🌸 網址帶 #編號 時，直接顯示那一句；否則照原本隨機顯示
+function openFromUrlHash() {
+    var m = (location.hash || '').match(/^#(\d+)$/);
+    if (m && parseInt(m[1], 10) > 0) {
+        handleNumberDirectSearch(parseInt(m[1], 10), document.getElementById('userPrompt'));
+        return true;
+    }
+    return false;
+}
+
+window.addEventListener('hashchange', openFromUrlHash);
+
+if (isLineInAppBrowser()) {
+    var lineBanner = document.getElementById('lineIabBanner');
+    var lineLink = document.getElementById('lineIabOpenLink');
+    if (lineBanner) lineBanner.style.display = 'block';
+    if (lineLink) lineLink.href = location.origin + location.pathname + '?openExternalBrowser=1' + (location.hash || '');
+}
+
+if (!openFromUrlHash()) {
+    renderUI(true);
+}
 </script>
 
 </body>
