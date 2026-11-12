@@ -319,6 +319,7 @@
 
         /* 🌸 提示訊息（電腦上複製圖片後顯示） */
         .app-toast {
+            white-space: pre-line;
             position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
             background: rgba(27, 54, 93, 0.95); color: #ffffff; padding: 10px 16px; border-radius: 10px;
             font-size: 0.95rem; line-height: 1.4; z-index: 10001; max-width: 90vw; text-align: center;
@@ -431,6 +432,16 @@
         .btn-copy.quote-copy-btn svg, .ai-card .btn-copy svg { width: 20px; height: 20px; }
         .ai-card-top-btns { gap: 2px; }
         .ai-card .card-right-side { align-items: flex-end; }
+
+        /* 頭像下方的喇叭與方塊：和金句卡片的喇叭、方塊同一欄位、右緣對齊 */
+        .input-action-tools {
+            display: grid !important; grid-template-columns: 28px 22px; column-gap: 2px;
+            justify-content: end; justify-items: center; align-items: center;
+            padding-right: 8px; box-sizing: border-box; width: 100%;
+        }
+        @media (max-width: 680px) {
+            .input-action-tools { padding-right: 6px; }
+        }
 
         /* 最上方關鍵詞列的左緣，對齊金句卡片內標籤的左緣 */
         #keywordsContainer { padding-left: 8px !important; }
@@ -1923,7 +1934,7 @@ function generateAiAphorism() {
     copyBtn.innerHTML = copySvg;
     copyBtn.type = 'button';
     copyBtn.title = '複製結緣語';
-    copyBtn.onclick = function() { copyToClipboard(generatedText, copyBtn); };
+    copyBtn.onclick = function() { copyAiAphorismToClipboard(generatedText, copyBtn); };
 
     rightSide.appendChild(topBtnsDiv);
     rightSide.appendChild(copyBtn);
@@ -2850,12 +2861,34 @@ function buildQuoteUrl(num) {
     return location.origin + location.pathname + '?openExternalBrowser=1#' + num;
 }
 
+// 🌸 複製後的提示句（兩行置中）
+var QUOTE_COPIED_MESSAGE = '已複製該金句的網址與文字供貼到\n其它輸入格如 LINE 聊天室給朋友。';
+
+// 🌸 自創結緣語無法用網址重現，所以附上網站首頁網址
+function buildHomeUrl() {
+    return location.origin + location.pathname + '?openExternalBrowser=1';
+}
+
+// 🌸 複製自創結緣語
+function copyAiAphorismToClipboard(text, btn) {
+    var copyText = '開示金句：' + text + '\n' + buildHomeUrl();
+    var done = function() {
+        showToast(QUOTE_COPIED_MESSAGE, 4000);
+        if (btn) showCopyTooltip(btn);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(copyText).then(done).catch(function() { legacyCopy(copyText); done(); });
+    } else {
+        legacyCopy(copyText); done();
+    }
+}
+
 // 🌸 複製金句文字與分享網址
 function copyQuoteToClipboard(num, btn) {
     var found = aphorismsData.find(function(item) { return item.origId === num; });
-    var copyText = (found ? found.content + '\n' : '') + buildQuoteUrl(num);
+    var copyText = (found ? '靜思語句：' + found.content + '\n' : '') + buildQuoteUrl(num);
     var done = function() {
-        showToast('已複製該金句的網址與文字供貼到其它輸入格如 LINE 聊天室給朋友。', 4000);
+        showToast(QUOTE_COPIED_MESSAGE, 4000);
         if (btn && btn.classList && btn.classList.contains('btn-copy')) showCopyTooltip(btn);
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
