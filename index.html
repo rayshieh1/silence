@@ -479,6 +479,7 @@ var recentTemplateIndices = [];
 var aiImageDownloadCounter = 0;
 var currentSelectedGreeting = "";
 var currentModalText = "";
+var currentShareFile = null;
 
 var daytimeGreetingsPool = [
     "日安", "工作順利", "能量滿格", "諸事順遂", "步步高升", "今日事畢",
@@ -2091,6 +2092,7 @@ function toggleImageAspectMode() {
 }
 
 function openMorningModal(aphorismText, aspectMode, cardId) {
+    currentShareFile = null;
     currentModalText = aphorismText;
     currentAspectMode = aspectMode || 'portrait'; 
 
@@ -2376,6 +2378,12 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
         if (imgOverlay) {
             imgOverlay.src = canvas.toDataURL('image/jpeg', 0.92);
         }
+        // 🌸 先把問候圖轉成檔案備用，按 LINE 鈕時才能立刻交給手機分享
+        if (canvas.toBlob) {
+            canvas.toBlob(function(blob) {
+                currentShareFile = blob ? new File([blob], '靜思問候圖.jpg', { type: 'image/jpeg' }) : null;
+            }, 'image/jpeg', 0.92);
+        }
 
         modal.style.display = 'flex';
     });
@@ -2410,8 +2418,21 @@ function downloadCurrentMorningImage() {
     link.click();
 }
 
-// 🌸 按 LINE 鈕：只傳文字，開啟 LINE 後可選擇要傳給的好友或群組
+// 🌸 按 LINE 鈕：手機會跳出分享選單，選 LINE → 選好友，直接傳出問候圖
 function shareToLine() {
+    if (currentShareFile && navigator.canShare && navigator.canShare({ files: [currentShareFile] })) {
+        navigator.share({ files: [currentShareFile] })
+            .catch(function(err) {
+                if (err && err.name === 'AbortError') return; // 使用者按取消，不做事
+                shareTextToLine();
+            });
+        return;
+    }
+    shareTextToLine();
+}
+
+// 🌸 不支援分享圖片時（例如部分電腦瀏覽器），改用原本的方式：開啟 LINE 傳文字，可選擇好友
+function shareTextToLine() {
     var bodyText = currentModalText ? currentModalText.trim() : "";
     if (!bodyText) return;
 
