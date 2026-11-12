@@ -320,6 +320,7 @@
         /* 🌸 提示訊息（電腦上複製圖片後顯示） */
         .app-toast {
             white-space: pre-line;
+            width: max-content; max-width: calc(100vw - 24px) !important; box-sizing: border-box;
             position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
             background: rgba(27, 54, 93, 0.95); color: #ffffff; padding: 10px 16px; border-radius: 10px;
             font-size: 0.95rem; line-height: 1.4; z-index: 10001; max-width: 90vw; text-align: center;
@@ -408,30 +409,39 @@
             .btn-generate-ai, .btn-morning-image { font-size: 15px; }
         }
 
-        /* ===== 🌸 金句卡片右側：喇叭、方塊在上；編號、複製鈕在下，三張卡片上下對齊 ===== */
-        .card {
-            display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 6px; align-items: start;
+        /* ===== 🌸 金句卡片：右上是編號與複製鈕，右下是喇叭與方塊（和關鍵詞同一列），各卡片上下對齊 ===== */
+        .card, .ai-card {
+            display: grid; grid-template-columns: minmax(0, 1fr) 28px 22px;
+            column-gap: 2px; row-gap: 2px; align-items: start;
         }
-        .card > .card-main-body { display: contents; }
-        .card .card-content { grid-column: 1; grid-row: 1; }
-        .card .card-meta { grid-column: 1; grid-row: 2; }
-        .card .card-right-side {
-            grid-column: 2; grid-row: 1 / span 2;
-            display: grid; grid-template-columns: 28px 22px; grid-template-rows: 28px 22px;
-            column-gap: 2px; row-gap: 4px; align-items: center; justify-items: center; margin-right: 0;
-        }
+        .card > .card-main-body, .ai-card > .card-main-body,
+        .card .card-right-side, .ai-card .card-right-side,
+        .ai-card .ai-card-top-btns { display: contents; }
+
+        .card .card-content, .ai-card .card-content { grid-column: 1; grid-row: 1; margin-right: 4px; }
+        .card .card-meta, .ai-card .card-meta { grid-column: 1; grid-row: 2; align-self: center; }
+
+        /* 右上：編號（喇叭正上方）、複製鈕（方塊正上方） */
+        .card .quote-number { grid-column: 2; grid-row: 1; align-self: start; }
+        .card .quote-copy-btn, .ai-card .btn-copy { grid-column: 3; grid-row: 1; align-self: start; justify-self: center; }
+
+        /* 右下：喇叭、方塊，和關鍵詞同一列 */
+        .card .btn-speak, .ai-card .btn-speak { grid-column: 2; grid-row: 2; align-self: center; justify-self: center; }
+        .card .card-checkbox, .ai-card .card-checkbox { grid-column: 3; grid-row: 2; align-self: center; justify-self: center; }
+
+        /* 自創語卡片下方的按鈕列佔滿整寬 */
+        .ai-card .bottom-buttons-row { grid-column: 1 / -1; grid-row: 3; }
+        .ai-card .bottom-buttons-row:empty { display: none; }
+
         .quote-number {
             justify-self: end; font-size: 11px; line-height: 22px; color: #888; white-space: nowrap;
-            /* 喇叭圖示在 28px 寬的按鈕裡置中，圖案本身約 18px，左右各留約 5px；
-               編號往左內縮 5px，尾數右緣就會切齊喇叭圖案的右緣 */
+            /* 喇叭圖案約 18px 置中在 28px 的欄位裡，編號往左內縮 5px，尾數右緣切齊喇叭圖案右緣 */
             padding-right: 5px;
             cursor: pointer; letter-spacing: -0.2px;
         }
         .quote-number:active { opacity: 0.6; }
         .btn-copy.quote-copy-btn, .ai-card .btn-copy { width: 22px; height: 22px; }
         .btn-copy.quote-copy-btn svg, .ai-card .btn-copy svg { width: 20px; height: 20px; }
-        .ai-card-top-btns { gap: 2px; }
-        .ai-card .card-right-side { align-items: flex-end; }
 
         /* 頭像下方的喇叭與方塊：和金句卡片的喇叭、方塊同一欄位、右緣對齊 */
         .input-action-tools {
