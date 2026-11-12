@@ -317,6 +317,15 @@
         }
         .btn-close-square:hover { background-color: #d1d5db; }
 
+        /* 🌸 提示訊息（電腦上複製圖片後顯示） */
+        .app-toast {
+            position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+            background: rgba(27, 54, 93, 0.95); color: #ffffff; padding: 10px 16px; border-radius: 10px;
+            font-size: 0.95rem; line-height: 1.4; z-index: 10001; max-width: 90vw; text-align: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.25s ease; pointer-events: none;
+        }
+        .app-toast.show { opacity: 1; }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
@@ -2418,8 +2427,66 @@ function downloadCurrentMorningImage() {
     link.click();
 }
 
-// 🌸 按 LINE 鈕：手機會跳出分享選單，選 LINE → 選好友，直接傳出問候圖
+// 🌸 判斷是否為手機或平板（iPad 新版會偽裝成 Mac，用觸控點判斷）
+function isMobileDevice() {
+    var ua = navigator.userAgent || '';
+    if (/Android|iPhone|iPad|iPod/i.test(ua)) return true;
+    if (/Macintosh/i.test(ua) && navigator.maxTouchPoints && navigator.maxTouchPoints > 1) return true;
+    return false;
+}
+
+// 🌸 畫面下方的提示訊息
+function showToast(message, durationMs) {
+    var toast = document.getElementById('appToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'appToast';
+        toast.className = 'app-toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(function() { toast.classList.remove('show'); }, durationMs || 4000);
+}
+
+// 🌸 電腦上：把問候圖複製到剪貼簿，再到電腦版 LINE 貼上
+function copyMorningImageToClipboard() {
+    var canvas = document.getElementById('morningCanvas');
+    var pasteKey = /Mac/i.test(navigator.platform || navigator.userAgent || '') ? '⌘+V' : 'Ctrl+V';
+
+    function fallbackDownload() {
+        downloadCurrentMorningImage();
+        showToast('圖片已下載，請把圖片拖進電腦版 LINE 的聊天視窗傳送。', 5000);
+    }
+
+    if (!canvas || !navigator.clipboard || !navigator.clipboard.write || typeof ClipboardItem === 'undefined') {
+        fallbackDownload();
+        return;
+    }
+
+    try {
+        var pngPromise = new Promise(function(resolve, reject) {
+            canvas.toBlob(function(blob) { blob ? resolve(blob) : reject(new Error('no blob')); }, 'image/png');
+        });
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': pngPromise })])
+            .then(function() {
+                showToast('圖片已複製！請到電腦版 LINE 的聊天視窗按 ' + pasteKey + ' 貼上傳送。', 5000);
+            })
+            .catch(function() { fallbackDownload(); });
+    } catch (e) {
+        fallbackDownload();
+    }
+}
+
+// 🌸 按 LINE 鈕：
+//    手機 → 跳出分享選單，選 LINE → 選好友，直接傳出問候圖
+//    電腦 → 把問候圖複製到剪貼簿，到電腦版 LINE 貼上
 function shareToLine() {
+    if (!isMobileDevice()) {
+        copyMorningImageToClipboard();
+        return;
+    }
     if (currentShareFile && navigator.canShare && navigator.canShare({ files: [currentShareFile] })) {
         navigator.share({ files: [currentShareFile] })
             .catch(function(err) {
