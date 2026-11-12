@@ -489,6 +489,8 @@ var aiImageDownloadCounter = 0;
 var currentSelectedGreeting = "";
 var currentModalText = "";
 var currentShareFile = null;
+// 🌸 問候圖以 2 倍解析度繪製，傳到 LINE 壓縮後仍保持清晰（版面位置不變）
+var CANVAS_SCALE = 2;
 
 var daytimeGreetingsPool = [
     "日安", "工作順利", "能量滿格", "諸事順遂", "步步高升", "今日事畢",
@@ -1881,7 +1883,7 @@ function drawLandscapeBackground(ctx, width, height, callback) {
             hasResponded = true;
             drawFallbackCanvasBackground(ctx, width, height, callback);
         }
-    }, 1200);
+    }, 3000);
 
     img.onload = function() {
         if (hasResponded) return;
@@ -1912,14 +1914,22 @@ function drawLandscapeBackground(ctx, width, height, callback) {
         if (callback) callback();
     };
 
+    var triedOriginalUrl = false;
     img.onerror = function() {
         if (hasResponded) return;
+        // 🌸 高畫質網址讀不到時，改讀原本的網址再試一次
+        if (!triedOriginalUrl) {
+            triedOriginalUrl = true;
+            img.src = randomImgUrl;
+            return;
+        }
         hasResponded = true;
         clearTimeout(loadTimeout);
         drawFallbackCanvasBackground(ctx, width, height, callback);
     };
 
-    img.src = randomImgUrl;
+    // 🌸 向雲端硬碟要求較大尺寸的圖片（寬 1600 像素），畫質較清晰
+    img.src = randomImgUrl + '=w1600';
 }
 
 function drawFallbackCanvasBackground(ctx, width, height, callback) {
@@ -1961,7 +1971,7 @@ function drawFallbackCanvasBackground(ctx, width, height, callback) {
         ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
 
         ctx.fillStyle = '#fffdf0';
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; ctx.shadowBlur = 30;
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.8)'; ctx.shadowBlur = 30 * CANVAS_SCALE;
         ctx.beginPath(); ctx.arc(width * 0.5, height * 0.2, 50, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
     }
@@ -2133,8 +2143,9 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
     var canvasW = (currentAspectMode === 'landscape') ? 800 : 450;
     var canvasH = (currentAspectMode === 'landscape') ? 450 : 800;
     
-    canvas.width = canvasW;
-    canvas.height = canvasH;
+    canvas.width = canvasW * CANVAS_SCALE;
+    canvas.height = canvasH * CANVAS_SCALE;
+    ctx.setTransform(CANVAS_SCALE, 0, 0, CANVAS_SCALE, 0, 0);
 
     ctx.clearRect(0, 0, canvasW, canvasH);
 
@@ -2148,7 +2159,7 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
         var fontKai = '"DFKai-SB", "Microsoft DFKai-SB", "標楷體", "BiauKai", "Kaiti TC", "Kaiti SC", "LXGW WenKai TC", "楷體", serif';
         ctx.fillStyle = '#ffffff';
         ctx.shadowColor = 'rgba(0, 0, 0, 0.95)'; 
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 18 * CANVAS_SCALE;
 
         var finalFontSize = 36; 
 
@@ -2385,13 +2396,13 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
         ctx.shadowBlur = 0; 
         
         if (imgOverlay) {
-            imgOverlay.src = canvas.toDataURL('image/jpeg', 0.92);
+            imgOverlay.src = canvas.toDataURL('image/jpeg', 0.95);
         }
         // 🌸 先把問候圖轉成檔案備用，按 LINE 鈕時才能立刻交給手機分享
         if (canvas.toBlob) {
             canvas.toBlob(function(blob) {
                 currentShareFile = blob ? new File([blob], '靜思問候圖.jpg', { type: 'image/jpeg' }) : null;
-            }, 'image/jpeg', 0.92);
+            }, 'image/jpeg', 0.95);
         }
 
         modal.style.display = 'flex';
@@ -2423,7 +2434,7 @@ function downloadCurrentMorningImage() {
     }
     
     link.download = fileName;
-    link.href = canvas.toDataURL('image/jpeg', 0.92);
+    link.href = canvas.toDataURL('image/jpeg', 0.95);
     link.click();
 }
 
@@ -2471,7 +2482,7 @@ function copyMorningImageToClipboard() {
         });
         navigator.clipboard.write([new ClipboardItem({ 'image/png': pngPromise })])
             .then(function() {
-                showToast('圖片已複製！請到電腦版 LINE 的聊天視窗按 ' + pasteKey + ' 貼上傳送。', 5000);
+                showToast('圖片已複製! 可到電腦版 LINE 的聊天視窗輸入格裡直接按 ' + pasteKey + ' 貼上後傳送。', 5000);
             })
             .catch(function() { fallbackDownload(); });
     } catch (e) {
