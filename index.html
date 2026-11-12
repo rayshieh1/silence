@@ -620,7 +620,8 @@ var aiImageDownloadCounter = 0;
 var currentSelectedGreeting = "";
 var currentModalText = "";
 var currentShareFile = null;
-// 🌸 問候圖以 2 倍解析度繪製，傳到 LINE 壓縮後仍保持清晰（版面位置不變）
+// 🌸 問候圖以 2 倍解析度繪製（900×1600／1600×900），文字更銳利；
+//    背景圖仍讀原本的網址（不加尺寸參數），背景樣子與之前相同或更清楚
 var CANVAS_SCALE = 2;
 
 var daytimeGreetingsPool = [
@@ -2090,24 +2091,14 @@ function drawLandscapeBackground(ctx, width, height, callback) {
         if (callback) callback();
     };
 
-    var triedOriginalUrl = false;
     img.onerror = function() {
         if (hasResponded) return;
-        // 🌸 高畫質網址讀不到時，改讀原本的網址再試一次
-        if (!triedOriginalUrl) {
-            triedOriginalUrl = true;
-            img.src = randomImgUrl;
-            return;
-        }
         hasResponded = true;
         clearTimeout(loadTimeout);
         drawFallbackCanvasBackground(ctx, width, height, callback);
     };
 
-    // 🌸 向雲端硬碟要求較大尺寸的圖片（最長邊 2400 像素）
-    //    直式問候圖需要圖片高度至少 1600、橫式需要寬度至少 1600，
-    //    用「最長邊」來要求，橫圖、直圖裁切後都不會被放大而變糊
-    img.src = randomImgUrl + '=s2400';
+    img.src = randomImgUrl;
 }
 
 function drawFallbackCanvasBackground(ctx, width, height, callback) {
