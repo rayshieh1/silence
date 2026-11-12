@@ -388,17 +388,54 @@
         }
 
         /* ===== 🌸 第二次放大：副標一行、提示字、金句、下方兩顆按鈕 ===== */
+        /* 副標一行：置中；空間不夠時（手機）自動往左讓開頭像，不會被擋住 */
         .subtitle-one-line {
-            margin: 0 0 4px 0; white-space: nowrap; text-align: center; width: 100%;
-            font-size: clamp(10px, 3.3vw, 14px); line-height: 1.3;
+            margin: 3px 0 0 0; white-space: nowrap; text-align: center !important; width: 100%;
+            padding-right: 66px; box-sizing: border-box;
+            padding-left: max(0px, min(66px, calc(100vw - 106px - 28.5 * clamp(8px, calc((100vw - 92px) / 28.5), 14px))));
+            font-size: clamp(8px, calc((100vw - 92px) / 28.5), 14px); line-height: 1.2;
         }
-        textarea::placeholder { font-size: 12px; line-height: 1.25; }
+        /* 輸入框提示字：三行剛好填滿輸入框高度，最長一行（25 字）不換行 */
+        textarea::placeholder {
+            font-size: clamp(8px, calc((100vw - 112px) / 25.5), 16px); line-height: 20px;
+        }
         .card-content { font-size: 1.22rem; line-height: 1.38; }
         .btn-generate-ai, .btn-morning-image { min-width: 0; overflow: hidden; font-size: 15px; }
         @media (max-width: 680px) {
-            textarea::placeholder { font-size: 12px; }
+            textarea::placeholder { font-size: clamp(8px, calc((100vw - 110px) / 25.5), 16px); line-height: 20px; }
             .card-content { font-size: 1.15rem; line-height: 1.33; }
             .btn-generate-ai, .btn-morning-image { font-size: 15px; }
+        }
+
+        /* ===== 🌸 金句卡片右側：喇叭、方塊在上；編號、複製鈕在下，三張卡片上下對齊 ===== */
+        .card {
+            display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 6px; align-items: start;
+        }
+        .card > .card-main-body { display: contents; }
+        .card .card-content { grid-column: 1; grid-row: 1; }
+        .card .card-meta { grid-column: 1; grid-row: 2; }
+        .card .card-right-side {
+            grid-column: 2; grid-row: 1 / span 2;
+            display: grid; grid-template-columns: 28px 22px; grid-template-rows: 28px 22px;
+            column-gap: 2px; row-gap: 4px; align-items: center; justify-items: center; margin-right: 0;
+        }
+        .quote-number {
+            justify-self: end; font-size: 11px; line-height: 22px; color: #888; white-space: nowrap;
+            /* 喇叭圖示在 28px 寬的按鈕裡置中，圖案本身約 18px，左右各留約 5px；
+               編號往左內縮 5px，尾數右緣就會切齊喇叭圖案的右緣 */
+            padding-right: 5px;
+            cursor: pointer; letter-spacing: -0.2px;
+        }
+        .quote-number:active { opacity: 0.6; }
+        .btn-copy.quote-copy-btn, .ai-card .btn-copy { width: 22px; height: 22px; }
+        .btn-copy.quote-copy-btn svg, .ai-card .btn-copy svg { width: 20px; height: 20px; }
+        .ai-card-top-btns { gap: 2px; }
+        .ai-card .card-right-side { align-items: flex-end; }
+
+        /* 最上方關鍵詞列的左緣，對齊金句卡片內標籤的左緣 */
+        #keywordsContainer { padding-left: 8px !important; }
+        @media (max-width: 680px) {
+            #keywordsContainer { padding-left: 6px !important; }
         }
 
         /* ===== 🌸 在 LINE 內建瀏覽器開啟時的提示列 ===== */
@@ -426,14 +463,14 @@
     <div class="header-area">
         <div class="header-text">
             <h1>靜思語錄產生器</h1>
+            <p class="subtitle subtitle-one-line">輸入當下境遇或任選核心重點後按獲得啟發即可得到智慧指引</p>
         </div>
         <img src="https://lh3.googleusercontent.com/d/1wTre0yQG95uB71xYSgFXbZLVmRE9b8tr" alt="Header Avatar" class="header-avatar">
     </div>
-    <p class="subtitle subtitle-one-line">輸入當下境遇或任選核心重點後按獲得啟發即可得到智慧指引</p>
 
     <!-- 🌸 輸入格區域 -->
     <div class="input-group">
-        <textarea id="userPrompt" placeholder="可輸入最多三行每列十字內的文字後，或直接選取關鍵詞按獲得啟發鈕&#10;找出最貼近的金句開示； 亦可勾選任何方塊產生自創語句或生成問候圖。" onkeydown="checkLineLimitOnKeyDown(event, this)" oninput="enforceMaxCharsPerLine(this)"></textarea>
+        <textarea id="userPrompt" placeholder="可輸入最多三行每列十字內的文字後，&#10;或直接選取關鍵詞按獲得啟發鈕找出最貼近的金句開示；&#10;亦可勾選任何方塊產生自創語句或生成問候圖。" onkeydown="checkLineLimitOnKeyDown(event, this)" oninput="enforceMaxCharsPerLine(this)"></textarea>
         <div class="input-right-control">
             <div class="input-action-tools">
                 <button class="btn-speak" id="btnSpeakInput" type="button" onclick="speakInputText(this)" title="點擊朗讀輸入內容">🔊</button>
@@ -545,7 +582,7 @@
 </div>
 
 <script>
-var defaultPlaceholderText = "可輸入最多三行每列十字內的文字後，或直接選取關鍵詞按獲得啟發鈕\n找出最貼近的金句開示； 亦可勾選任何方塊產生自創語句或生成問候圖。";
+var defaultPlaceholderText = "可輸入最多三行每列十字內的文字後，\n或直接選取關鍵詞按獲得啟發鈕找出最貼近的金句開示；\n亦可勾選任何方塊產生自創語句或生成問候圖。";
 var aphorismShowCounts = {}; 
 var tagShowCounts = {}; 
 var lastDisplayedIds = []; 
@@ -1503,12 +1540,13 @@ function renderCardsDirectly(selected, primaryCard) {
 
         rightSide.appendChild(speakBtn); 
         rightSide.appendChild(checkbox);
+        rightSide.appendChild(createQuoteLinkSpan(item.origId));
+        rightSide.appendChild(createQuoteCopyButton(item.origId));
 
         mainBody.appendChild(contentP); 
         mainBody.appendChild(rightSide);
 
         var metaDiv = document.createElement('div'); metaDiv.className = 'card-meta';
-        var idSpan = createQuoteLinkSpan(item.origId);
         var tagContainer = document.createElement('div'); tagContainer.className = 'tag-list-container';
 
         var displayCardTags = item.semanticTags || [];
@@ -1522,7 +1560,7 @@ function renderCardsDirectly(selected, primaryCard) {
             })(displayCardTags[t]);
         }
 
-        metaDiv.appendChild(tagContainer); metaDiv.appendChild(idSpan);
+        metaDiv.appendChild(tagContainer);
         card.appendChild(mainBody); card.appendChild(metaDiv);
         list.appendChild(card);
     }
@@ -2757,12 +2795,13 @@ function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlacehold
 
         rightSide.appendChild(speakBtn); 
         rightSide.appendChild(checkbox);
+        rightSide.appendChild(createQuoteLinkSpan(item.origId));
+        rightSide.appendChild(createQuoteCopyButton(item.origId));
 
         mainBody.appendChild(contentP); 
         mainBody.appendChild(rightSide);
 
         var metaDiv = document.createElement('div'); metaDiv.className = 'card-meta';
-        var idSpan = createQuoteLinkSpan(item.origId);
         var tagContainer = document.createElement('div'); tagContainer.className = 'tag-list-container';
 
         var orderedCardTags = [];
@@ -2792,7 +2831,7 @@ function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlacehold
             })(displayCardTags[t]);
         }
 
-        metaDiv.appendChild(tagContainer); metaDiv.appendChild(idSpan);
+        metaDiv.appendChild(tagContainer);
         card.appendChild(mainBody); card.appendChild(metaDiv);
         list.appendChild(card);
     }
@@ -2811,23 +2850,40 @@ function buildQuoteUrl(num) {
     return location.origin + location.pathname + '?openExternalBrowser=1#' + num;
 }
 
-// 🌸 卡片右下角的「#編號 🔗」：點一下複製這句金句的分享網址
+// 🌸 複製金句文字與分享網址
+function copyQuoteToClipboard(num, btn) {
+    var found = aphorismsData.find(function(item) { return item.origId === num; });
+    var copyText = (found ? found.content + '\n' : '') + buildQuoteUrl(num);
+    var done = function() {
+        showToast('已複製該金句的網址與文字供貼到其它輸入格如 LINE 聊天室給朋友。', 4000);
+        if (btn && btn.classList && btn.classList.contains('btn-copy')) showCopyTooltip(btn);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(copyText).then(done).catch(function() { legacyCopy(copyText); done(); });
+    } else {
+        legacyCopy(copyText); done();
+    }
+}
+
+// 🌸 喇叭下方的金句編號（點一下也會複製）
 function createQuoteLinkSpan(num) {
     var span = document.createElement('span');
-    span.className = 'quote-link';
-    span.textContent = '#' + num + ' 🔗';
+    span.className = 'quote-number';
+    span.textContent = '#' + num;
     span.title = '複製這句金句的文字與分享網址';
-    span.onclick = function() {
-        var found = aphorismsData.find(function(item) { return item.origId === num; });
-        var copyText = (found ? found.content + '\n' : '') + buildQuoteUrl(num);
-        var done = function() { showToast('已複製該金句的網址與文字供貼到其它輸入格如 LINE 聊天室給朋友。', 4000); };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(copyText).then(done).catch(function() { legacyCopy(copyText); done(); });
-        } else {
-            legacyCopy(copyText); done();
-        }
-    };
+    span.onclick = function() { copyQuoteToClipboard(num, null); };
     return span;
+}
+
+// 🌸 方塊下方的複製鈕
+function createQuoteCopyButton(num) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-copy quote-copy-btn';
+    btn.innerHTML = copySvg;
+    btn.title = '複製這句金句的文字與分享網址';
+    btn.onclick = function() { copyQuoteToClipboard(num, btn); };
+    return btn;
 }
 
 function legacyCopy(text) {
