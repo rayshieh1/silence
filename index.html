@@ -467,6 +467,13 @@
             #keywordsContainer { padding-left: 6px !important; }
         }
 
+        /* 🌸 暫時顯示背景圖編號（不會出現在存下或分享的圖片裡），調整完裁切後可關閉 */
+        .bg-no-label {
+            position: absolute; left: 6px; bottom: 6px; z-index: 11; pointer-events: none;
+            background: rgba(0,0,0,0.55); color: #fff; font-size: 12px; padding: 2px 6px; border-radius: 4px;
+            display: none;
+        }
+
         /* ===== 🌸 在 LINE 內建瀏覽器開啟時的提示列 ===== */
         .line-iab-banner {
             display: none; background: #fff7e0; border: 1px solid #f0d68a; color: #5c4400;
@@ -543,6 +550,7 @@
         <div class="modal-canvas-wrapper">
             <canvas id="morningCanvas" width="450" height="800"></canvas>
             <img id="morningImgOverlay" alt="問候圖（長按可儲存）" />
+            <div id="bgNoLabel" class="bg-no-label"></div>
         </div>
         <div class="modal-actions">
             <button class="btn-greeting-option" id="btnGreetMorning" onclick="selectGreetingText('早安')" title="早安">
@@ -623,6 +631,8 @@ var currentSelectedGreeting = "";
 var currentModalText = "";
 var currentShareFile = null;
 var currentBackgroundNo = null;
+// 🌸 暫時在問候圖左下角顯示背景圖編號（true＝顯示，調整完改成 false 即可關閉）
+var SHOW_BACKGROUND_NO = true;
 // 🌸 問候圖以 2 倍解析度繪製（900×1600／1600×900），文字更銳利；
 //    背景圖仍讀原本的網址（不加尺寸參數），背景樣子與之前相同或更清楚
 var CANVAS_SCALE = 2;
@@ -2130,6 +2140,7 @@ function drawLandscapeBackground(ctx, width, height, callback) {
     var loadTimeout = setTimeout(function() {
         if (!hasResponded) {
             hasResponded = true;
+            currentBackgroundNo = null;
             drawFallbackCanvasBackground(ctx, width, height, callback);
         }
     }, 3000);
@@ -2166,6 +2177,7 @@ function drawLandscapeBackground(ctx, width, height, callback) {
     };
 
     img.onerror = function() {
+        currentBackgroundNo = null;
         if (hasResponded) return;
         hasResponded = true;
         clearTimeout(loadTimeout);
@@ -2660,6 +2672,11 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
             imgOverlay.src = canvas.toDataURL('image/jpeg', 0.95);
             // 🌸 電腦上滑鼠停在圖上，會顯示背景圖編號，方便指定要調整哪一張
             imgOverlay.title = currentBackgroundNo ? ('背景圖 #' + currentBackgroundNo) : '';
+            var bgNoLabel = document.getElementById('bgNoLabel');
+            if (bgNoLabel) {
+                bgNoLabel.textContent = currentBackgroundNo ? ('背景圖 #' + currentBackgroundNo) : '漸層背景';
+                bgNoLabel.style.display = SHOW_BACKGROUND_NO ? 'block' : 'none';
+            }
         }
         // 🌸 先把問候圖轉成檔案備用，按 LINE 鈕時才能立刻交給手機分享
         if (canvas.toBlob) {
