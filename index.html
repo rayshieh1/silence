@@ -632,7 +632,7 @@ var currentModalText = "";
 var currentShareFile = null;
 var currentBackgroundNo = null;
 // 🌸 暫時在問候圖左下角顯示背景圖編號（true＝顯示，調整完改成 false 即可關閉）
-var SHOW_BACKGROUND_NO = true;
+var SHOW_BACKGROUND_NO = false;
 // 🌸 問候圖以 2 倍解析度繪製（900×1600／1600×900），文字更銳利；
 //    背景圖仍讀原本的網址（不加尺寸參數），背景樣子與之前相同或更清楚
 var CANVAS_SCALE = 2;
@@ -2132,7 +2132,10 @@ function drawLandscapeBackground(ctx, width, height, callback) {
     currentBackgroundNo = chosenBg.no;
     // 🌸 裁切位置：focusX／focusY 為 0～1（0＝最左／最上，0.5＝置中，1＝最右／最下），沒設定就置中
     var focusX = (typeof chosenBg.focusX === 'number') ? chosenBg.focusX : 0.5;
-    var focusY = (typeof chosenBg.focusY === 'number') ? chosenBg.focusY : 0.5;
+    // 🌸 橫式問候圖：預設取圖片偏上方的部分（上方裁掉 1/3、下方裁掉 2/3），讓建築、山、月亮等主體較完整，下方的海或地面少一點
+    //    直式問候圖維持置中；個別圖片仍可用 focusY 另外指定
+    var defaultFocusY = (width > height) ? (1 / 3) : 0.5;
+    var focusY = (typeof chosenBg.focusY === 'number') ? chosenBg.focusY : defaultFocusY;
     var img = new Image();
     img.crossOrigin = 'Anonymous';
 
@@ -2671,7 +2674,7 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
         if (imgOverlay) {
             imgOverlay.src = canvas.toDataURL('image/jpeg', 0.95);
             // 🌸 電腦上滑鼠停在圖上，會顯示背景圖編號，方便指定要調整哪一張
-            imgOverlay.title = currentBackgroundNo ? ('背景圖 #' + currentBackgroundNo) : '';
+            imgOverlay.title = (SHOW_BACKGROUND_NO && currentBackgroundNo) ? ('背景圖 #' + currentBackgroundNo) : '';
             var bgNoLabel = document.getElementById('bgNoLabel');
             if (bgNoLabel) {
                 bgNoLabel.textContent = currentBackgroundNo ? ('背景圖 #' + currentBackgroundNo) : '漸層背景';
