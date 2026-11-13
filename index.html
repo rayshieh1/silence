@@ -397,14 +397,14 @@
             padding-left: max(0px, min(66px, calc(100vw - 106px - 28.5 * clamp(8px, calc((100vw - 92px) / 28.5), 14px))));
             font-size: clamp(8px, calc((100vw - 92px) / 28.5), 14px); line-height: 1.2;
         }
-        /* 輸入框提示字：三行剛好填滿輸入框高度，最長一行（25 字）不換行 */
+        /* 輸入框提示字：三行剛好填滿輸入框高度，最長一行（24 字）不換行 */
         textarea::placeholder {
-            font-size: clamp(8px, calc((100vw - 112px) / 25.5), 16px); line-height: 20px;
+            font-size: clamp(8px, calc((100vw - 112px) / 24.5), 16px); line-height: 20px;
         }
         .card-content { font-size: 1.22rem; line-height: 1.38; }
         .btn-generate-ai, .btn-morning-image { min-width: 0; overflow: hidden; font-size: 15px; }
         @media (max-width: 680px) {
-            textarea::placeholder { font-size: clamp(8px, calc((100vw - 110px) / 25.5), 16px); line-height: 20px; }
+            textarea::placeholder { font-size: clamp(8px, calc((100vw - 110px) / 24.5), 16px); line-height: 20px; }
             .card-content { font-size: 1.15rem; line-height: 1.33; }
             .btn-generate-ai, .btn-morning-image { font-size: 15px; }
         }
@@ -454,6 +454,8 @@
             display: grid !important; grid-template-columns: 28px 22px; column-gap: 2px;
             justify-content: end; justify-items: center; align-items: center;
             padding-right: 8px; box-sizing: border-box; width: 100%; margin: 0; gap: 0 2px;
+            /* 微調：往右移 2px，和下方金句卡片的喇叭、方塊切齊（要再調整時只改這個數字） */
+            position: relative; left: 2px;
         }
         @media (max-width: 680px) {
             .input-action-tools { padding-right: 6px; }
@@ -497,7 +499,7 @@
 
     <!-- 🌸 輸入格區域 -->
     <div class="input-group">
-        <textarea id="userPrompt" placeholder="可輸入最多三行每列十字內的文字後，&#10;或直接選取關鍵詞按獲得啟發鈕找出最貼近的金句開示；&#10;亦可勾選任何方塊產生自創語句或生成問候圖。" onkeydown="checkLineLimitOnKeyDown(event, this)" oninput="enforceMaxCharsPerLine(this)"></textarea>
+        <textarea id="userPrompt" placeholder="可直接：選取下方關鍵詞，或於此輸入每列十字內、&#10;最多三行的文字後，按獲得啟發鈕找出最貼切的語錄；&#10;亦可勾選任何方塊產生自創佳句或生成問候圖。" onkeydown="checkLineLimitOnKeyDown(event, this)" oninput="enforceMaxCharsPerLine(this)"></textarea>
         <div class="input-right-control">
             <div class="input-action-tools">
                 <button class="btn-speak" id="btnSpeakInput" type="button" onclick="speakInputText(this)" title="點擊朗讀輸入內容">🔊</button>
@@ -609,7 +611,7 @@
 </div>
 
 <script>
-var defaultPlaceholderText = "可輸入最多三行每列十字內的文字後，\n或直接選取關鍵詞按獲得啟發鈕找出最貼近的金句開示；\n亦可勾選任何方塊產生自創語句或生成問候圖。";
+var defaultPlaceholderText = "可直接：選取下方關鍵詞，或於此輸入每列十字內、\n最多三行的文字後，按獲得啟發鈕找出最貼切的語錄；\n亦可勾選任何方塊產生自創佳句或生成問候圖。";
 var aphorismShowCounts = {}; 
 var tagShowCounts = {}; 
 var lastDisplayedIds = []; 
@@ -620,6 +622,7 @@ var aiImageDownloadCounter = 0;
 var currentSelectedGreeting = "";
 var currentModalText = "";
 var currentShareFile = null;
+var currentBackgroundNo = null;
 // 🌸 問候圖以 2 倍解析度繪製（900×1600／1600×900），文字更銳利；
 //    背景圖仍讀原本的網址（不加尺寸參數），背景樣子與之前相同或更清楚
 var CANVAS_SCALE = 2;
@@ -632,6 +635,8 @@ var daytimeGreetingsPool = [
 
 // 🌸 背景圖清單：要新增圖片，只要在下面加一行，填上網址和用途即可
 //    用途：「早安」＝只用早安；「白天」＝早安、日安都用；「晚安」＝只用晚安；「不選」＝日安、沒選早午晚安時使用
+//    裁切位置（選填）：focusY＝上下（0 最上、0.5 置中、1 最下）；focusX＝左右（0 最左、0.5 置中、1 最右）
+//    例：{ no: 20, url: "...", use: "晚安", focusY: 0.2 } → 橫式圖往上多留一點、少一點下方
 var backgroundImages = [
     { no: 1, url: "https://lh3.googleusercontent.com/d/1ZvfF2ODIimJv3JwRP_w27QxYj3wrfeel", use: "早安" },
     { no: 2, url: "https://lh3.googleusercontent.com/d/1-EAYnTCF4afPFQgVuICTzb-dKqL3qk_k", use: "白天" },
@@ -1121,6 +1126,49 @@ for (var i = 0; i < aphorismsData.length; i++) {
 
 var currentDisplayKeywords = []; 
 var selectedUserTags = []; 
+var lastSearchText = "";   // 🌸 最近一次在輸入框搜尋的文字（按獲得啟發後輸入框會清空，所以另外記住）
+
+// 🌸 生活用語對照：輸入框裡出現這些詞，就視為和右邊的關鍵詞有關
+var aiConceptMap = [
+    { keys: ["家人", "家裡", "爸", "媽", "父母", "孩子", "小孩", "兒子", "女兒", "先生", "太太", "老公", "老婆", "公婆", "長輩", "兄弟", "姊妹", "姐妹"], tags: ["家庭", "父母", "孝順", "包容", "溝通"] },
+    { keys: ["工作", "上班", "公司", "同事", "老闆", "主管", "客戶", "加班", "業績", "職場"], tags: ["工作", "合作", "盡責", "包容", "溝通"] },
+    { keys: ["吵架", "爭執", "罵", "誤會", "冷戰", "衝突", "討厭", "看不順眼"], tags: ["衝突", "包容", "原諒", "溝通", "轉念"], w: 2 },
+    { keys: ["生氣", "火大", "氣死", "憤怒", "不爽"], tags: ["生氣", "平靜", "包容", "轉念"], w: 2 },
+    { keys: ["壓力", "焦慮", "擔心", "緊張", "煩", "失眠", "睡不著", "睡不好"], tags: ["煩惱", "平靜", "安定", "轉念"], w: 2 },
+    { keys: ["難過", "傷心", "失落", "沮喪", "委屈", "想哭", "孤單", "寂寞"], tags: ["煩惱", "希望", "樂觀", "溫暖"], w: 2 },
+    { keys: ["失敗", "挫折", "考試", "落榜", "被拒", "沒成功", "搞砸"], tags: ["失敗", "勇氣", "堅持", "毅力"], w: 2 },
+    { keys: ["困難", "辛苦", "累", "疲憊", "撐不下去", "好難"], tags: ["困難", "毅力", "堅持", "信心"], w: 2 },
+    { keys: ["生病", "身體", "醫院", "開刀", "健康", "病"], tags: ["健康", "珍惜", "平靜", "感恩"] },
+    { keys: ["錢", "存款", "投資", "股票", "薪水", "買", "發票", "貸款"], tags: ["知足", "欲望", "得失", "惜福"] },
+    { keys: ["比較", "嫉妒", "羨慕", "不公平"], tags: ["比較", "知足", "欣賞", "轉念"], w: 2 },
+    { keys: ["謝謝", "感謝", "感恩", "幫忙", "幫助"], tags: ["感恩", "惜福", "付出", "溫暖"] },
+    { keys: ["朋友", "友誼", "人際", "相處"], tags: ["溝通", "包容", "真誠", "尊重"] },
+    { keys: ["學習", "讀書", "上課", "進修", "功課"], tags: ["學習", "專注", "努力", "毅力"] },
+    { keys: ["早安", "日安", "晚安", "祝福", "問候", "生日"], tags: ["幸福", "感恩", "歡喜", "溫暖"] }
+];
+
+// 🌸 把一段文字轉成相關的關鍵詞，並依相關程度排序：
+//    ①文字中直接出現的關鍵詞（權重 3）
+//    ②生活用語對照：情緒、困境類（權重 2）比家人、工作等情境類（權重 1）優先
+//    同一個關鍵詞被多組對照到時，權重會累加，越相關的越先被代入
+function textToAiTags(text) {
+    if (!text) return [];
+    var score = {}, order = [];
+    function add(t, w) {
+        if (allSystemTags.indexOf(t) === -1) return;
+        if (!(t in score)) { score[t] = 0; order.push(t); }
+        score[t] += w;
+    }
+    extractKeywordsFromText(text).forEach(function(t) { add(t, 3); });
+    aiConceptMap.forEach(function(group) {
+        var hit = group.keys.some(function(k) { return text.indexOf(k) !== -1; });
+        if (hit) group.tags.forEach(function(t) { add(t, group.w || 1); });
+    });
+    return order.slice().sort(function(a, b) {
+        if (score[b] !== score[a]) return score[b] - score[a];
+        return order.indexOf(a) - order.indexOf(b);
+    });
+}
 var currentGeneratedAphorismText = "";
 var currentGeneratedAphorismLines = [];
 
@@ -1416,6 +1464,7 @@ function buildTopKeywordsByRules(cards, activeInputText, hitTagsFromInput) {
 function refreshCoreKeywords() {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     selectedUserTags = []; 
+    lastSearchText = "";
     var inputElem = document.getElementById('userPrompt');
     if (inputElem) { inputElem.placeholder = defaultPlaceholderText; inputElem.value = ""; }
 
@@ -1616,6 +1665,7 @@ window.doSearch = function() {
         if (numMatches) {
             var targetNum = parseInt(numMatches[0], 10);
             if (targetNum > 0) {
+                lastSearchText = "";
                 handleNumberDirectSearch(targetNum, inputElem);
                 return;
             }
@@ -1624,6 +1674,7 @@ window.doSearch = function() {
 
     if (trimmed !== "") {
         selectedUserTags = [];
+        lastSearchText = trimmed;
         renderUI(false, [], false, false, trimmed);
         inputElem.placeholder = trimmed;
         inputElem.value = "";
@@ -1849,10 +1900,25 @@ function generateAiAphorism() {
         });
     });
 
-    // 🌸 智慧挑選句型：依負面詞類別篩選，再依主題與勾選金句標籤的重疊程度打分數
-    var selectedNegs = collectedTags.filter(function(t) { return negTagList.indexOf(t) !== -1; });
+    // 🌸 輸入框的意思：目前輸入框的文字，沒有的話用最近一次搜尋的文字
+    var promptElem = document.getElementById('userPrompt');
+    var inputText = (promptElem && promptElem.value ? promptElem.value.trim() : '') || lastSearchText || '';
+    var inputTags = textToAiTags(inputText);
+
+    // 🌸 智慧挑選句型：依負面詞類別篩選，再依主題與「輸入框的意思」「勾選金句標籤」的重疊程度打分數
+    //    輸入框的詞優先（權重 2），勾選金句的標籤其次（權重 1）
+    function uniqueMerge(a, b) {
+        var out = a.slice();
+        b.forEach(function(t) { if (out.indexOf(t) === -1) out.push(t); });
+        return out;
+    }
+    var inputNegs = inputTags.filter(function(t) { return negTagList.indexOf(t) !== -1; });
+    var cardNegs = collectedTags.filter(function(t) { return negTagList.indexOf(t) !== -1; });
+    var selectedNegs = uniqueMerge(inputNegs, cardNegs);
     var negCategory = selectedNegs.length > 0 ? aiNegCategoryOf(selectedNegs[0]) : null;
-    var availablePos = collectedTags.filter(function(t) { return aiPosWordList.indexOf(t) !== -1; });
+    var inputPos = inputTags.filter(function(t) { return aiPosWordList.indexOf(t) !== -1; });
+    var cardPos = collectedTags.filter(function(t) { return aiPosWordList.indexOf(t) !== -1; });
+    var availablePos = uniqueMerge(inputPos, cardPos);
 
     var candidates = [];
     aiTemplates.forEach(function(tp, idx) {
@@ -1872,7 +1938,10 @@ function generateAiAphorism() {
     var scored = freshCandidates.map(function(idx) {
         var tp = aiTemplates[idx];
         var score = 0;
-        tp.th.forEach(function(th) { if (collectedTags.indexOf(th) !== -1) score += 1; });
+        tp.th.forEach(function(th) {
+            if (inputTags.indexOf(th) !== -1) score += 2;
+            else if (collectedTags.indexOf(th) !== -1) score += 1;
+        });
         if (!negCategory && tp.neg.length === 0) score += 2;
         if (tp.t.indexOf('【POS3】') !== -1) {
             if (chosenCards.length >= 3 && availablePos.length >= 3) score += 2;
@@ -2048,7 +2117,12 @@ function drawLandscapeBackground(ctx, width, height, callback) {
     }
 
     if (candidates.length === 0) candidates = backgroundImages;
-    var randomImgUrl = candidates[Math.floor(Math.random() * candidates.length)].url;
+    var chosenBg = candidates[Math.floor(Math.random() * candidates.length)];
+    var randomImgUrl = chosenBg.url;
+    currentBackgroundNo = chosenBg.no;
+    // 🌸 裁切位置：focusX／focusY 為 0～1（0＝最左／最上，0.5＝置中，1＝最右／最下），沒設定就置中
+    var focusX = (typeof chosenBg.focusX === 'number') ? chosenBg.focusX : 0.5;
+    var focusY = (typeof chosenBg.focusY === 'number') ? chosenBg.focusY : 0.5;
     var img = new Image();
     img.crossOrigin = 'Anonymous';
 
@@ -2072,13 +2146,13 @@ function drawLandscapeBackground(ctx, width, height, callback) {
         if (imgAspect > canvasAspect) {
             renderH = height;
             renderW = height * imgAspect;
-            offsetX = (width - renderW) / 2;
+            offsetX = (width - renderW) * focusX;
             offsetY = 0;
         } else {
             renderW = width;
             renderH = width / imgAspect;
             offsetX = 0;
-            offsetY = (height - renderH) / 2;
+            offsetY = (height - renderH) * focusY;
         }
 
         ctx.imageSmoothingEnabled = true;
@@ -2382,6 +2456,24 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
                     var startY = startTop + (availableZoneH - totalBlockH) / 2;
                     var startX = canvasW * 0.15;
 
+                    // 🌸 有選早午晚安時，問候字在左上角：金句往下讓開，放不下就把字稍微縮小，避免和問候字重疊
+                    if (currentSelectedGreeting !== "") {
+                        var bottomLimit = canvasH - 20;
+                        var minTop = 18 + Math.max(40, Math.floor(unifiedFontSize * 1.25)) + 8;
+                        if (startY + totalBlockH > bottomLimit || startY < minTop) {
+                            if (minTop + totalBlockH > bottomLimit) {
+                                unifiedFontSize = Math.floor((bottomLimit - 26) / (1.25 + 1.22 * lines.length));
+                                if (unifiedFontSize < 24) unifiedFontSize = 24;
+                                finalFontSize = unifiedFontSize;
+                                lineHeight = Math.floor(unifiedFontSize * 1.22);
+                                totalBlockH = lines.length * lineHeight;
+                                ctx.font = 'bold ' + unifiedFontSize + 'px ' + fontKai;
+                                minTop = 18 + Math.max(40, Math.floor(unifiedFontSize * 1.25)) + 8;
+                            }
+                            if (startY < minTop) startY = minTop;
+                        }
+                    }
+
                     for (var i = 0; i < lines.length; i++) {
                         ctx.fillText(lines[i], startX, startY + (i * lineHeight));
                     }
@@ -2566,6 +2658,8 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
         
         if (imgOverlay) {
             imgOverlay.src = canvas.toDataURL('image/jpeg', 0.95);
+            // 🌸 電腦上滑鼠停在圖上，會顯示背景圖編號，方便指定要調整哪一張
+            imgOverlay.title = currentBackgroundNo ? ('背景圖 #' + currentBackgroundNo) : '';
         }
         // 🌸 先把問候圖轉成檔案備用，按 LINE 鈕時才能立刻交給手機分享
         if (canvas.toBlob) {
