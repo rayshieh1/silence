@@ -661,60 +661,66 @@ var daytimeGreetingsPool = [
     "心想事成", "舒心自在", "幸福滿杯", "順心如意", "日日平安", "喜樂滿盈"
 ];
 
-// 🌸 背景圖清單：要新增圖片，只要在下面加一行，填上網址和用途即可
-//    用途：「早安」＝只用早安；「白天」＝早安、日安都用；「晚安」＝只用晚安；「不選」＝日安、沒選早午晚安時使用
+// 🌸 背景圖清單（圖片放在 GitHub 的 images 資料夾）
+//    要新增圖片：把圖檔放進 images 資料夾，再在下面加一行，填上檔名和用途即可
+//    用途：「早安」＝按早安時；「晚安」＝按晚安時；「日安」＝按日安時；
+//          「心情」＝沒選早午晚安、金句和心情有關時；「隨機」＝沒選早午晚安、其他金句時
 //    裁切位置（選填）：focusY＝上下（0 最上、0.5 置中、1 最下）；focusX＝左右（0 最左、0.5 置中、1 最右）
-//    例：{ no: 20, url: "...", use: "晚安", focusY: 0.2 } → 橫式圖往上多留一點、少一點下方
 var backgroundImages = [
-    { no: 1, url: "https://lh3.googleusercontent.com/d/1ZvfF2ODIimJv3JwRP_w27QxYj3wrfeel", use: "早安" },
-    { no: 2, url: "https://lh3.googleusercontent.com/d/1-EAYnTCF4afPFQgVuICTzb-dKqL3qk_k", use: "白天" },
-    { no: 3, url: "https://lh3.googleusercontent.com/d/1YvemrnxzOjZpjW_jh1pJLBmxXCwTZrR1", use: "早安" },
-    { no: 4, url: "https://lh3.googleusercontent.com/d/1T6_KDd_oIsTtFHTtPOxwC5tZekZjmfT0", use: "早安" },
-    { no: 5, url: "https://lh3.googleusercontent.com/d/1MfFnaoRgc1knb1HqS7WGQqgGYXqorYNH", use: "早安" },
-    { no: 6, url: "https://lh3.googleusercontent.com/d/1kWcKP35RGBh6kU7ZuAYDKkkNbcy-dYTT", use: "不選" },
-    { no: 7, url: "https://lh3.googleusercontent.com/d/1cMjQ4G4JfnXS37Ta8Qk2LpC_MAwNeQi-", use: "不選" },
-    { no: 8, url: "https://lh3.googleusercontent.com/d/17yCSF0Wo1ukQTVXzKhllSkCaGdpJ0jxE", use: "白天" },
-    { no: 9, url: "https://lh3.googleusercontent.com/d/1QA0j9rg-thTpIhlbTwrCAAPMtYVwn8l7", use: "白天" },
-    { no: 10, url: "https://lh3.googleusercontent.com/d/19nK31Un1wRzEQXjpFhkQA56M-OWYy72y", use: "早安" },
-    { no: 11, url: "https://lh3.googleusercontent.com/d/17SpoDUq1LOUUDyOI3WYD7_l7Z2UgRnL0", use: "不選" },
-    { no: 12, url: "https://lh3.googleusercontent.com/d/1g6FSudILJeqbJDPk2N6aP8-k7hefPpbK", use: "早安" },
-    { no: 13, url: "https://lh3.googleusercontent.com/d/1yXcwmud5yqidZ-8Bg7J5UFp23_4b2bRz", use: "早安" },
-    { no: 14, url: "https://lh3.googleusercontent.com/d/1dTsiiMEVxXJ9CfuaHyETPUhubaBZ5UhV", use: "不選" },
-    { no: 15, url: "https://lh3.googleusercontent.com/d/17PEd1EMNrPlgNBxAO8BcY85pL529hMrp", use: "不選" },
-    { no: 16, url: "https://lh3.googleusercontent.com/d/1HrWHeS_zaj3HjJz54oN17Ri8dfj68IDl", use: "早安" },
-    { no: 17, url: "https://lh3.googleusercontent.com/d/1IaYGCFc8PLu2hmI68c10YAXnIHPA_C25", use: "晚安" },
-    { no: 18, url: "https://lh3.googleusercontent.com/d/1PrVZJ4i0FOJs_W9Qfmvp2y_5cvV0Tnx-", use: "晚安" },
-    { no: 19, url: "https://lh3.googleusercontent.com/d/1TbsTIMTW8r6T1FABF4i0HZYOTan9UvoV", use: "晚安" },
-    { no: 20, url: "https://lh3.googleusercontent.com/d/1GREFl5bU3bxGnMc448oV6okshG3tuekk", use: "晚安" },
-    { no: 21, url: "https://lh3.googleusercontent.com/d/18lv3InNZrkYneiyXF7AgOMwOiS7-d1_Z", use: "晚安" },
-    { no: 22, url: "https://lh3.googleusercontent.com/d/1PpoascwJ8kJMUg7tI0roDlE7dyY3YJL4", use: "晚安" },
-    { no: 23, url: "https://lh3.googleusercontent.com/d/1M4BZk94SwXAZfE1-KqAm9RCAm45Gfq4j", use: "晚安" },
-    { no: 24, url: "https://lh3.googleusercontent.com/d/1ILY573KtmZUo-50mBEISLZRdoKlKUynQ", use: "白天" },
-    { no: 25, url: "https://lh3.googleusercontent.com/d/1C1xJDL_yVKsvhjMHn9-OR1TNjBSJPWPc", use: "白天" },
-    { no: 26, url: "https://lh3.googleusercontent.com/d/1QvhYRQBJyzTxHX7f4lxibcPh6TdXHpHd", use: "不選" },
-    { no: 27, url: "https://lh3.googleusercontent.com/d/1G-WuFZX3zpRtkOtP0hrIIHedikImPgTz", use: "白天" },
-    { no: 28, url: "https://lh3.googleusercontent.com/d/1cekfyMQlcrxa7euHfl20xF_OTJsqdKvH", use: "白天" },
-    { no: 29, url: "https://lh3.googleusercontent.com/d/1VCAkfCMsnRS-NQWcJFdoUk26Hxlmn550", use: "早安" },
-    { no: 30, url: "https://lh3.googleusercontent.com/d/1_wMhVZbBHtLRDxAynk_I-7zyJWaFANAo", use: "不選" },
-    { no: 31, url: "https://lh3.googleusercontent.com/d/18E4PNdmP7GrkMnzuFCKC2Pc5jurVFuR9", use: "早安" },
-    { no: 32, url: "https://lh3.googleusercontent.com/d/1Qpph-oFfk70xr20SlvnEF8cUgYorYroZ", use: "早安" },
-    { no: 33, url: "https://lh3.googleusercontent.com/d/1RINrvjV5uQAxzN9608_BejUL4w1LI92h", use: "不選" },
-    { no: 34, url: "https://lh3.googleusercontent.com/d/1iheNTHjP12UvHoPwVAjel9fyuuHqfPKZ", use: "不選" },
-    { no: 35, url: "https://lh3.googleusercontent.com/d/1FBzBanq7y4vj9UzvcuFpXB57pzRJPIXY", use: "不選" },
-    { no: 36, url: "https://lh3.googleusercontent.com/d/1AUf4VyTwQtrisH4aqBPjUx_1bl9Bbbxo", use: "不選" },
-    { no: 37, url: "https://lh3.googleusercontent.com/d/1zVllgFb-5fVNNOkJ4gGjww-wQUrqydlq", use: "不選" },
-    { no: 38, url: "https://lh3.googleusercontent.com/d/1VyEJV_fGddOMXvZjcpj3xXNd0ki86AC3", use: "白天" },
-    { no: 39, url: "https://lh3.googleusercontent.com/d/10yRIb3S_7NyLFL_DIEDhDpVJNWGOsCPp", use: "晚安" },
-    { no: 40, url: "https://lh3.googleusercontent.com/d/1hg_KTvqH9fUCkEeBjW0VHTKi7z53f82J", use: "晚安" },
-    { no: 41, url: "https://lh3.googleusercontent.com/d/1Ts3QsG61FWYy1KIgmPw2wQ9jirLtlt4K", use: "晚安" }
+    { no: 1, url: "images/01.jpg", use: "早安" },
+    { no: 2, url: "images/02.jpg", use: "早安" },
+    { no: 3, url: "images/03.jpg", use: "早安" },
+    { no: 4, url: "images/04.jpg", use: "早安" },
+    { no: 5, url: "images/05.jpg", use: "早安" },
+    { no: 6, url: "images/06.jpg", use: "早安" },
+    { no: 7, url: "images/07.jpg", use: "早安" },
+    { no: 8, url: "images/08.jpg", use: "早安" },
+    { no: 9, url: "images/09.jpg", use: "早安" },
+    { no: 10, url: "images/10.jpg", use: "早安", focusX: 0.8 },
+    { no: 11, url: "images/11.jpg", use: "晚安" },
+    { no: 12, url: "images/12.jpg", use: "晚安" },
+    { no: 13, url: "images/13.jpg", use: "晚安", focusY: 0.1 },
+    { no: 14, url: "images/14.jpg", use: "晚安" },
+    { no: 15, url: "images/15.jpg", use: "晚安" },
+    { no: 16, url: "images/16.jpg", use: "晚安" },
+    { no: 17, url: "images/17.jpg", use: "晚安" },
+    { no: 18, url: "images/18.jpg", use: "晚安" },
+    { no: 19, url: "images/19.jpg", use: "晚安" },
+    { no: 20, url: "images/20.jpg", use: "晚安" },
+    { no: 21, url: "images/21.jpg", use: "日安" },
+    { no: 22, url: "images/22.jpg", use: "日安" },
+    { no: 23, url: "images/23.jpg", use: "日安" },
+    { no: 24, url: "images/24.jpg", use: "日安" },
+    { no: 25, url: "images/25.jpg", use: "日安" },
+    { no: 26, url: "images/26.jpg", use: "日安" },
+    { no: 27, url: "images/27.jpg", use: "日安" },
+    { no: 28, url: "images/28.jpg", use: "日安" },
+    { no: 29, url: "images/29.jpg", use: "日安" },
+    { no: 30, url: "images/30.jpg", use: "日安" },
+    { no: 31, url: "images/31.jpg", use: "心情" },
+    { no: 32, url: "images/32.jpg", use: "心情" },
+    { no: 33, url: "images/33.jpg", use: "心情" },
+    { no: 34, url: "images/34.jpg", use: "心情" },
+    { no: 35, url: "images/35.jpg", use: "心情" },
+    { no: 36, url: "images/36.jpg", use: "心情" },
+    { no: 37, url: "images/37.jpg", use: "心情", focusY: 0.15 },
+    { no: 38, url: "images/38.jpg", use: "心情", focusY: 0.1 },
+    { no: 39, url: "images/39.jpg", use: "心情" },
+    { no: 40, url: "images/40.jpg", use: "心情", focusY: 0.15 },
+    { no: 41, url: "images/41.jpg", use: "隨機" },
+    { no: 42, url: "images/42.jpg", use: "隨機" },
+    { no: 43, url: "images/43.jpg", use: "隨機" },
+    { no: 44, url: "images/44.jpg", use: "隨機" },
+    { no: 45, url: "images/45.jpg", use: "隨機" },
+    { no: 46, url: "images/46.jpg", use: "隨機" },
+    { no: 47, url: "images/47.jpg", use: "隨機" },
+    { no: 48, url: "images/48.jpg", use: "隨機" },
+    { no: 49, url: "images/49.jpg", use: "隨機" },
+    { no: 50, url: "images/50.jpg", use: "隨機", focusY: 0.2 }
 ];
 
-// 🌸 沒選早午晚安時，依金句主題優先挑選的圖片編號（不到 3 張時，改從「不選」全部隨機挑）
-var backgroundThemeGroups = [
-    { tags: ["健康", "工作", "時間"], nos: [11, 14, 26, 36] },
-    { tags: ["平靜", "知足", "修養"], nos: [15, 30] },
-    { tags: ["大愛", "感恩", "希望", "光明"], nos: [6, 7, 33, 35, 37] }
-];
+// 🌸 沒選早午晚安時，金句（或輸入的文字）帶有這些心情相關的關鍵詞，就用「心情」圖，否則用「隨機」圖
+var backgroundMoodTags = ["平靜", "安定", "心情", "正念", "煩惱", "生氣", "抱怨", "解脫", "自由", "快樂", "歡喜", "樂觀", "轉念", "知足", "修養", "感恩", "希望"];
 
 var copySvg = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
 var checkSvg = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
@@ -2150,30 +2156,23 @@ function drawLandscapeBackground(ctx, width, height, callback) {
 
     var candidates = [];
     if (currentSelectedGreeting === '早安') {
-        candidates = imagesFor(['早安', '白天']);
+        candidates = imagesFor(['早安']);
     } else if (currentSelectedGreeting === '日安') {
-        candidates = imagesFor(['白天', '不選']);
+        candidates = imagesFor(['日安']);
     } else if (currentSelectedGreeting === '晚安') {
         candidates = imagesFor(['晚安']);
     } else {
-        var noGreetingImages = imagesFor(['不選']);
-        candidates = noGreetingImages;
-
+        // 沒選早午晚安：看金句的關鍵詞（或自己輸入、自創語的文字）是否和心情有關
+        var moodTags = [];
         var numericId = currentSelectedCardId ? parseInt(currentSelectedCardId, 10) : null;
         var foundCard = numericId ? aphorismsData.find(function(item){ return item.id === numericId; }) : null;
-
         if (foundCard && foundCard.semanticTags) {
-            var tags = foundCard.semanticTags;
-            for (var g = 0; g < backgroundThemeGroups.length; g++) {
-                var group = backgroundThemeGroups[g];
-                var hit = group.tags.some(function(t) { return tags.indexOf(t) !== -1; });
-                if (hit) {
-                    var themed = noGreetingImages.filter(function(b) { return group.nos.indexOf(b.no) !== -1; });
-                    if (themed.length >= 3) candidates = themed;
-                    break;
-                }
-            }
+            moodTags = foundCard.semanticTags;
+        } else {
+            moodTags = textToAiTags(currentModalText || '');
         }
+        var isMood = moodTags.some(function(t) { return backgroundMoodTags.indexOf(t) !== -1; });
+        candidates = imagesFor([isMood ? '心情' : '隨機']);
     }
 
     if (candidates.length === 0) candidates = backgroundImages;
@@ -2486,6 +2485,18 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
 
                 var targetWidth = canvasW * 0.70; 
                 var unifiedFontSize = Math.floor(targetWidth / (maxCharCount || 1));
+
+                // 🌸 自己輸入、英數為主的文字：英文字母比中文字窄，改用實際量到的寬度決定字體大小，字會比較大
+                if (cardId === 'custom_input' && isMostlyHalfWidthText(aphorismText)) {
+                    ctx.font = 'bold 100px ' + fontKai;
+                    var widest100 = 0;
+                    for (var mw = 0; mw < lines.length; mw++) {
+                        var mm = ctx.measureText(lines[mw]);
+                        var mwidth = (mm && mm.width) ? mm.width : Array.from(lines[mw]).length * 55;
+                        if (mwidth > widest100) widest100 = mwidth;
+                    }
+                    unifiedFontSize = Math.floor(targetWidth * 100 / (widest100 || 1));
+                }
 
                 var maxFontLimit = 64;
                 if (aphorismText.indexOf("行為言語") !== -1 || aphorismText.indexOf("在人事歷練中不求聰明") !== -1) {
