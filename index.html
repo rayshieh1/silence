@@ -637,6 +637,22 @@ var SHOW_BACKGROUND_NO = false;
 //    背景圖仍讀原本的網址（不加尺寸參數），背景樣子與之前相同或更清楚
 var CANVAS_SCALE = 2;
 
+// 🌸 英數為主時，日安改用的英文問候語（隨機挑一個）
+var englishDaytimeGreetingsPool = ["Good Day~", "Have a Nice Day~", "Stay Well~", "Keep Smiling~", "Best Wishes~"];
+
+// 🌸 英文問候語太長時縮小字體，確保整句放得下；回傳最後使用的字體大小
+function fitEnglishGreetingFont(ctx, text, startSize, maxLength, fontFamily) {
+    var size = startSize;
+    ctx.font = 'bold ' + size + 'px ' + fontFamily;
+    var m = ctx.measureText(text);
+    var width = (m && m.width) ? m.width : text.length * size * 0.55;
+    if (width > maxLength) {
+        size = Math.max(24, Math.floor(size * maxLength / width));
+        ctx.font = 'bold ' + size + 'px ' + fontFamily;
+    }
+    return size;
+}
+
 var daytimeGreetingsPool = [
     "日安", "工作順利", "能量滿格", "諸事順遂", "步步高升", "今日事畢",
     "平安喜樂", "幸福美滿", "闔家平安", "身體健康", "萬事如意",
@@ -2679,6 +2695,14 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
                 renderGreetingStr = '晚安';
             }
 
+            // 🌸 自己輸入的文字以英數為主時，改用英文問候語
+            var useEnglishGreeting = (currentSelectedCardId === 'custom_input' && isMostlyHalfWidthText(aphorismText));
+            if (useEnglishGreeting) {
+                if (currentSelectedGreeting === '早安') renderGreetingStr = 'Good Morning!';
+                else if (currentSelectedGreeting === '晚安') renderGreetingStr = 'Good Night';
+                else if (currentSelectedGreeting === '日安') renderGreetingStr = englishDaytimeGreetingsPool[Math.floor(Math.random() * englishDaytimeGreetingsPool.length)];
+            }
+
             if (lines.length === 0) {
                 greetingFontSize = (currentAspectMode === 'landscape') ? 64 : 56;
             }
@@ -2691,6 +2715,16 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(renderGreetingStr, canvasW / 2, canvasH / 2);
+                } else if (useEnglishGreeting) {
+                    // 英文問候語：轉 90 度橫躺，置中
+                    fitEnglishGreetingFont(ctx, renderGreetingStr, greetingFontSize, canvasH - 120, fontKai);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.save();
+                    ctx.translate(canvasW / 2, canvasH / 2);
+                    ctx.rotate(Math.PI / 2);
+                    ctx.fillText(renderGreetingStr, 0, 0);
+                    ctx.restore();
                 } else {
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
@@ -2711,6 +2745,17 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
                     var gX = 30;
                     var gY = 18;
                     ctx.fillText(renderGreetingStr, gX, gY);
+                } else if (useEnglishGreeting) {
+                    // 英文問候語：在左側轉 90 度橫躺，由上往下
+                    var egSize = fitEnglishGreetingFont(ctx, renderGreetingStr, greetingFontSize, canvasH - 120, fontKai);
+                    var egX = 45 - Math.floor(finalFontSize * 0.65) + 3 + egSize / 2;
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.save();
+                    ctx.translate(egX, 60);
+                    ctx.rotate(Math.PI / 2);
+                    ctx.fillText(renderGreetingStr, 0, 0);
+                    ctx.restore();
                 } else {
                     ctx.textAlign = 'left'; 
                     ctx.textBaseline = 'top';
