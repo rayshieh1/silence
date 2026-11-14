@@ -631,6 +631,8 @@ var currentSelectedGreeting = "";
 var currentModalText = "";
 var currentShareFile = null;
 var currentBackgroundNo = null;
+// 🌸 問候圖右下／左下角的網址浮水印（改成空字串 "" 就不顯示）
+var WATERMARK_TEXT = 's.rayshieh.com';
 // 🌸 暫時在問候圖左下角顯示背景圖編號（true＝顯示，調整完改成 false 即可關閉）
 var SHOW_BACKGROUND_NO = false;
 // 🌸 問候圖以 2 倍解析度繪製（900×1600／1600×900），文字更銳利；
@@ -1374,8 +1376,14 @@ function speakText(text, btnElement) {
     allSpeakBtns.forEach(function(b) { b.classList.remove('speaking'); });
 
     var utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'zh-TW';
-    utterance.rate = 0.9;
+    // 🌸 英數為主時改用英文語音，其他用中文語音
+    if (isMostlyHalfWidthText(text)) {
+        utterance.lang = 'en-US';
+        utterance.rate = 0.95;
+    } else {
+        utterance.lang = 'zh-TW';
+        utterance.rate = 0.9;
+    }
 
     btnElement.classList.add('speaking');
     utterance.onend = function() { btnElement.classList.remove('speaking'); };
@@ -2773,6 +2781,20 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
             }
         }
         
+        // 🌸 網址浮水印：小字、半透明；橫式放左下角，直式放右下角（避開「靜思語錄」字樣）
+        ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 3 * CANVAS_SCALE;
+        ctx.textBaseline = 'bottom';
+        if (currentAspectMode === 'landscape') {
+            ctx.textAlign = 'left';
+            ctx.fillText(WATERMARK_TEXT, 16, canvasH - 10);
+        } else {
+            ctx.textAlign = 'right';
+            ctx.fillText(WATERMARK_TEXT, canvasW - 14, canvasH - 10);
+        }
+
         ctx.shadowBlur = 0; 
         
         if (imgOverlay) {
@@ -2906,13 +2928,15 @@ function shareTextToLine() {
     var bodyText = currentModalText ? currentModalText.trim() : "";
     if (!bodyText) return;
 
+    // 🌸 文字後面附上網址：靜思語錄附該句的連結；自創語和自己輸入的文字附首頁連結
     var shareMessage;
     if (currentSelectedCardId === '9999') {
-        shareMessage = "開示金句: " + bodyText;          // 自創金句
+        shareMessage = "開示金句：" + bodyText + "\n" + buildHomeUrl();          // 自創金句
     } else if (currentSelectedCardId === 'custom_input') {
-        shareMessage = bodyText;                          // 自己輸入的文字，原樣傳送
+        shareMessage = bodyText + "\n" + buildHomeUrl();                        // 自己輸入的文字
     } else {
-        shareMessage = "靜思語錄: " + bodyText;          // 靜思語錄原句
+        var quoteNum = parseInt(currentSelectedCardId, 10);
+        shareMessage = "靜思語錄：" + bodyText + "\n" + (quoteNum > 0 ? buildQuoteUrl(quoteNum) : buildHomeUrl());   // 靜思語錄原句
     }
 
     var lineUrl = "https://line.me/R/msg/text/?" + encodeURIComponent(shareMessage);
