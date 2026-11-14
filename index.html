@@ -1287,6 +1287,22 @@ function checkLineLimitOnKeyDown(event, textareaElem) {
     }
 }
 
+// 🌸 判斷文字是否以英數為主：半形英數字的數量多於中文等全形字
+function isMostlyHalfWidthText(text) {
+    var half = 0, full = 0;
+    Array.from(text || '').forEach(function(ch) {
+        if (/\s/.test(ch)) return;
+        if (isHalfWidthChar(ch)) half++; else full++;
+    });
+    return half > full;
+}
+
+// 🌸 判斷是否為半形字：英文、數字、半形符號、半形空白、半形片假名
+function isHalfWidthChar(ch) {
+    var code = ch.codePointAt(0);
+    return (code >= 0x20 && code <= 0x7E) || (code >= 0xFF61 && code <= 0xFF9F);
+}
+
 function enforceMaxCharsPerLine(textareaElem) {
     if (!textareaElem) return;
     var lines = textareaElem.value.split('\n');
@@ -1297,9 +1313,19 @@ function enforceMaxCharsPerLine(textareaElem) {
         modified = true;
     }
 
+    // 🌸 每列寬度上限 22：全形字（中文、全形標點、表情符號）算 2，半形字（英數、半形符號）算 1
+    //    也就是全形最多 11 字、半形最多 22 字，可以混合
     for (var i = 0; i < lines.length; i++) {
-        if (lines[i].length > 11) {
-            lines[i] = lines[i].substring(0, 11);
+        var chars = Array.from(lines[i]);
+        var width = 0, keep = 0;
+        for (var c = 0; c < chars.length; c++) {
+            var w = isHalfWidthChar(chars[c]) ? 1 : 2;
+            if (width + w > 22) break;
+            width += w;
+            keep++;
+        }
+        if (keep < chars.length) {
+            lines[i] = chars.slice(0, keep).join('');
             modified = true;
         }
     }
@@ -2507,7 +2533,9 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
 
                 var unifiedFontSize = Math.floor(availableH / maxCharCountInLines);
                 if (unifiedFontSize > 72) unifiedFontSize = 72; 
-                if (unifiedFontSize < 32) unifiedFontSize = 32; 
+                // 自己輸入的文字可能有最多 22 個半形字，最小字放寬到 26，避免直書超出畫面
+                var minPortraitFont = (cardId === 'custom_input') ? 26 : 32;
+                if (unifiedFontSize < minPortraitFont) unifiedFontSize = minPortraitFont; 
 
                 if (aphorismText.indexOf("面對紛雜的氣氛") !== -1) {
                     unifiedFontSize = Math.floor(unifiedFontSize * 0.72);
@@ -2516,7 +2544,39 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
                 finalFontSize = unifiedFontSize;
                 ctx.font = 'bold ' + unifiedFontSize + 'px ' + fontKai;
 
-                if (cardId === 'custom_input') {
+                if (cardId === 'custom_input' && isMostlyHalfWidthText(lines.join(''))) {
+                    // 🌸 英數比中文多：整行轉 90 度橫躺，由右到左排列（像直書中的英文）
+                    var maxLineWidth100 = 0;
+                    ctx.font = 'bold 100px ' + fontKai;
+                    for (var w = 0; w < lines.length; w++) {
+                        var m = ctx.measureText(lines[w]);
+                        var lw = (m && m.width) ? m.width : Array.from(lines[w]).length * 60;
+                        if (lw > maxLineWidth100) maxLineWidth100 = lw;
+                    }
+                    var rotatedFont = Math.floor(availableH * 100 / (maxLineWidth100 || 1));
+                    if (rotatedFont > 72) rotatedFont = 72;
+                    if (rotatedFont < 24) rotatedFont = 24;
+                    unifiedFontSize = rotatedFont;
+                    finalFontSize = unifiedFontSize;
+                    ctx.font = 'bold ' + unifiedFontSize + 'px ' + fontKai;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    var rLineCount = lines.length;
+                    var rColWidth = unifiedFontSize * 1.35;
+                    var rTotalW = rLineCount * rColWidth;
+                    var rStartX = (canvasW + rTotalW) / 2 - (rColWidth / 2);
+
+                    for (var rIdx = 0; rIdx < rLineCount; rIdx++) {
+                        if (!lines[rIdx]) continue;
+                        var rX = rStartX - (rIdx * rColWidth);
+                        ctx.save();
+                        ctx.translate(rX, canvasH / 2);
+                        ctx.rotate(Math.PI / 2);
+                        ctx.fillText(lines[rIdx], 0, 0);
+                        ctx.restore();
+                    }
+                } else if (cardId === 'custom_input') {
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
 
@@ -2526,8 +2586,9 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
                     var startX = (canvasW + totalW) / 2 - (colWidth / 2);
 
                     for (var lineIdx = 0; lineIdx < lineCount; lineIdx++) {
-                        var lineText = lines[lineIdx];
-                        var charCount = lineText.length;
+                        // 用 Array.from 逐字切開，表情符號才不會被切壞
+                        var lineChars = Array.from(lines[lineIdx]);
+                        var charCount = lineChars.length;
                         if (charCount === 0) continue;
 
                         var currentX = startX - (lineIdx * colWidth);
@@ -2536,10 +2597,8 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
                         if (startY < topPadding) startY = topPadding;
 
                         for (var charIdx = 0; charIdx < charCount; charIdx++) {
-                            var singleChar = lineText[charIdx];
                             var currentY = startY + (charIdx * unifiedFontSize * 1.08);
-
-                            ctx.fillText(singleChar, currentX, currentY);
+                            ctx.fillText(lineChars[charIdx], currentX, currentY);
                         }
                     }
                 } else {
