@@ -732,25 +732,24 @@ var checkSvg = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></pol
 var allSystemTags = [
     "智慧", "轉念", "包容", "知足", "謙虛", "反省", "自愛", "大愛", "修養", "樂觀",
     "無愧", "真誠", "誠信", "自律", "善念", "健康", "感恩", "惜福", "專注", "平靜",
-    "正念", "尊嚴", "歡喜", "快樂", "安定", "無私", "解脫", "自由", "態度", "協助",
-    "溝通", "原諒", "批評", "本份", "付出", "生氣", "合作", "謹慎", "失敗", "堅持",
+    "正念", "尊嚴", "歡喜", "快樂", "安定", "無私", "解脫", "自由", "態度", "溝通", "原諒", "批評", "本份", "付出", "生氣", "合作", "謹慎", "失敗", "堅持",
     "學習", "改變", "處事", "毅力", "努力", "團結", "信心", "勇氣", "積極", "行動",
     "盡責", "準備", "磨練", "說話", "讚美", "教育", "平等", "尊重", "時間", "愛心",
     "利益", "比較", "改過", "父母", "家庭", "孝順", "感情", "衝突", "團隊", "做人",
     "欣賞", "體諒", "關懷", "禮讓", "溫暖", "得失", "事業", "功德", "考驗", "經驗",
     "成就", "人格", "煩惱", "方向", "工作", "困難", "責任", "心情", "抱怨", "幸福",
     "希望", "選擇", "名利", "欲望", "生命", "珍惜", "機會", "命運", "價值", "光明",
-    "克服", "溫情"
+    "克服"
 ];
 
 var negTagList = ["生氣", "失敗", "批評", "衝突", "困難", "煩惱", "抱怨", "欲望", "名利", "得失", "比較", "考驗", "磨練"];
-var posTagList = ["智慧", "轉念", "包容", "知足", "謙虛", "反省", "自愛", "大愛", "修養", "樂觀", "無愧", "真誠", "誠信", "自律", "善念", "感恩", "惜福", "平靜", "正念", "尊嚴", "歡喜", "快樂", "安定", "無私", "解脫", "自由", "讚美", "愛心", "幸福", "希望", "光明", "溫暖", "克服", "溫情"];
+var posTagList = ["智慧", "轉念", "包容", "知足", "謙虛", "反省", "自愛", "大愛", "修養", "樂觀", "無愧", "真誠", "誠信", "自律", "善念", "感恩", "惜福", "平靜", "正念", "尊嚴", "歡喜", "快樂", "安定", "無私", "解脫", "自由", "讚美", "愛心", "幸福", "希望", "光明", "溫暖", "克服"];
 
 allSystemTags.forEach(function(t) { tagShowCounts[t] = 0; });
 
 var aphorismsData = [
-    {id:1, origId:1, content:"口說好話，心想好意，身行好事。", semanticTags:["說話","善念","行動"], lines:["口說好話，","心想好意，","身行好事。"]},
-    {id:2, origId:2, content:"理直氣和，得理要饒人。", semanticTags:["包容","修養","原諒","處事","衝突"], lines:["理直氣和，","得理要饒人。"]},
+    {id:1, origId:1, content:"口說好話，心想好意，身行好事，腳走好路。", semanticTags:["說話","善念","行動"], lines:["口說好話，心想好意，", "身行好事，腳走好路。"]},
+    {id:2, origId:2, content:"理直要氣和，得理要饒人。", semanticTags:["包容","修養","原諒","處事","衝突"], lines:["理直要氣和，", "得理要饒人。"]},
     {id:3, origId:3, content:"太陽光大，父母恩大，君子量大。", semanticTags:["父母","感恩","孝順"], lines:["太陽光大，","父母恩大，","君子量大。"]},
     {id:4, origId:4, content:"話多不如話少；話少不如話好。", semanticTags:["說話","溝通","謹慎"], lines:["話多不如話少；","話少不如話好。"]},
     {id:5, origId:5, content:"做好事不能少我一人，做壞事不能多我一人。", semanticTags:["本份","自律","付出"], lines:["做好事不能少我一人，","做壞事不能多我一人。"]},
@@ -766,16 +765,16 @@ var aphorismsData = [
     {id:15, origId:15, content:"人生最大的成就，是從失敗中站立起來。", semanticTags:["失敗","成就","勇氣"], lines:["人生最大的成就，","是從失敗中站立起來。"]},
     {id:16, origId:16, content:"唯其尊重自己的人，才更勇於縮小自己。", semanticTags:["尊嚴","謙虛","自愛"], lines:["唯其尊重自己的人，","才更勇於縮小自己。"]},
     {id:17, origId:17, content:"有智慧才能分辨善惡邪正；有謙虛才能建立美滿人生。", semanticTags:["智慧","謙虛","幸福","家庭"], lines:["有智慧才能分辨善惡邪正；","有謙虛才能建立美滿人生。"]},
-    {id:18, origId:18, content:"米粒愈飽滿，垂得愈低。", semanticTags:["謙虛","修養","做人"], lines:["米粒愈飽滿，","垂得愈低。"]},
+    {id:18, origId:18, content:"即使已達智慧圓融，更應含蓄謙虛，像稻穗一樣，米粒愈飽滿垂得愈低。", semanticTags:["謙虛","修養","做人"], lines:["即使已達智慧圓融，", "更應含蓄謙虛，", "像稻穗一樣，", "米粒愈飽滿垂得愈低。"]},
     {id:19, origId:19, content:"待人退一步，愛人寬一寸，在人生的道路中就會活的很快樂。", semanticTags:["快樂","包容","禮讓"], lines:["待人退一步，愛人寬一寸，","在人生的道路中就會活的很快樂。"]},
     {id:20, origId:20, content:"人要自愛，才能愛普天下的人。", semanticTags:["自愛","大愛","付出"], lines:["人要自愛，","才能愛普天下的人。"]},
     {id:21, origId:21, content:"時間可以造就人格，成就事業，也可以儲積功德。", semanticTags:["時間","事業","功德"], lines:["時間可以造就人格，","成就事業，","也可以儲積功德。"]},
-    {id:22, origId:22, content:"人的心地是一畦田，土地沒有播下好種子，也長不出好的果實。", semanticTags:["善念","心情","改變"], lines:["人的心地是一畦田，","土地沒有播下好種子，","也長不出好的果實。"]},
+    {id:22, origId:22, content:"人的心地就像一畝田。土地沒有播下好種子，也長不出好的果實來。", semanticTags:["善念","心情","改變"], lines:["人的心地就像一畝田。", "土地沒有播下好種子，", "也長不出好的果實來。"]},
     {id:23, origId:23, content:"能付出愛心就是福；能消除煩惱就是慧。", semanticTags:["付出","愛心","煩惱"], lines:["能付出愛心就是福；","能消除煩惱就是慧。"]},
     {id:24, origId:24, content:"不能低頭的人，是因為一再回顧過去的成就。", semanticTags:["成就","謙虛","反省"], lines:["不能低頭的人，","是因為一再回顧過去的成就。"]},
     {id:25, origId:25, content:"柔能調服眾生；剛能堅強己志。", semanticTags:["毅力","堅持","修養"], lines:["柔能調服眾生；","剛能堅強己志。"]},
     {id:26, origId:26, content:"人能和，則是非不生。", semanticTags:["平靜","衝突","處事"], lines:["人能和，","則是非不生。"]},
-    {id:27, origId:27, content:"培養好自己的氣質，不要爭面子。爭來的是假的，養來的才是真的。", semanticTags:["修養","人格","反省"], lines:["培養好自己的氣質，","不要爭面子。","爭來的是假的，","養來的才是真的。"]},
+    {id:27, origId:27, content:"不要爭面子。爭來的是假的，培養來的才是真的。", semanticTags:["修養","人格","反省"], lines:["不要爭面子。", "爭來的是假的，", "培養來的才是真的。"]},
     {id:28, origId:28, content:"人事的艱難與琢磨，就是一種考驗。", semanticTags:["考驗","磨練","困難"], lines:["人事的艱難與琢磨，","就是一種考驗。"]},
     {id:29, origId:29, content:"是非當教育，讚美作警惕，嫌棄當反省，錯誤作經驗。", semanticTags:["反省","讚美","教育"], lines:["是非當教育，","讚美作警惕，","嫌棄當反省，","錯誤作經驗。"]},
     {id:30, origId:30, content:"任何批評都是寶貴的一課。", semanticTags:["批評","學習","反省"], lines:["任何批評都是寶貴的一課。"]},
@@ -787,7 +786,7 @@ var aphorismsData = [
     {id:36, origId:36, content:"對人要寬心，講話要細心。", semanticTags:["說話","體諒","謹慎"], lines:["對人要寬心，","講話要細心。"]},
     {id:37, origId:37, content:"原諒別人是美德，原諒自己是損德。", semanticTags:["原諒","反省","修養"], lines:["原諒別人是美德，","原諒自己是損德。"]},
     {id:38, origId:38, content:"大錯誤容易反省，小習氣不易除掉。", semanticTags:["反省","改過","自律"], lines:["大錯誤容易反省，","小習氣不易除掉。"]},
-    {id:39, origId:39, content:"生氣是把別人的過錯拿來懲罰自己。", semanticTags:["生氣","轉念","包容"], lines:["生氣是把別人的過錯","拿來懲罰自己。"]},
+    {id:39, origId:39, content:"生氣，就是拿別人的過錯來懲罰自己。", semanticTags:["生氣","轉念","包容"], lines:["生氣，就是拿別人的", "過錯來懲罰自己。"]},
     {id:40, origId:40, content:"一般人常說要爭一口氣。其實真正有工夫的人，是把這口氣嚥下去。", semanticTags:["轉念","自律","修養"], lines:["一般人常說要爭一口氣。","其實真正有工夫的人，","是把這口氣嚥下去。"]},
     {id:41, origId:41, content:"多做多得，少做多失。", semanticTags:["付出","行動","本份"], lines:["多做多得，","少做多失。"]},
     {id:42, origId:42, content:"甘願做，歡喜受。", semanticTags:["歡喜","付出","態度"], lines:["甘願做，","歡喜受。"]},
@@ -805,7 +804,7 @@ var aphorismsData = [
     {id:54, origId:54, content:"閒人無樂趣，忙人無是非。", semanticTags:["時間","工作","本份"], lines:["閒人無樂趣，","忙人無是非。"]},
     {id:55, origId:55, content:"改變自己是自救，影響別人是救人。", semanticTags:["轉念","自愛","改變"], lines:["改變自己是自救，","影響別人是救人。"]},
     {id:56, origId:56, content:"願要大，志要堅，氣要柔，心要細。", semanticTags:["毅力","修養","謹慎"], lines:["願要大，志要堅，","氣要柔，心要細。"]},
-    {id:57, origId:57, content:"一雙手健全卻不肯做事的人，等於沒手的人。", semanticTags:["行動","工作","本份"], lines:["一雙手健全卻不肯做事的人，","等於沒手的人。"]},
+    {id:57, origId:57, content:"雙手健全卻不肯做事的人，等於是沒有手的人。", semanticTags:["行動","工作","本份"], lines:["雙手健全卻不肯做事的人，", "等於是沒有手的人。"]},
     {id:58, origId:58, content:"弱者等待時機，強者創造時機。", semanticTags:["勇氣","行動","機會"], lines:["弱者等待時機，","強者創造時機。"]},
     {id:59, origId:59, content:"發脾氣是無能的表現。", semanticTags:["生氣","修養","自律"], lines:["發脾氣是無能的表現。"]},
     {id:60, origId:60, content:"看別人不順眼時，就要調整自己。", semanticTags:["轉念","反省","改變"], lines:["看別人不順眼時，","就要調整自己。"]},
@@ -815,11 +814,11 @@ var aphorismsData = [
     {id:64, origId:64, content:"人的眼睛長在前面，只看到別人的缺點，絲毫看不到自己的缺點。", semanticTags:["反省","改過","批評"], lines:["人的眼睛長在前面，","只看到別人的缺點，","絲毫看不到自己的缺點。"]},
     {id:65, origId:65, content:"施比受更有福。", semanticTags:["付出","歡喜","幸福"], lines:["施比受更有福。"]},
     {id:66, origId:66, content:"真正的快樂是施捨後的那份清靜、安慰與喜悅。", semanticTags:["快樂","付出","平靜"], lines:["真正的快樂是","施捨後的那份","清靜、安慰與喜悅。"]},
-    {id:67, origId:67, content:"要做個受歡迎、被愛的人，必須先照顧好自己的聲和色、面容動作、言談舉止，都是在日常生活中修養忍辱得來。", semanticTags:["修養","態度","禮讓"], lines:["要做個受歡迎、被愛的人，","必須先照顧好自己的聲和色、","面容動作、言談舉止，","都是在日常生活中修養忍辱得來。"]},
+    {id:67, origId:67, content:"要做個受歡迎、被愛的人，必須先照顧好自己的聲和色，面容動作、言談舉止，都是在日常生活中修養忍辱得來。", semanticTags:["修養","態度","禮讓"], lines:["要做個受歡迎、被愛的人，", "必須先照顧好自己的聲和色，", "面容動作、言談舉止，都是在", "日常生活中修養忍辱得來。"]},
     {id:68, origId:68, content:"多一次原諒別人就多一次福，把量放大福就大。", semanticTags:["原諒","包容","大愛"], lines:["多一次原諒別人就多一次福，","把量放大福就大。"]},
     {id:69, origId:69, content:"有心就有福，有願就有力；自造福田，自得福緣。", semanticTags:["自律","堅持","考驗","功德","付出","命運"], lines:["有心就有福，有願就有力；","自造福田，自得福緣。"]},
     {id:70, origId:70, content:"說話要謹慎、委婉：面對知音，不必說就懂；不是知音，說得再露骨也沒用。", semanticTags:["謹慎","說話","溝通"], lines:["說話要謹慎、委婉：","面對知音，不必說就懂；","不是知音，說得再露骨也沒用。"]},
-    {id:71, origId:71, content:"轉一個角度來看世界，世界無限寬大；換一種立場來待人事，人事無不輕安。", semanticTags:["轉念","包容","處事"], lines:["轉一個角度來看世界，","世界無限寬大；","換一種立場來待人事，","人事無不輕安。"]},
+    {id:71, origId:71, content:"轉一個角度來看世界，世界無限寬大；換一種立場待人處事，人事無不輕安。", semanticTags:["轉念","包容","處事"], lines:["轉一個角度來看世界，", "世界無限寬大；", "換一種立場待人處事，", "人事無不輕安。"]},
     {id:72, origId:72, content:"能忍而不計較，則再大的困難也能克服。", semanticTags:["克服","困難","包容"], lines:["能忍而不計較，","則再大的困難也能克服。"]},
     {id:73, origId:73, content:"自己害自己，莫過於亂發脾氣。", semanticTags:["生氣","自律","反省"], lines:["自己害自己，","莫過於亂發脾氣。"]},
     {id:74, origId:74, content:"凡夫迷失於當下，後悔於過去；聖人覺悟於當下，解脫於未來。", semanticTags:["選擇","解脫","時間"], lines:["凡夫迷失於當下，","後悔於過去；","聖人覺悟於當下，","解脫於未來。"]},
@@ -838,7 +837,7 @@ var aphorismsData = [
     {id:87, origId:87, content:"每天無所事事，是人生的消費者；積極有用，才是人生的創造者。", semanticTags:["時間","本份","工作"], lines:["每天無所事事，","是人生的消費者；","積極有用，","才是人生的創造者。"]},
     {id:88, origId:88, content:"一個人要點亮自己的心光，才能去引發別人。", semanticTags:["改變","希望","光明"], lines:["一個人要點亮自己的心光，","才能去引發別人。"]},
     {id:89, origId:89, content:"把他人拿來做自己的鏡子。看他人的優點，自我鞭策；看別人的缺點，反省自己。", semanticTags:["反省","學習","讚美"], lines:["把他人拿來做自己的鏡子。","看他人的優點，自我鞭策；","看別人的缺點，反省自己。"]},
-    {id:90, origId:90, content:"愛不是要求對方，而是要由自身的付出，無條件的奉獻，做到事事圓滿。", semanticTags:["付出","愛心","無私"], lines:["愛不是要求對方，","而是要由自身的付出，","無條件的奉獻，","做到事事圓滿。"]},
+    {id:90, origId:90, content:"愛不是要求對方，而是要由自身的付出，無條件地奉獻，做到事事圓滿。", semanticTags:["付出","愛心","無私"], lines:["愛不是要求對方，", "而是要由自身的付出，", "無條件地奉獻，", "做到事事圓滿。"]},
     {id:91, origId:91, content:"凡事往好的方面想，心中常存善念，遇事逢凶化。", semanticTags:["善念","轉念","樂觀"], lines:["凡事往好的方面想，","心中常存善念，","遇事逢凶化。"]},
     {id:92, origId:92, content:"你好我也好，一個人不但要看重自己，也要懂得欣賞別人。", semanticTags:["欣賞","讚美","平等"], lines:["你好我也好，","一個人不但要看重自己，","也要懂得欣賞別人。"]},
     {id:93, origId:93, content:"量才適性，終身不憂，取璞守直，終身不悔。", semanticTags:["知足","心情","態度"], lines:["量才適性，終身不憂，","取璞守直，終身不悔。"]},
@@ -861,15 +860,15 @@ var aphorismsData = [
     {id:110, origId:110, content:"草的堅強來自於它的無限謙卑、忍耐、柔軟，以及永不休止的生長與抗爭。", semanticTags:["謙虛","態度","克服"], lines:["草的堅強來自於它的","無限謙卑、忍耐、柔軟，","以及永不休止的生長與抗爭。"]},
     {id:111, origId:111, content:"我們最強的對手不一定是別人，而可能是我們自己。", semanticTags:["反省","自律","克服"], lines:["我們最強的對手不一定是別人，","而可能是我們自己。"]},
     {id:112, origId:112, content:"無心去往壞處想，則任何話都是好話。", semanticTags:["轉念","包容","說話"], lines:["無心去往壞處想，","則任何話都是好話。"]},
-    {id:113, origId:113, content:"人生如高空走索，要專心一意往前看、向前走；不要回頭空懊惱。", semanticTags:["專注","堅持","方向"], lines:["人生如高空走索，","要專心一意往前看、向前走；","不要回頭空懊惱。"]},
-    {id:114, origId:114, content:"人生最踏實的事，是今日此時有多少力量，就儘快付出，去做利益人群的事，造福社會的工作。", semanticTags:["付出","利益","工作"], lines:["人生最踏實的事，是今日此時","有多少力量，就儘快付出，","去做利益人群的事，造福社會的工作。"]},
+    {id:113, origId:113, content:"人生如高空走索，應專心一意往前看、向前走；不要回頭空懊惱。", semanticTags:["專注","堅持","方向"], lines:["人生如高空走索，應", "專心一意往前看、向前走；", "不要回頭空懊惱。"]},
+    {id:114, origId:114, content:"人生最踏實的事，是今日此時有多少力量就儘快付出，去做利益人群的事，造福社會的工作。", semanticTags:["付出","利益","工作"], lines:["人生最踏實的事，是今日此時", "有多少力量就儘快付出，去做", "利益人群的事，造福社會的工作。"]},
     {id:115, origId:115, content:"想成就事業，就先成就自己的品德，昇華自己的人格。", semanticTags:["事業","成就","人格"], lines:["想成就事業，","就先成就自己的品德，","昇華自己的人格。"]},
     {id:116, origId:116, content:"身體污泥可以用水清除，心靈污泥則須用智慧之水消除。", semanticTags:["智慧","改過","修養"], lines:["身體污泥可以用水清除，","心靈污泥則須用智慧之水消除。"]},
     {id:117, origId:117, content:"犯錯生出懺悔心，才能清淨無煩惱。", semanticTags:["改過","反省","煩惱"], lines:["犯錯生出懺悔心，","才能清淨無煩惱。"]},
     {id:118, origId:118, content:"做該做的事是智慧，做不該做的事是愚痴。", semanticTags:["智慧","自律","選擇"], lines:["做該做的事是智慧，","做不該做的事是愚痴。"]},
     {id:119, origId:119, content:"「誠」即是發自內心的一分自動自發的精神。", semanticTags:["真誠","行動","工作"], lines:["「誠」即是發自內心的","一分自動自發的精神。"]},
-    {id:120, origId:120, content:"熱心易發，恆心難持；光說不練，則無法體悟真理。", semanticTags:["堅持","毅力","行動"], lines:["熱心易發，恆心難持；","光說不練，則無法體悟真理。"]},
-    {id:121, origId:121, content:"人生的價值在功能，而不是在於形象，形象沒有價值。", semanticTags:["價值","付出","成就"], lines:["人生的價值在功能，","而不是在於形象，","形象沒有價值。"]},
+    {id:120, origId:120, content:"熱心易發，恆心難持；光說不練，則無法體悟真理、實踐道法。", semanticTags:["堅持","毅力","行動"], lines:["熱心易發，恆心難持；", "光說不練，則無法", "體悟真理、實踐道法。"]},
+    {id:121, origId:121, content:"人生的價值在功能，而不是在於形象。形象沒有價值。", semanticTags:["價值","付出","成就"], lines:["人生的價值在功能，", "而不是在於形象。", "形象沒有價值。"]},
     {id:122, origId:122, content:"修養是從日常生活中點點滴滴累積而成。", semanticTags:["修養","時間","自律"], lines:["修養是從日常生活中","點點滴滴累積而成。"]},
     {id:123, origId:123, content:"說人是非，傷人傷己；好話要多說，是非不要提；心若正，則行必端。", semanticTags:["說話","衝突","態度"], lines:["說人是非，傷人傷己；","好話要多說，是非不要提；","心若正，則行必端。"]},
     {id:124, origId:124, content:"恆心就如滴水穿石，再大的困難與阻礙也能衝破。", semanticTags:["毅力","堅持","困難"], lines:["恆心就如滴水穿石，","再大的困難與阻礙也能衝破。"]},
@@ -880,7 +879,7 @@ var aphorismsData = [
     {id:129, origId:129, content:"布施如播種，以歡善心滋潤種子，才會發芽。", semanticTags:["歡喜","付出","態度"], lines:["布施如播種，","以歡善心滋潤種子，","才會發芽。"]},
     {id:130, origId:130, content:"顧好自己的心念，才能真正愛人。", semanticTags:["自愛","心情","正念"], lines:["顧好自己的心念，","才能真正愛人。"]},
     {id:131, origId:131, content:"彎個腰、伸個手，把別人不要的福撿回來，就是我的。", semanticTags:["謙虛","惜福","行動"], lines:["彎個腰、伸個手，","把別人不要的福","撿回來，就是我的。"]},
-    {id:132, origId:132, content:"福人居福地，並非福地福人居。", semanticTags:["修養","善念","幸福"], lines:["福人居福地，","並非福地福人居。"]},
+    {id:132, origId:132, content:"福人居福地，不是福地福人居。", semanticTags:["修養","善念","幸福"], lines:["福人居福地，", "不是福地福人居。"]},
     {id:133, origId:133, content:"盡多少本分，就得多少本事。", semanticTags:["本份","盡責","責任"], lines:["盡多少本分，","就得多少本事。"]},
     {id:134, origId:134, content:"心若開，運就通；運通，福就來。", semanticTags:["轉念","歡喜","幸福"], lines:["心若開，運就通；","運通，福就來。"]},
     {id:135, origId:135, content:"內能自謙，縮小自己；外能忍讓，成就別人。", semanticTags:["成就","謙虛","禮讓"], lines:["內能自謙，縮小自己；","外能忍讓，成就別人。"]},
@@ -900,7 +899,7 @@ var aphorismsData = [
     {id:149, origId:149, content:"有智慧者，不見人過，但見己非。", semanticTags:["智慧","反省","包容"], lines:["有智慧者，","不見人過，","但見己非。"]},
     {id:150, origId:150, content:"凡事都是從智慧學習中得來的。", semanticTags:["智慧","學習","經驗"], lines:["凡事都是從智慧","學習中得來的。"]},
     {id:151, origId:151, content:"小事不做，大事難成。", semanticTags:["本份","行動","成就"], lines:["小事不做，","大事難成。"]},
-    {id:152, origId:152, content:"天上最美是星星，人生最美是溫情。", semanticTags:["溫情","感情","幸福"], lines:["天上最美是星星，","人生最美是溫情。"]},
+    {id:152, origId:152, content:"天上最美是星星，人間最美是溫情。", semanticTags:["溫暖","感情","幸福"], lines:["天上最美是星星，", "人間最美是溫情。"]},
     {id:153, origId:153, content:"智慧當向恭敬中求，當向謙卑中求，當向無私中求。", semanticTags:["智慧","謙虛","無私"], lines:["智慧當向恭敬中求，","當向謙卑中求，","當向無私中求。"]},
     {id:154, origId:154, content:"君子如水，隨方就圓，無處不自在。", semanticTags:["修養","處事","包容"], lines:["君子如水，","隨方就圓，","無處不自在。"]},
     {id:155, origId:155, content:"稻穗結得越飽滿，越會往下垂；一個人越有成就，就要越有謙沖的胸襟。", semanticTags:["成就","謙虛","修養"], lines:["稻穗結得越飽滿，","越會往下垂；","一個人越有成就，","就要越有謙沖的胸襟。"]},
@@ -908,8 +907,8 @@ var aphorismsData = [
     {id:157, origId:157, content:"站在半路，比走到目標更辛苦。", semanticTags:["堅持","毅力","方向"], lines:["站在半路，","比走到目標更辛苦。"]},
     {id:158, origId:158, content:"理直氣壯，得理不饒人，不僅惹是生非，傷人傷己，甚至永遠無法化解仇恨，圓融人事。", semanticTags:["包容","修養","原諒","處事","衝突"], lines:["理直氣壯，得理不饒人，","不僅惹是生非，傷人傷己，","甚至永遠無法化解仇恨，圓融人事。"]},
     {id:159, origId:159, content:"職業易生比較心，事業易生功利心。而志業是啟發人人本具的愛心、良知，使人無所求的付出。", semanticTags:["付出","愛心","比較"], lines:["職業易生比較心，事業易生功利心。","而志業是啟發人人本具的","愛心、良知，使人無所求的付出。"]},
-    {id:160, origId:160, content:"服務人群是造福，從中學習是修慧；想造福修慧必須身體力行，才能有所收穫。", semanticTags:["學習","智慧","付出","行動","利益","協助"], lines:["服務人群是造福，","從中學習是修慧；","想造福修慧必須身體力行，","才能有所收穫。"]},
-    {id:161, origId:161, content:"最敏感的佛在心中，最有利的菩薩是我們的手和腳；付出我們的力量，做利益眾生的事。", semanticTags:["付出","利益","協助"], lines:["最敏感的佛在心中，","最有利的菩薩是我們的手和腳；","付出我們的力量，","做利益眾生的事。"]},
+    {id:160, origId:160, content:"服務人群是造福，從中學習是修慧；想造福修慧必須身體力行，才能有所收穫。", semanticTags:["學習", "智慧", "付出", "行動", "利益"], lines:["服務人群是造福，","從中學習是修慧；","想造福修慧必須身體力行，","才能有所收穫。"]},
+    {id:161, origId:161, content:"最敏感的佛在心中，最有利的菩薩是我們的手和腳；付出我們的力量，做利益眾生的事。", semanticTags:["付出", "利益", "合作"], lines:["最敏感的佛在心中，","最有利的菩薩是我們的手和腳；","付出我們的力量，","做利益眾生的事。"]},
     {id:162, origId:162, content:"心量大，才能付出關心與愛給天下眾生。", semanticTags:["付出","包容","關懷"], lines:["心量大，才能付出","關心與愛給天下眾生。"]},
     {id:163, origId:163, content:"一滴水要想不乾，就設法投入浩渺的大海。", semanticTags:["大愛","團結","團隊"], lines:["一滴水要想不乾，","就設法投入浩渺的大海。"]},
     {id:164, origId:164, content:"行為言語，顯現精神文化的內涵；培養寬大的心量，心量大才能發揮大愛，能原諒別人就是最有福的人。", semanticTags:["大愛","原諒","態度"], lines:["行為言語，顯現精神文化的","內涵；培養寬大的心量，","心量大才能發揮大愛，","能原諒別人就是最有福的人。"]},
@@ -933,7 +932,7 @@ var aphorismsData = [
     {id:182, origId:182, content:"每個人心裡都有一股清流，都有一塊福田，隱藏著豐沛的泉源。", semanticTags:["善念","平靜","心情"], lines:["每個人心裡都有一股清流，","都有一塊福田，","隱藏著豐沛的泉源。"]},
     {id:183, origId:183, content:"人生多一分感恩，就多一分美化。", semanticTags:["感恩","知足","歡喜"], lines:["人生多一分感恩，","就多一分美化。"]},
     {id:184, origId:184, content:"一個不能緩和憤怒之火的人，會喪失他所有的名譽。", semanticTags:["生氣","自律","態度"], lines:["一個不能緩和憤怒之火的人，","會喪失他所有的名譽。"]},
-    {id:185, origId:185, content:"要用心、細心，不要操心、煩心。", semanticTags:["專注","平靜"], lines:["要用心、細心，","不要操心、煩心。"]},
+    {id:185, origId:185, content:"要用心、細心，不要操心、煩心。", semanticTags:["專注","平靜","心情"], lines:["要用心、細心，","不要操心、煩心。"]},
     {id:186, origId:186, content:"每一天都是做人的開始，每一個時刻都是自己的警惕。", semanticTags:["做人","反省","謹慎"], lines:["每一天都是做人的開始，","每一個時刻都是自己的警惕。"]},
     {id:187, origId:187, content:"時間對一個有智慧的人來說，就如鑽石般的珍貴；對愚人來說，卻像泥土，一點也沒有價值。", semanticTags:["智慧","時間","專注"], lines:["時間對一個有智慧的人來說，","就如鑽石般的珍貴；","對愚人來說，卻像泥土，","一點也沒有價值。"]},
     {id:188, origId:188, content:"為自己找藉口逃避的人，永遠不會進步。", semanticTags:["改過","自律","反省"], lines:["為自己找藉口逃避的人，","永遠不會進步。"]},
@@ -941,7 +940,7 @@ var aphorismsData = [
     {id:190, origId:190, content:"不要怕人家說你傻，要擔心人家說你太聰明，太聰明就是狡猾。", semanticTags:["真誠","謙虛","本份"], lines:["不要怕人家說你傻，","要擔心人家說你太聰明，","太聰明就是狡猾。"]},
     {id:191, origId:191, content:"人不能忘形，更不能喪志；寧願被毀滅，不願被擊敗。", semanticTags:["勇氣","克服","失敗"], lines:["人不能忘形，更不能喪志；","寧願被毀滅，不願被擊敗。"]},
     {id:192, origId:192, content:"為人處事要小心，但不要小心眼。", semanticTags:["謹慎","包容","處事"], lines:["為人處事要小心，","但不要小心眼。"]},
-    {id:193, origId:193, content:"人多力大，福就大。", semanticTags:["協助","團隊","團結"], lines:["人多力大，","福就大。"]},
+    {id:193, origId:193, content:"人多力大，福就大。", semanticTags:["團隊", "團結", "合作"], lines:["人多力大，","福就大。"]},
     {id:194, origId:194, content:"凡事善解，能忍自安。", semanticTags:["平靜","安定","轉念"], lines:["凡事善解，","能忍自安。"]},
     {id:195, origId:195, content:"哭泣不能消除昨日的哀傷，只能消減明日的銳氣。", semanticTags:["轉念","勇氣","樂觀"], lines:["哭泣不能消除昨日的哀傷，","只能消減明日的銳氣。"]},
     {id:196, origId:196, content:"君子立恆志，小人恆立志。", semanticTags:["堅持","方向","毅力"], lines:["君子立恆志，","小人恆立志。"]},
@@ -957,7 +956,7 @@ var aphorismsData = [
     {id:206, origId:206, content:"抱著盡本分的心去做好事，才是真正的好事，才是至誠無私的善事。", semanticTags:["本份","真誠","付出","無私"], lines:["抱著盡本分的心去做好事，","才是真正的好事，","才是至誠無私的善事。"]},
     {id:207, origId:207, content:"自造福田，自得福緣。", semanticTags:["付出","行動","功德"], lines:["自造福田，","自得福緣。"]},
     {id:208, origId:208, content:"人生要為善競爭，分秒必爭。", semanticTags:["時間","積極","善念"], lines:["人生要為善競爭，","分秒必爭。"]},
-    {id:209, origId:209, content:"有人扯後腿要心存感激。沒有人扯，練不出腿勁。", semanticTags:["感恩","轉念","考驗"], lines:["有人扯後腿要心存感激。","沒有人扯，練不出腿勁。"]},
+    {id:209, origId:209, content:"有人扯後腿，要心存感恩；沒有人扯，就練不出腿勁。", semanticTags:["感恩","轉念","考驗"], lines:["有人扯後腿，要心存感恩；", "沒有人扯，就練不出腿勁。"]},
     {id:210, origId:210, content:"要適應他人，不要要求他人。", semanticTags:["包容","體諒","處事"], lines:["要適應他人，","不要要求他人。"]},
     {id:211, origId:211, content:"不怕事多，只怕多事。", semanticTags:["本份","工作","說話"], lines:["不怕事多，","只怕多事。"]},
     {id:212, origId:212, content:"別人因為「沒有」才要佔我便宜，我因為「有」才有便宜讓人家佔。", semanticTags:["包容","知足","付出"], lines:["別人因為「沒有」才要佔我便宜，","我因為「有」才有便宜讓人家佔。"]},
@@ -1005,14 +1004,14 @@ var aphorismsData = [
     {id:254, origId:254, content:"佛心看人，人人是佛。", semanticTags:["平等","尊重","包容"], lines:["佛心看人，","人人是佛。"]},
     {id:255, origId:255, content:"逆境，是非來源，心中要持一寬字。", semanticTags:["包容","轉念","處事"], lines:["逆境，是非來源，","心中要持一寬字。"]},
     {id:256, origId:256, content:"人生都是向外求，其實最重要的是內心的追求。", semanticTags:["平靜","反省","心情"], lines:["人生都是向外求，","其實最重要的是內心的追求。"]},
-    {id:257, origId:257, content:"生命無常，慧命永久；愛心無涯，精神常在。", semanticTags:["愛心","珍惜","生命"], lines:["生命無常，慧命永久；","愛心無涯，精神常在。"]},
+    {id:257, origId:257, content:"生命無常，慧命永存；愛心無涯，精神常在。", semanticTags:["愛心","珍惜","生命"], lines:["生命無常，慧命永存；", "愛心無涯，精神常在。"]},
     {id:258, origId:258, content:"人生沒有所有權，只有生命的使用權。", semanticTags:["時間","珍惜","生命"], lines:["人生沒有所有權，","只有生命的使用權。"]},
     {id:259, origId:259, content:"開口傷神氣，舌動惹是非。", semanticTags:["說話","修養","謹慎"], lines:["開口傷神氣，","舌動惹是非。"]},
     {id:260, origId:260, content:"心安茅屋穩，心定菜根香。", semanticTags:["平靜","知足","安定"], lines:["心安茅屋穩，","心定菜根香。"]},
     {id:261, origId:261, content:"縮小自己，反求諸己，包容別人。", semanticTags:["包容","謙虛","反省"], lines:["縮小自己，","反求諸己，","包容別人。"]},
     {id:262, origId:262, content:"在順境時，要使生活有風采；逆境時，要不散亂，保持靜心。", semanticTags:["平靜","自律","考驗"], lines:["在順境時，要使生活有風采；","逆境時，要不散亂，保持靜心。"]},
     {id:263, origId:263, content:"今天的工作，將是明天的文章，後天的歷史。", semanticTags:["盡責","工作","時間"], lines:["今天的工作，將是","明天的文章，","後天的歷史。"]},
-    {id:264, origId:264, content:"每一天都是我們的一張紙；每天經歷的人與事，都是我們的一篇文章。", semanticTags:["學習","珍惜","時間"], lines:["每一天都是我們的一張紙；","每天經歷的人與事，","都是我們的一篇文章。"]},
+    {id:264, origId:264, content:"每天都是生命中的一張白紙；每一個人、每一件事，都是我們的一篇文章。", semanticTags:["學習","珍惜","時間"], lines:["每天都是生命中的一張白紙；", "每一個人、每一件事，", "都是我們的一篇文章。"]},
     {id:265, origId:265, content:"心中常存善解、包容、感恩、知足、惜福。", semanticTags:["包容","知足","感恩"], lines:["心中常存善解、包容、","感恩、知足、惜福。"]},
     {id:266, origId:266, content:"心中有愛，有善念，而能身體力行者，即是菩薩。", semanticTags:["善念","行動","愛心"], lines:["心中有愛，有善念，","而能身體力行者，即是菩薩。"]},
     {id:267, origId:267, content:"世間如烘樓，要禁得起鍛鍊，才能將百鍊鋼化為繞指柔。", semanticTags:["考驗","磨練","堅持"], lines:["世間如烘樓，要禁得起鍛鍊，","才能將百鍊鋼化為繞指柔。"]},
@@ -1111,7 +1110,7 @@ var aphorismsData = [
     {id:360, origId:360, content:"應走而不走，非智；難行而能行，是勇；勇者但知「行所當行，為所應為」。", semanticTags:["勇氣","本份","行動"], lines:["應走而不走，非智；","難行而能行，是勇；","勇者但知「行所當行，為所應為」。"]},
     {id:361, origId:361, content:"正語就是要說真正的話、實在的話、誠懇的話。", semanticTags:["真誠","誠信","說話"], lines:["正語就是要說","真正的話、","實在的話、","誠懇的話。"]},
     {id:362, origId:362, content:"人之所以會痛苦是因為不滿足，對別人要求太多，而且不肯輕易原諒別人。", semanticTags:["原諒","知足","包容"], lines:["人之所以會痛苦","是因為不滿足，","對別人要求太多，","而且不肯輕易原諒別人。"]},
-    {id:363, origId:363, content:"真正的智慧，在於坦誠的愛和彼此間的信賴，而不涉及任何利害關係。", semanticTags:["智慧","誠信","感情"], lines:["真正的智慧，在於","坦誠的愛和彼此間的信賴，","而不涉及任何利害關係。"]},
+    {id:363, origId:363, content:"真正的智慧，在於坦誠的愛和彼此間的信賴，而不涉及任何利害關係。", semanticTags:["智慧","誠信","感情"], lines:["真正的智慧，在於坦誠的","愛和彼此間的信賴，","而不涉及任何利害關係。"]},
     {id:364, origId:364, content:"人生為人群付出多少，就得多少踏實感。", semanticTags:["付出","工作","生命"], lines:["人生為人群付出多少，","就得多少踏實感。"]},
     {id:365, origId:365, content:"生命的蠟燭要點滴不漏，充分發揮光明照耀人間。", semanticTags:["珍惜","大愛","光明"], lines:["生命的蠟燭要點滴不漏，","充分發揮光明照耀人間。"]},
     {id:366, origId:366, content:"愛的教育是愛他；教育他的同時，也要啟發他愛人的心。", semanticTags:["教育","愛心","付出"], lines:["愛的教育是愛他；","教育他的同時，","也要啟發他愛人的心。"]},
@@ -1145,17 +1144,85 @@ var aphorismsData = [
     {id:394, origId:394, content:"能懂得適時適機運用所得，利益人群，廣結善緣，才是成功圓滿的人生。", semanticTags:["利益","成就","處事"], lines:["能懂得適時適機運用所得，","利益人群，廣結善緣，","才是成功圓滿的人生。"]},
     {id:395, origId:395, content:"內能自謙是功，外能禮讓是德。", semanticTags:["謙虛","禮讓","修養"], lines:["內能自謙是功，","外能禮讓是德。"]},
     {id:396, origId:396, content:"只有享受不是福氣，有能力為他人付出，才是真正恆常的福。", semanticTags:["付出","惜福","幸福"], lines:["只有享受不是福氣。","有能力為他人付出，","才是真正恆常的福。"]},
-    {id:397, origId:397, content:"開口動舌，舉手投足，無不是業。", semanticTags:["謹慎","自律","修養"], lines:["開口動舌，","舉手投足，","無不是業。"]},
+    {id:397, origId:397, content:"起心動念無不是業；開口動舌、舉手投足，無不是罪。", semanticTags:["謹慎","自律","修養"], lines:["起心動念無不是業；", "開口動舌、舉手投足，", "無不是罪。"]},
     {id:398, origId:398, content:"要讓心中常保餘地，切莫自滿而有所溢。", semanticTags:["謙虛","包容","反省"], lines:["要讓心中常保餘地，","切莫自滿而有所溢。"]},
     {id:399, origId:399, content:"對自己有幻想的人叫愚，對別人有幻想的人叫痴。", semanticTags:["反省","智慧","改過"], lines:["對自己有幻想的人叫愚，","對別人有幻想的人叫痴。"]},
     {id:400, origId:400, content:"心地空時，宇宙虛空都可容納；心地滿時，容不了一滴水、一粒沙。", semanticTags:["包容","謙虛","平靜"], lines:["心地空時，宇宙虛空都可容納；","心地滿時，容不了一滴水、一粒沙。"]},
     {id:401, origId:401, content:"人命呼吸間，唯有在分秒間警惕自己毋怠毋懈，方能不斷向前邁進。", semanticTags:["時間","珍惜","自律","堅持"], lines:["人命呼吸間，","唯有在分秒間","警惕自己毋怠毋懈，","方能不斷向前邁進。"]},
     {id:402, origId:402, content:"過去的努力有現在的成就；未來的展望是現在的動作。", semanticTags:["努力","成就","方向","時間"], lines:["過去的努力有現在的成就；","未來的展望是現在的動作。"]},
     {id:403, origId:403, content:"人生無常，要趕緊行善修行。", semanticTags:["時間","珍惜","生命","善念"], lines:["人生無常，","要趕緊行善修行。"]},
-    {id:404, origId:404, content:"做人要有踏實感，不要只有成就感；踏實的人，心中多舒服。", semanticTags:["做人","態度","心情"], lines:["做人要有踏實感，不要只有成就感；","踏實的人，心中多舒服。"]},
+    {id:404, origId:404, content:"做人要有踏實感，不要只有成就感；踏踏實實地做人，心中多舒服。", semanticTags:["做人","態度","心情"], lines:["做人要有踏實感，", "不要只有成就感；", "踏踏實實地做人，", "心中多舒服。"]},
     {id:405, origId:405, content:"做人要做到三不靠：不靠權力，不靠地位，不靠金錢。", semanticTags:["做人","自律","尊嚴"], lines:["做人要做到三不靠：","不靠權力，","不靠地位，","不靠金錢。"]},
     {id:406, origId:406, content:"難行能行、難捨能捨、難為能為，才能昇華自我的人格。", semanticTags:["努力","堅持","修養","人格"], lines:["難行能行、難捨能捨、","難為能為，才能","昇華自我的人格。"]},
-    {id:407, origId:407, content:"不要把陰影覆藏在心裡，要散發光和熱，生命才有意義。", semanticTags:["解脫","轉念","光明"], lines:["不要把陰影覆藏在心裡，","要散發光和熱，","生命才有意義。"]}
+    {id:407, origId:407, content:"不要把陰影覆藏在心裡，要散發光和熱，生命才有意義。", semanticTags:["解脫","轉念","光明"], lines:["不要把陰影覆藏在心裡，","要散發光和熱，","生命才有意義。"]},
+    {id:408, origId:408, content:"善於利用時間的人，無時無刻不是修持參禪的好機緣。", semanticTags:["時間", "珍惜", "專注"], lines:["善於利用時間的人，", "無時無刻不是", "修持參禪的好機緣。"]},
+    {id:409, origId:409, content:"心平靜，當下就是淨土。", semanticTags:["平靜", "安定", "心情"], lines:["心平靜，", "當下就是淨土。"]},
+    {id:410, origId:410, content:"真正的心好，應該是非常自然，沒有一絲一毫地考慮，馬上伸出援手去扶助別人。", semanticTags:["善念", "行動", "關懷", "付出"], lines:["真正的心好，應該是非常自然，", "沒有一絲一毫地考慮，", "馬上伸出援手去扶助別人。"]},
+    {id:411, origId:411, content:"布施若不是真正心存喜捨，則非但沒有功德，反增煩惱。", semanticTags:["付出", "歡喜", "煩惱", "無私"], lines:["布施若不是真正心存喜捨，", "則非但沒有功德，反增煩惱。"]},
+    {id:412, origId:412, content:"人人本具菩薩心，也具有和菩薩同等的精神與力量。", semanticTags:["信心", "善念", "自愛"], lines:["人人本具菩薩心，也具有和", "菩薩同等的精神與力量。"]},
+    {id:413, origId:413, content:"一個人面臨絕境時，還能心存感恩很是難得。永保感恩心付出的人，比較不會陷入絕境。", semanticTags:["感恩", "困難", "希望", "付出"], lines:["一個人面臨絕境時，", "還能心存感恩很是難得。", "永保感恩心付出的人，", "比較不會陷入絕境。"]},
+    {id:414, origId:414, content:"「戒」是不起心動念；「定」是臨危不亂；「慧」能運心轉境。", semanticTags:["自律", "智慧", "平靜", "修養"], lines:["「戒」是不起心動念；", "「定」是臨危不亂；", "「慧」能運心轉境。"]},
+    {id:415, origId:415, content:"心無邪思，意無邪念，即常自在；心正則邪不侵。", semanticTags:["正念", "善念", "自律", "安定", "解脫"], lines:["心無邪思，意無邪念，", "即常自在；心正則邪不侵。"]},
+    {id:416, origId:416, content:"理想要放在遠方，腳步要落實現在。", semanticTags:["方向", "行動", "努力"], lines:["理想要放在遠方，", "腳步要落實現在。"]},
+    {id:417, origId:417, content:"心迷就會苦，心悟就自在。", semanticTags:["轉念", "智慧", "解脫"], lines:["心迷就會苦，", "心悟就自在。"]},
+    {id:418, origId:418, content:"陪伴父母要歡喜，而不是應付責任。", semanticTags:["孝順", "父母", "歡喜", "責任"], lines:["陪伴父母要歡喜，", "而不是應付責任。"]},
+    {id:419, origId:419, content:"千里之路，必須從第一步開始；聖人的境域，也是自凡夫起步。", semanticTags:["行動", "堅持", "努力", "方向"], lines:["千里之路，必須從第一步開始；", "聖人的境域，也是自凡夫起步。"]},
+    {id:420, origId:420, content:"遭受別人批評時，先問自心是否無愧？無愧則心安。", semanticTags:["批評", "反省", "無愧", "平靜"], lines:["遭受別人批評時，", "先問自心是否無愧？", "無愧則心安。"]},
+    {id:421, origId:421, content:"感恩他人就是美化自己。", semanticTags:["感恩", "修養", "欣賞"], lines:["感恩他人就是美化自己。"]},
+    {id:422, origId:422, content:"學佛，就是要學會及時改正錯誤的觀念。", semanticTags:["改過", "反省", "學習"], lines:["學佛，就是要學會", "及時改正錯誤的觀念。"]},
+    {id:423, origId:423, content:"人生幾十年的成就，都是由每一天的言行累積而成。所以，要照顧好每一天的言行。", semanticTags:["成就", "謹慎", "自律", "說話"], lines:["人生幾十年的成就，都是由", "每一天的言行累積而成。", "所以，要照顧好每一天的言行。"]},
+    {id:424, origId:424, content:"聽話、說話要完整，不要只揀前一句、後一句，合起來剛好尖尖的刺進人心。", semanticTags:["說話", "溝通", "謹慎", "衝突"], lines:["聽話、說話要完整，", "不要只揀前一句、後一句，", "合起來剛好尖尖的刺進人心。"]},
+    {id:425, origId:425, content:"人生若精神文化充足富有，縱使物質生活平淡，也會感到樂在其中。", semanticTags:["知足", "快樂", "價值"], lines:["人生若精神文化充足富有，", "縱使物質生活平淡，", "也會感到樂在其中。"]},
+    {id:426, origId:426, content:"什麼都沒做，就是空過的人生；若能不斷付出利益人群，就是大好的人生。", semanticTags:["付出", "行動", "利益", "價值"], lines:["什麼都沒做，就是空過的人生；", "若能不斷付出利益人群，", "就是大好的人生。"]},
+    {id:427, origId:427, content:"感恩可以打開我們的心結，並且啟發我們的悲心。", semanticTags:["感恩", "愛心", "轉念"], lines:["感恩可以打開我們的心結，", "並且啟發我們的悲心。"]},
+    {id:428, origId:428, content:"以歡喜心做事，即使忙碌卻不感到辛苦，反而覺得甘甜。", semanticTags:["歡喜", "工作", "態度"], lines:["以歡喜心做事，即使忙碌", "卻不感到辛苦，反而覺得甘甜。"]},
+    {id:429, origId:429, content:"好事，需要你、我、他共同來成就。所以，不要有你、我、他的成見。", semanticTags:["合作", "團結", "包容"], lines:["好事，需要你、我、他共同來成就。", "所以，不要有你、我、他的成見。"]},
+    {id:430, origId:430, content:"要擁有很可愛的人生，就要自己先去愛人。", semanticTags:["愛心", "付出", "幸福"], lines:["要擁有很可愛的人生，", "就要自己先去愛人。"]},
+    {id:431, origId:431, content:"以親切的愛心去關懷別人，這分愛心便是造福的種子。", semanticTags:["關懷", "愛心", "善念", "付出"], lines:["以親切的愛心去關懷別人，", "這分愛心便是造福的種子。"]},
+    {id:432, origId:432, content:"行善是本分、付出無所求，不執著「善有善報」，自然輕安自在。", semanticTags:["本份", "付出", "無私", "安定"], lines:["行善是本分、付出無所求，", "不執著「善有善報」，", "自然輕安自在。"]},
+    {id:433, origId:433, content:"退讓一步以成全別人，即是修養，即是修行。", semanticTags:["禮讓", "修養", "包容"], lines:["退讓一步以成全別人，", "即是修養，即是修行。"]},
+    {id:434, origId:434, content:"心中有信，願力無窮；心中無私，其福無量。", semanticTags:["信心", "無私", "幸福"], lines:["心中有信，願力無窮；", "心中無私，其福無量。"]},
+    {id:435, origId:435, content:"把貪念轉為滿足，把滿足化作慈悲。", semanticTags:["欲望", "知足", "大愛", "轉念"], lines:["把貪念轉為滿足，", "把滿足化作慈悲。"]},
+    {id:436, origId:436, content:"我們要接受天下人、事、物的磨練，方能成為一個堅強的人。", semanticTags:["磨練", "考驗", "毅力"], lines:["我們要接受天下", "人、事、物的磨練，", "方能成為一個堅強的人。"]},
+    {id:437, origId:437, content:"處理事情，感情要蘊藏在理智中；與人相處，則要把感情表現在理智上。", semanticTags:["處事", "溝通", "感情", "智慧"], lines:["處理事情，感情", "要蘊藏在理智中；", "與人相處，則要把", "感情表現在理智上。"]},
+    {id:438, origId:438, content:"有一分心，就有一分力量。", semanticTags:["信心", "行動", "努力"], lines:["有一分心，就有一分力量。"]},
+    {id:439, origId:439, content:"人人本有清淨純真的佛性，只因煩惱無明而遮蔽了。", semanticTags:["煩惱", "善念", "智慧"], lines:["人人本有清淨純真的佛性，", "只因煩惱無明而遮蔽了。"]},
+    {id:440, origId:440, content:"菩薩不是土塑木刻的形象，真正的菩薩能做事、能說話、能吃飯，能尋聲救苦隨處現身。", semanticTags:["行動", "關懷", "付出"], lines:["菩薩不是土塑木刻的形象，", "真正的菩薩能做事、能說話、", "能吃飯，能尋聲救苦隨處現身。"]},
+    {id:441, origId:441, content:"最平淡的日子，心裡最安定。", semanticTags:["安定", "平靜", "知足"], lines:["最平淡的日子，", "心裡最安定。"]},
+    {id:442, origId:442, content:"發脾氣是短暫的發瘋。", semanticTags:["生氣", "修養", "自律"], lines:["發脾氣是短暫的發瘋。"]},
+    {id:443, origId:443, content:"以愛待人、以慈對人，則不惹人怨，亦能結好緣。", semanticTags:["愛心", "關懷", "包容"], lines:["以愛待人、以慈對人，", "則不惹人怨，亦能結好緣。"]},
+    {id:444, origId:444, content:"人既然生在世間，就不能離開眾緣，修行也不能離群隱世。", semanticTags:["處事", "合作", "修養"], lines:["人既然生在世間，", "就不能離開眾緣，", "修行也不能離群隱世。"]},
+    {id:445, origId:445, content:"做人固然不應將自我看得太重，但也不要自輕己靈。", semanticTags:["謙虛", "自愛", "信心"], lines:["做人固然不應將", "自我看得太重，", "但也不要自輕己靈。"]},
+    {id:446, origId:446, content:"時時感恩，處處感恩，人人感恩，事事感恩。", semanticTags:["感恩", "惜福", "歡喜"], lines:["時時感恩，處處感恩，", "人人感恩，事事感恩。"]},
+    {id:447, origId:447, content:"平安就是福，助人就是慧。", semanticTags:["幸福", "智慧", "付出"], lines:["平安就是福，", "助人就是慧。"]},
+    {id:448, origId:448, content:"「不斷地付出就是在造福，面對人事就是在修慧」；若能福慧雙具，就是慧命增長。", semanticTags:["付出", "智慧", "處事"], lines:["「不斷地付出就是在造福，", "面對人事就是在修慧」；", "若能福慧雙具，就是慧命增長。"]},
+    {id:449, origId:449, content:"合心為善，和氣付出；互愛讚歎，伸手協力。", semanticTags:["合作", "團結", "讚美", "付出"], lines:["合心為善，和氣付出；", "互愛讚歎，伸手協力。"]},
+    {id:450, origId:450, content:"珍惜每一分、每一秒，踏踏實實為社會付出愛。", semanticTags:["珍惜", "時間", "付出", "愛心"], lines:["珍惜每一分、每一秒，", "踏踏實實為社會付出愛。"]},
+    {id:451, origId:451, content:"人生若能減低欲望，生活上便沒有什麼值得計較！", semanticTags:["欲望", "知足", "得失"], lines:["人生若能減低欲望，", "生活上便沒有什麼值得計較！"]},
+    {id:452, origId:452, content:"人最難看得見的，就是自己。", semanticTags:["反省", "謙虛", "智慧"], lines:["人最難看得見的，", "就是自己。"]},
+    {id:453, origId:453, content:"煩惱就像一條毒蛇睡在人的心中。一觸動它，蛇就會咬人。", semanticTags:["煩惱", "心情", "平靜"], lines:["煩惱就像一條毒蛇", "睡在人的心中。", "一觸動它，蛇就會咬人。"]},
+    {id:454, origId:454, content:"凡事對機即是好。", semanticTags:["處事", "智慧", "選擇"], lines:["凡事對機即是好。"]},
+    {id:455, origId:455, content:"做好事，不在於一定做多少，應該做的就要做。", semanticTags:["本份", "行動", "善念"], lines:["做好事，不在於", "一定做多少，", "應該做的就要做。"]},
+    {id:456, origId:456, content:"增一分感恩心，即減一分猜疑心。", semanticTags:["感恩", "包容", "信心"], lines:["增一分感恩心，", "即減一分猜疑心。"]},
+    {id:457, origId:457, content:"多做好事，才能開闊心靈的天地。", semanticTags:["善念", "行動", "心情"], lines:["多做好事，才能", "開闊心靈的天地。"]},
+    {id:458, origId:458, content:"解除人間的災難，一定要從改善人心做起。", semanticTags:["善念", "改變", "教育"], lines:["解除人間的災難，", "一定要從改善人心做起。"]},
+    {id:459, origId:459, content:"面對業力不要埋怨；要用寬諒和樂的心來代替埋怨。", semanticTags:["抱怨", "包容", "轉念", "歡喜"], lines:["面對業力不要埋怨；", "要用寬諒和樂的心", "來代替埋怨。"]},
+    {id:460, origId:460, content:"對人有疑心，就無法愛人；對人有疑念，就無法原諒人；對人有疑惑，就無法相信人。", semanticTags:["信心", "原諒", "愛心", "溝通"], lines:["對人有疑心，就無法愛人；", "對人有疑念，就無法原諒人；", "對人有疑惑，就無法相信人。"]},
+    {id:461, origId:461, content:"美滿的人生，不在物質、權勢、名利及地位，而在人與人之間的關愛與情誼。", semanticTags:["幸福", "關懷", "名利", "感情"], lines:["美滿的人生，不在", "物質、權勢、名利及地位，", "而在人與人之間的關愛與情誼。"]},
+    {id:462, origId:462, content:"凡夫追求財物，聖人追求真理。", semanticTags:["名利", "欲望", "智慧"], lines:["凡夫追求財物，", "聖人追求真理。"]},
+    {id:463, origId:463, content:"要有過程，不要有手段；要有目標，不要有目的。", semanticTags:["處事", "方向", "真誠"], lines:["要有過程，不要有手段；", "要有目標，不要有目的。"]},
+    {id:464, origId:464, content:"心量大福報就大。", semanticTags:["包容", "幸福", "修養"], lines:["心量大福報就大。"]},
+    {id:465, origId:465, content:"有所求的愛，是無法永久存在的。能夠永久存在的，是那份無形、無染且無求的愛。", semanticTags:["愛心", "無私", "感情"], lines:["有所求的愛，", "是無法永久存在的。", "能夠永久存在的，是那份", "無形、無染且無求的愛。"]},
+    {id:466, origId:466, content:"布施就好比汲取井水：唯有不斷地布施，才能造福、增福。", semanticTags:["付出", "無私", "善念"], lines:["布施就好比汲取井水：", "唯有不斷地布施，", "才能造福、增福。"]},
+    {id:467, origId:467, content:"不是什麼都不理就叫無爭，而是要與人合心、和氣、互愛、協力。", semanticTags:["合作", "團結", "包容", "溝通"], lines:["不是什麼都不理就叫", "無爭，而是要與人", "合心、和氣、互愛、協力。"]},
+    {id:468, origId:468, content:"把自己的本分事做好，歡喜接受所面臨的一切。過一分鐘即消一分災。", semanticTags:["本份", "歡喜", "態度"], lines:["把自己的本分事做好，", "歡喜接受所面臨的一切。", "過一分鐘即消一分災。"]},
+    {id:469, origId:469, content:"社會的進步不是用喊出來的，是做出來的。", semanticTags:["行動", "努力", "改變"], lines:["社會的進步", "不是用喊出來的，", "是做出來的。"]},
+    {id:470, origId:470, content:"聽到別人批評，要自我反省；有錯就改，沒錯則歡喜包容。", semanticTags:["批評", "反省", "改過", "包容"], lines:["聽到別人批評，要自我反省；", "有錯就改，沒錯則歡喜包容。"]},
+    {id:471, origId:471, content:"想要家庭吉祥、和睦，就應該常常起歡喜心，天天為自己的家庭祝福。", semanticTags:["家庭", "歡喜", "幸福"], lines:["想要家庭吉祥、和睦，", "就應該常常起歡喜心，", "天天為自己的家庭祝福。"]},
+    {id:472, origId:472, content:"真正的禪，是在日常生活中不起煩惱妄想。", semanticTags:["平靜", "煩惱", "正念"], lines:["真正的禪，", "是在日常生活中", "不起煩惱妄想。"]},
+    {id:473, origId:473, content:"心如鏡。雖外在景物不斷轉變，鏡面卻不會轉動，此即境轉而心不轉。", semanticTags:["平靜", "安定", "修養"], lines:["心如鏡。雖外在", "景物不斷轉變，", "鏡面卻不會轉動，", "此即境轉而心不轉。"]},
+    {id:474, origId:474, content:"無量功德是在日積月累中，分毫累積聚集而成。", semanticTags:["功德", "堅持", "善念"], lines:["無量功德是在日積月累中，", "分毫累積聚集而成。"]},
+    {id:475, origId:475, content:"聽到好話要感恩，聽到壞話要善解。", semanticTags:["感恩", "包容", "說話"], lines:["聽到好話要感恩，", "聽到壞話要善解。"]}
 ];
 
 for (var i = 0; i < aphorismsData.length; i++) {
@@ -1743,9 +1810,9 @@ window.doSearch = function() {
     }
 
     if (trimmed !== "") {
-        selectedUserTags = [];
+        // 🌸 輸入文字和選取的關鍵詞一起使用（不再清掉關鍵詞）
         lastSearchText = trimmed;
-        renderUI(false, [], false, false, trimmed);
+        renderUI(false, selectedUserTags.slice(), false, false, trimmed);
         inputElem.placeholder = trimmed;
         inputElem.value = "";
     } else {
@@ -1787,6 +1854,112 @@ function sortByExposureAndRandom(pool) {
         if (cA === cB) return 0.5 - Math.random();
         return cA - cB;
     });
+}
+
+// 🌸 依關鍵詞挑金句（可搭配輸入文字）：
+//    ① 同時符合輸入文字和關鍵詞的優先
+//    ② 每一則盡量涵蓋「還沒被前面金句涵蓋到」的關鍵詞，讓選取的關鍵詞盡量都出現在 3 則金句裡
+//    ③ 符合的關鍵詞越多越前面
+//    ④ 其餘條件相同時，出現次數少的優先，再隨機
+function pickCardsByCoverage(tags, limitCount, usedIdMap, inputText) {
+    var result = [];
+    var inputTags = inputText ? extractKeywordsFromText(inputText) : [];
+    function inputScore(item) {
+        if (!inputText) return 0;
+        var sc = 0;
+        if (item.content.indexOf(inputText) === 0) sc += 3;
+        else if (item.content.indexOf(inputText) !== -1) sc += 2;
+        inputTags.forEach(function(t) { if (cardHasExactTag(item, t)) sc += 1; });
+        if (sc === 0 && calculateSemanticScore(item.content, inputText) > 0) sc += 1;
+        return sc;
+    }
+    var pool = [];
+    aphorismsData.forEach(function(item) {
+        if (usedIdMap[item.id]) return;
+        var hits = (tags || []).filter(function(t) { return cardHasExactTag(item, t); });
+        var inp = inputScore(item);
+        if (hits.length === 0 && inp === 0) return;
+        // recent：上一次剛顯示過的金句，排後面一點，讓連按「獲得啟發」時能換到別句
+        var recent = (lastDisplayedIds && lastDisplayedIds.indexOf(item.id) !== -1) ? 1 : 0;
+        pool.push({ item: item, hits: hits, inp: inp, recent: recent, exp: aphorismShowCounts[item.id] || 0, rnd: Math.random() });
+    });
+    var covered = {};
+
+    // 🌸 選了 2 個以上關鍵詞時：先找出「最多能涵蓋幾個關鍵詞」的金句組合（例如 5 個關鍵詞盡量分佈在 3 則金句裡）
+    if (tags && tags.length >= 2 && limitCount > 1) {
+        var groups = {};
+        pool.forEach(function(o) {
+            if (o.hits.length === 0) return;
+            var key = o.hits.slice().sort().join('|');
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(o);
+        });
+        var sigs = Object.keys(groups).map(function(key) {
+            var list = groups[key].sort(function(a, b) { return (a.recent - b.recent) || (b.inp - a.inp) || (a.exp - b.exp) || (a.rnd - b.rnd); });
+            return { hits: key.split('|'), best: list[0] };
+        });
+        // 只保留「不是別人子集合」的組合，減少計算量
+        sigs = sigs.filter(function(sg) {
+            return !sigs.some(function(other) {
+                return other !== sg && other.hits.length > sg.hits.length &&
+                       sg.hits.every(function(t) { return other.hits.indexOf(t) !== -1; });
+            });
+        }).sort(function(a, b) { return b.hits.length - a.hits.length; }).slice(0, 60);
+
+        var bestCombo = null, bestScore = null;
+        function evaluate(combo) {
+            var cov = {}, inpCount = 0, hitSum = 0, expSum = 0, recentSum = 0;
+            combo.forEach(function(sg) {
+                sg.hits.forEach(function(t) { cov[t] = true; });
+                if (sg.best.inp > 0) inpCount++;
+                hitSum += sg.hits.length; expSum += sg.best.exp; recentSum += sg.best.recent;
+            });
+            // 涵蓋數最優先；涵蓋數相同時，避開上一次剛出現過的金句，讓連按時有變化
+            var score = [Object.keys(cov).length, inpCount, -combo.length, -recentSum, hitSum, -expSum, Math.random()];
+            if (!bestScore) { bestScore = score; bestCombo = combo.slice(); return; }
+            for (var i = 0; i < score.length; i++) {
+                if (score[i] > bestScore[i]) { bestScore = score; bestCombo = combo.slice(); return; }
+                if (score[i] < bestScore[i]) return;
+            }
+        }
+        var maxSize = Math.min(limitCount, sigs.length);
+        for (var i1 = 0; i1 < sigs.length; i1++) {
+            evaluate([sigs[i1]]);
+            if (maxSize < 2) continue;
+            for (var i2 = i1 + 1; i2 < sigs.length; i2++) {
+                evaluate([sigs[i1], sigs[i2]]);
+                if (maxSize < 3) continue;
+                for (var i3 = i2 + 1; i3 < sigs.length; i3++) {
+                    evaluate([sigs[i1], sigs[i2], sigs[i3]]);
+                }
+            }
+        }
+        if (bestCombo) {
+            bestCombo.forEach(function(sg) {
+                if (pushUniqueCard(result, sg.best.item, usedIdMap)) {
+                    sg.hits.forEach(function(t) { covered[t] = true; });
+                    var idx = pool.indexOf(sg.best);
+                    if (idx !== -1) pool.splice(idx, 1);
+                }
+            });
+        }
+    }
+
+    while (result.length < limitCount && pool.length > 0) {
+        pool.forEach(function(o) {
+            o.newCover = o.hits.filter(function(t) { return !covered[t]; }).length;
+            o.both = (inputText && o.inp > 0 && o.hits.length > 0) ? 1 : 0;
+        });
+        pool.sort(function(a, b) {
+            return (b.both - a.both) || (b.newCover - a.newCover) || (a.recent - b.recent) ||
+                   (b.hits.length - a.hits.length) || (b.inp - a.inp) || (a.exp - b.exp) || (a.rnd - b.rnd);
+        });
+        var pick = pool.shift();
+        if (pushUniqueCard(result, pick.item, usedIdMap)) {
+            pick.hits.forEach(function(t) { covered[t] = true; });
+        }
+    }
+    return result;
 }
 
 function getCardsByTags(targetTags, limitCount, usedIdMap) {
@@ -2983,9 +3156,16 @@ function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlacehold
                 pushUniqueCard(selected, leastExposedCards[lc], usedIdMap);
             }
         } else if (!hasInput) {
-            selected = getCardsByTags(handTags, 3, usedIdMap);
+            selected = pickCardsByCoverage(handTags, 3, usedIdMap, null);
+            if (selected.length < 3) {
+                getCardsByTags([], 3 - selected.length, usedIdMap).forEach(function(c) { pushUniqueCard(selected, c, usedIdMap); });
+            }
         } else {
             hitTagsFromInput = extractKeywordsFromText(activeInputText);
+            // 🌸 有選關鍵詞時，先找同時符合文字與關鍵詞、且涵蓋最多關鍵詞的金句；不足 3 則再用原本的文字搜尋補上
+            if (handTags.length > 0) {
+                selected = pickCardsByCoverage(handTags, 3, usedIdMap, activeInputText);
+            }
 
             var prefixMatched = sortByExposureAndRandom(aphorismsData.filter(function(item) {
                 return !usedIdMap[item.id] && item.content.indexOf(activeInputText) === 0;
