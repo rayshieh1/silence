@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>靜思語錄產生器</title>
+    <!-- 🌸 瀏覽器分頁、手機加到主畫面時顯示的圖示 -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <!-- 引入開源霞鶩文楷體作為跨平台字型備援 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -501,7 +504,7 @@
             <h1>靜思語錄產生器</h1>
             <p class="subtitle subtitle-one-line">輸入當下境遇或任選核心重點後按獲得啟發即可得到智慧指引</p>
         </div>
-        <img src="https://lh3.googleusercontent.com/d/1wTre0yQG95uB71xYSgFXbZLVmRE9b8tr" alt="Header Avatar" class="header-avatar">
+        <img src="avatar.jpg" alt="Header Avatar" class="header-avatar">
     </div>
 
     <!-- 🌸 輸入格區域 -->
@@ -599,10 +602,11 @@
                 <span>橫幅</span>
             </button>
 
-            <button class="btn-square-action btn-line-square" id="btnLineShare" onclick="shareToLine()" title="用 LINE 傳送金句">
+            <button class="btn-square-action btn-line-square" id="btnLineShare" onclick="shareToLine()" title="用 LINE 傳送圖片">
+                <!-- 🌸 綠底白字的 LINE 圖示 -->
                 <svg viewBox="0 0 100 100">
-                    <path d="M 50,15 C 28,15 10,29 10,46 C 10,56 18,65 30,71 C 29,76 25,84 20,88 C 28,87 36,83 41,78 C 44,79 47,80 50,80 C 72,80 90,66 90,48 C 90,29 72,15 50,15 Z" fill="none" stroke="#06C755" stroke-width="7" stroke-linejoin="round"></path>
-                    <text x="50" y="57" font-family="-apple-system, BlinkMacSystemFont, Arial, sans-serif" font-size="26" font-weight="900" fill="#06C755" text-anchor="middle">LINE</text>
+                    <path d="M 50,8 C 24,8 4,25 4,46 C 4,65 20,80 42,83 C 45,84 46,86 45.5,89 L 44.5,95 C 44.2,97 45.8,98.5 48,97.3 C 62,89.5 80,77 89,64 C 94,57 96,52 96,46 C 96,25 76,8 50,8 Z" fill="#06C755"></path>
+                    <text x="50" y="57" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif" font-size="27" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="-0.5">LINE</text>
                 </svg>
             </button>
             <button class="btn-square-action btn-download-square" onclick="downloadCurrentMorningImage()" title="下載圖片">
@@ -2435,11 +2439,7 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
 
     var lineBtn = document.getElementById('btnLineShare');
     if (lineBtn) {
-        if (currentSelectedCardId === '9999' || currentSelectedCardId === 'custom_input') {
-            lineBtn.title = "用 LINE 傳送問候語";
-        } else {
-            lineBtn.title = "用 LINE 傳送金句";
-        }
+        lineBtn.title = "用 LINE 傳送圖片";
     }
 
     var modal = document.getElementById('morningModal');
@@ -3185,7 +3185,7 @@ function createQuoteLinkSpan(num) {
     var span = document.createElement('span');
     span.className = 'quote-number';
     span.textContent = '#' + num;
-    span.title = '複製這句金句的文字與分享網址';
+    span.title = '複製該金句文字與分享連結';
     span.onclick = function() { copyQuoteToClipboard(num, null); };
     return span;
 }
@@ -3196,7 +3196,7 @@ function createQuoteCopyButton(num) {
     btn.type = 'button';
     btn.className = 'btn-copy quote-copy-btn';
     btn.innerHTML = copySvg;
-    btn.title = '複製這句金句的文字與分享網址';
+    btn.title = '複製該金句文字與分享連結';
     btn.onclick = function() { copyQuoteToClipboard(num, btn); };
     return btn;
 }
