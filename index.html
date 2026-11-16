@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>靜思語錄產生器</title>
+    <!-- 🌸 網址列自動補上 ?openExternalBrowser=1（不重新載入、保留 #編號），方便直接複製分享 -->
+    <script>
+    (function () {
+        try {
+            if (!/[?&]openExternalBrowser=/.test(location.search) && window.history && history.replaceState) {
+                var q = location.search ? location.search + '&openExternalBrowser=1' : '?openExternalBrowser=1';
+                history.replaceState(history.state, '', location.pathname + q + location.hash);
+            }
+        } catch (e) {}
+    })();
+    </script>
     <!-- 🌸 瀏覽器分頁、手機加到主畫面時顯示的圖示 -->
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -1222,7 +1233,8 @@ var aphorismsData = [
     {id:472, origId:472, content:"真正的禪，是在日常生活中不起煩惱妄想。", semanticTags:["平靜", "煩惱", "正念"], lines:["真正的禪，", "是在日常生活中", "不起煩惱妄想。"]},
     {id:473, origId:473, content:"心如鏡。雖外在景物不斷轉變，鏡面卻不會轉動，此即境轉而心不轉。", semanticTags:["平靜", "安定", "修養"], lines:["心如鏡。雖外在", "景物不斷轉變，", "鏡面卻不會轉動，", "此即境轉而心不轉。"]},
     {id:474, origId:474, content:"無量功德是在日積月累中，分毫累積聚集而成。", semanticTags:["功德", "堅持", "善念"], lines:["無量功德是在日積月累中，", "分毫累積聚集而成。"]},
-    {id:475, origId:475, content:"聽到好話要感恩，聽到壞話要善解。", semanticTags:["感恩", "包容", "說話"], lines:["聽到好話要感恩，", "聽到壞話要善解。"]}
+    {id:475, origId:475, content:"聽到好話要感恩，聽到壞話要善解。", semanticTags:["感恩", "包容", "說話"], lines:["聽到好話要感恩，", "聽到壞話要善解。"]},
+    {id:476, origId:476, content:"用鼓掌的雙手做環保。", semanticTags:["行動","珍惜","付出"], lines:["用鼓掌的雙手做環保。"]}
 ];
 
 for (var i = 0; i < aphorismsData.length; i++) {
