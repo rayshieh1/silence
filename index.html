@@ -18,6 +18,13 @@
     <!-- 🌸 瀏覽器分頁、手機加到主畫面時顯示的圖示 -->
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- 🌸 PWA：加到主畫面、全螢幕、離線使用 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1b365d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="靜思語錄">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <!-- 引入開源霞鶩文楷體作為跨平台字型備援 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -499,6 +506,53 @@
             position: absolute; top: 2px; right: 6px; background: none; border: none; font-size: 1.1rem;
             color: #8a6d1d; cursor: pointer; padding: 4px;
         }
+
+        /* ===== 🌸 頁首：頭像在左上、安裝鈕與版本在右上（頁首高度維持 60px） ===== */
+        .header-avatar { margin-left: 0 !important; margin-right: auto !important; }
+        .install-area {
+            position: absolute; right: 0; top: 0; width: 76px; height: 60px; z-index: 2;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+        }
+        /* 安裝鈕：和「獲得啟發」鈕同寬、同字級字距；圖示佔「獲得」兩字的寬度，所以「安裝」和「啟發」上下對齊 */
+        .btn-install {
+            width: 76px; height: 42px; padding: 0; border: none; border-radius: 8px;
+            background-color: var(--primary-color); color: #ffffff;
+            font-size: 14px; letter-spacing: 0.3px; font-weight: bold; white-space: nowrap; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+            user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; outline: none;
+        }
+        .btn-install:active { opacity: 0.8; }
+        .btn-install .install-icon { width: calc(2em + 0.6px); display: inline-flex; align-items: center; justify-content: center; }
+        .btn-install .install-icon svg { width: 18px; height: 18px; }
+        .btn-install.is-hidden { visibility: hidden; }
+        .app-version { font-size: 11px; line-height: 18px; height: 18px; color: #888; letter-spacing: 0.2px; }
+
+        /* 副標題：整行寬度和「靜思語錄產生器」相同（標題 7 字、字距 -0.5px；副標 27 字） */
+        .subtitle-one-line {
+            padding-left: 0 !important; padding-right: 0 !important; letter-spacing: 0 !important;
+            font-size: calc((7 * 1.8rem - 3.5px) / 27) !important;
+        }
+        @media (max-width: 680px) {
+            .subtitle-one-line { font-size: calc((7 * 1.55rem - 3.5px) / 27) !important; }
+        }
+
+        /* 安裝教學視窗 */
+        .install-modal {
+            display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.45);
+            align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;
+        }
+        .install-modal.show { display: flex; }
+        .install-modal-box {
+            background: #ffffff; color: var(--primary-color); border-radius: 12px; width: 100%; max-width: 300px;
+            padding: 16px 18px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        .install-modal-box h3 { margin: 0 0 10px 0; font-size: 1.1rem; text-align: center; }
+        .install-modal-box ol { margin: 0; padding-left: 1.3em; font-size: 15px; line-height: 1.8; }
+        .install-modal-box p { margin: 8px 0 0 0; font-size: 13px; color: #555; line-height: 1.5; }
+        .install-modal-box button {
+            margin-top: 14px; width: 100%; height: 38px; border: none; border-radius: 8px;
+            background: var(--primary-color); color: #ffffff; font-size: 15px; font-weight: bold; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -516,6 +570,13 @@
             <p class="subtitle subtitle-one-line">輸入當下境遇或任選核心重點後按獲得啟發即可得到智慧指引</p>
         </div>
         <img src="avatar.jpg" alt="Header Avatar" class="header-avatar">
+        <!-- 🌸 右上：安裝鈕＋版本 -->
+        <div class="install-area">
+            <button class="btn-install is-hidden" id="btnInstall" type="button" onclick="handleInstallClick()" title="加到主畫面">
+                <span class="install-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M12 7v7"></path><polyline points="9 11.5 12 14.5 15 11.5"></polyline><path d="M10.5 18.5h3"></path></svg></span><span>安裝</span>
+            </button>
+            <div class="app-version" id="appVersion"></div>
+        </div>
     </div>
 
     <!-- 🌸 輸入格區域 -->
@@ -3427,5 +3488,102 @@ if (!openFromUrlHash()) {
 }
 </script>
 
+<!-- 🌸 安裝教學視窗 -->
+<div class="install-modal" id="installModal" onclick="if(event.target===this)closeInstallModal()">
+    <div class="install-modal-box">
+        <h3 id="installModalTitle">加到主畫面</h3>
+        <div id="installModalBody"></div>
+        <button type="button" onclick="closeInstallModal()">我知道了</button>
+    </div>
+</div>
+
+<!-- 🌸 PWA：註冊 Service Worker（離線快取） -->
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+}
+
+// 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
+var APP_VERSION = 'v261116';
+document.getElementById('appVersion').textContent = APP_VERSION;
+
+// 🌸 安裝鈕
+var deferredInstallPrompt = null;
+var installBtn = document.getElementById('btnInstall');
+
+function isStandaloneApp() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+}
+function isIOSDevice() {
+    var ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+function isMobileDevice() {
+    return isIOSDevice() || /Android|Mobi/i.test(navigator.userAgent || '');
+}
+function updateInstallButton() {
+    // 已安裝（從主畫面開啟）：隱藏按鈕；手機一律顯示；電腦只在瀏覽器支援安裝時顯示
+    var show = !isStandaloneApp() && (isMobileDevice() || !!deferredInstallPrompt);
+    installBtn.classList.toggle('is-hidden', !show);
+}
+
+window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    updateInstallButton();
+});
+window.addEventListener('appinstalled', function () {
+    deferredInstallPrompt = null;
+    installBtn.classList.add('is-hidden');
+});
+
+function showInstallModal(title, html) {
+    document.getElementById('installModalTitle').textContent = title;
+    document.getElementById('installModalBody').innerHTML = html;
+    document.getElementById('installModal').classList.add('show');
+}
+function closeInstallModal() {
+    document.getElementById('installModal').classList.remove('show');
+}
+
+function handleInstallClick() {
+    // Android Chrome、電腦 Chrome／Edge：直接跳出系統安裝視窗
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(function () {
+            deferredInstallPrompt = null;
+            updateInstallButton();
+        });
+        return;
+    }
+    // LINE 內建瀏覽器：無法安裝，先改用瀏覽器開啟
+    if (isLineInAppBrowser()) {
+        var url = location.origin + location.pathname + '?openExternalBrowser=1' + (location.hash || '');
+        showInstallModal('請先用瀏覽器開啟',
+            '<p>LINE 裡無法加到主畫面。請點右上角「⋮」或「…」，選「以預設瀏覽器開啟」，或<a href="' + url + '">點這裡改用瀏覽器開啟</a>，再按一次安裝。</p>');
+        return;
+    }
+    // iPhone／iPad
+    if (isIOSDevice()) {
+        var isSafari = /Safari/i.test(navigator.userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent);
+        if (!isSafari) {
+            showInstallModal('請用 Safari 開啟', '<p>請複製網址，改用 Safari 開啟本頁，再按一次安裝。</p>');
+            return;
+        }
+        showInstallModal('加到主畫面',
+            '<ol><li>點下方 Safari 的分享鈕</li><li>往下滑，選「加入主畫面」</li><li>按右上角「新增」</li></ol>' +
+            '<p>之後從桌面的靜思語錄圖示開啟，即為全螢幕。</p>');
+        return;
+    }
+    // 其他（例如 Android 其他瀏覽器、系統尚未準備好）
+    showInstallModal('加到主畫面',
+        '<p>請點瀏覽器右上角選單「⋮」，選「安裝應用程式」或「加到主畫面」。</p>' +
+        '<p>之後從桌面的靜思語錄圖示開啟，即為全螢幕。</p>');
+}
+
+updateInstallButton();
+</script>
 </body>
 </html>
