@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>靜思語錄產生器</title>
+    <title>JS語錄產生器</title>
     <!-- 🌸 網址列自動補上 ?openExternalBrowser=1（不重新載入、保留 #編號），方便直接複製分享 -->
     <script>
     (function () {
@@ -23,7 +23,7 @@
     <meta name="theme-color" content="#1b365d">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="靜思語錄">
+    <meta name="apple-mobile-web-app-title" content="JS語錄">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <!-- 引入開源霞鶩文楷體作為跨平台字型備援 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -581,7 +581,7 @@
     </div>
     <div class="header-area">
         <div class="header-text">
-            <h1>靜思語錄產生器</h1>
+            <h1>JS 語錄產生器</h1>
             <p class="subtitle subtitle-one-line">輸入心境或選關鍵詞後按獲得啟發鈕得到智慧指引</p>
         </div>
         <img src="avatar.jpg" alt="Header Avatar" class="header-avatar" title="前往 www.rayshieh.com" onclick="window.open('https://www.rayshieh.com', '_blank', 'noopener')">
@@ -598,11 +598,11 @@
     <div class="input-group">
         <textarea id="userPrompt" placeholder="可直接：選取下方關鍵詞，或於此輸入每列十字內、&#10;最多三行的文字後，按獲得啟發鈕找出最貼切的語錄；&#10;亦可勾選任何方塊產生自創佳句或生成問候圖。" onkeydown="checkLineLimitOnKeyDown(event, this)" oninput="enforceMaxCharsPerLine(this)"></textarea>
         <div class="input-right-control">
+            <button class="btn-submit" id="searchBtn" type="button" onclick="doSearch()">獲得啟發</button>
             <div class="input-action-tools">
                 <button class="btn-speak" id="btnSpeakInput" type="button" onclick="speakInputText(this)" title="點擊朗讀輸入內容">🔊</button>
                 <input type="checkbox" class="card-checkbox" id="customInputCheckbox" data-card-id="custom_input" onchange="handleCustomCheckboxChange(this)" title="勾選將輸入文字生成問候圖">
             </div>
-            <button class="btn-submit" id="searchBtn" type="button" onclick="doSearch()">獲得啟發</button>
         </div>
     </div>
 
@@ -3082,7 +3082,7 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
         // 🌸 先把問候圖轉成檔案備用，按 LINE 鈕時才能立刻交給手機分享
         if (canvas.toBlob) {
             canvas.toBlob(function(blob) {
-                currentShareFile = blob ? new File([blob], '靜思問候圖.jpg', { type: 'image/jpeg' }) : null;
+                currentShareFile = blob ? new File([blob], 'JS問候圖.jpg', { type: 'image/jpeg' }) : null;
             }, 'image/jpeg', 0.95);
         }
 
@@ -3111,7 +3111,7 @@ function downloadCurrentMorningImage() {
         var numericId = currentSelectedCardId ? parseInt(currentSelectedCardId, 10) : null;
         var foundCard = numericId ? aphorismsData.find(function(item){ return item.id === numericId || item.origId === numericId; }) : null;
         var nValue = foundCard ? foundCard.origId : (numericId || 1);
-        fileName = '靜思語錄圖' + nValue + '.jpg';
+        fileName = 'JS語錄圖' + nValue + '.jpg';
     }
     
     link.download = fileName;
@@ -3200,7 +3200,7 @@ function shareTextToLine() {
     var bodyText = currentModalText ? currentModalText.trim() : "";
     if (!bodyText) return;
 
-    // 🌸 文字後面附上網址：靜思語錄附該句的連結；自創語和自己輸入的文字附首頁連結
+    // 🌸 文字後面附上網址：JS 語錄附該句的連結；自創語和自己輸入的文字附首頁連結
     var shareMessage;
     if (currentSelectedCardId === '9999') {
         shareMessage = "開示金句：" + bodyText + "\n" + buildHomeUrl();          // 自創金句
@@ -3208,7 +3208,7 @@ function shareTextToLine() {
         shareMessage = bodyText + "\n" + buildHomeUrl();                        // 自己輸入的文字
     } else {
         var quoteNum = parseInt(currentSelectedCardId, 10);
-        shareMessage = "靜思語錄：" + bodyText + "\n" + (quoteNum > 0 ? buildQuoteUrl(quoteNum) : buildHomeUrl());   // 靜思語錄原句
+        shareMessage = "JS 語錄：" + bodyText + "\n" + (quoteNum > 0 ? buildQuoteUrl(quoteNum) : buildHomeUrl());   // JS 語錄原句
     }
 
     var lineUrl = "https://line.me/R/msg/text/?" + encodeURIComponent(shareMessage);
@@ -3436,7 +3436,7 @@ function copyAiAphorismToClipboard(text, btn) {
 // 🌸 複製金句文字與分享網址
 function copyQuoteToClipboard(num, btn) {
     var found = aphorismsData.find(function(item) { return item.origId === num; });
-    var copyText = (found ? '靜思語句：' + found.content + '\n' : '') + buildQuoteUrl(num);
+    var copyText = (found ? 'JS 語句：' + found.content + '\n' : '') + buildQuoteUrl(num);
     var done = function() {
         showToast(QUOTE_COPIED_MESSAGE, 4000);
         if (btn && btn.classList && btn.classList.contains('btn-copy')) showCopyTooltip(btn);
@@ -3521,7 +3521,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261117b';
+var APP_VERSION = 'v261117c';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
@@ -3589,13 +3589,13 @@ function handleInstallClick() {
         }
         showInstallModal('加到主畫面',
             '<ol><li>點下方 Safari 的分享鈕</li><li>往下滑，選「加入主畫面」</li><li>按右上角「新增」</li></ol>' +
-            '<p>之後從桌面的靜思語錄圖示開啟，即為全螢幕。</p>');
+            '<p>之後從桌面的 JS語錄圖示開啟，即為全螢幕。</p>');
         return;
     }
     // 其他（例如 Android 其他瀏覽器、系統尚未準備好）
     showInstallModal('加到主畫面',
         '<p>請點瀏覽器右上角選單「⋮」，選「安裝應用程式」或「加到主畫面」。</p>' +
-        '<p>之後從桌面的靜思語錄圖示開啟，即為全螢幕。</p>');
+        '<p>之後從桌面的 JS語錄圖示開啟，即為全螢幕。</p>');
 }
 
 updateInstallButton();

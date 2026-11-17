@@ -1,7 +1,7 @@
 {
-  "name": "靜思語錄產生器",
-  "short_name": "靜思語錄",
-  "description": "靜思語錄金句、問候圖與結緣語產生器",
+  "name": "JS語錄產生器",
+  "short_name": "JS語錄",
+  "description": "JS語錄金句、問候圖與結緣語產生器",
   "lang": "zh-TW",
   "id": "/",
   "start_url": "/?openExternalBrowser=1",
