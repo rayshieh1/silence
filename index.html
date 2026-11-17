@@ -3521,7 +3521,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261117c';
+var APP_VERSION = 'v261117d';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
@@ -3601,7 +3601,7 @@ function handleInstallClick() {
 updateInstallButton();
 
 // 🌸 頁首自動排版：
-//   副標題一行、下緣切齊頭像下緣；中心對齊「錄」，若「引」字超過輸入格右緣，就以輸入格右緣往左推
+//   副標題一行、下緣切齊頭像下緣；中心對齊標題「錄」與「產」之間的縫隙，若「引」字超過輸入格右緣，就以輸入格右緣往左推
 //   版本資訊在同一列最左邊、與副標題同字級；副標題字級上限＝關鍵詞字級
 //   標題放大：不碰到左邊安裝鈕與右邊頭像，且「標題＋副標題」總高＝頭像高（60px）
 function measureTextEm(text, refEl, letterSpacingPx) {
@@ -3632,16 +3632,30 @@ function fitHeaderSubtitle() {
     var kw = document.querySelector('.keyword-badge');
     var kwFont = kw ? parseFloat(getComputedStyle(kw).fontSize) : 12.8;
 
-    // 1. 副標題與版本字級
+    // 1. 副標題與版本字級（副標題的中心對齊標題「錄」「產」之間的縫隙；縫隙位置隨標題字級而變，所以反覆算 3 次）
     var subEm = measureTextEm(sub.textContent, sub) / 100;
     var verEm = measureTextEm(ver.textContent || 'v000000', ver) / 100;
-    var center = W / 2;  // 「錄」是標題 7 字的正中間
-    var s = Math.min(
-        kwFont,
-        (inputRight - GAP) / (subEm + verEm),        // 右緣貼齊輸入格時，左邊不碰到版本
-        (center - GAP) / (subEm / 2 + verEm),        // 置中時，左邊不碰到版本
-        (inputRight) / subEm
-    );
+    var titleText = h1.textContent;
+    var titleEm = measureTextEm(titleText, h1, 0) / 100;   // 不含字距的寬度（每 1px 字級）
+    var gapIdx = titleText.indexOf('錄產');
+    var preEm = gapIdx >= 0 ? measureTextEm(titleText.slice(0, gapIdx + 1), h1, 0) / 100 : titleEm / 2;
+    var preN = gapIdx >= 0 ? gapIdx + 1 : titleText.length / 2;
+    var fByWidth = (W - 2 * SIDE + 3.5) / titleEm;          // 字距 -0.5px
+    var s, f = fByWidth, center = W / 2, subH;
+    for (var pass = 0; pass < 3; pass++) {
+        // 標題置中：縫隙位置＝標題左緣＋「…錄」的寬度（含字距 -0.5px）
+        center = W / 2 - (titleEm * f - 0.5 * titleText.length) / 2 + (preEm * f - 0.5 * preN);
+        s = Math.min(
+            kwFont,
+            (inputRight - GAP) / (subEm + verEm),        // 右緣貼齊輸入格時，左邊不碰到版本
+            (center - GAP) / (subEm / 2 + verEm),        // 置中時，左邊不碰到版本
+            (inputRight) / subEm
+        );
+        subH = s * SUB_LH;
+        f = Math.min(fByWidth, (HEADER_H - subH) / H1_LH);
+    }
+    center = W / 2 - (titleEm * f - 0.5 * titleText.length) / 2 + (preEm * f - 0.5 * preN);
+    s = Math.floor(s * 100) / 100;   // 字級無條件捨去到小數 2 位，避免進位後版本與副標題間隔小於 6px
     sub.style.setProperty('font-size', s.toFixed(2) + 'px', 'important');
     ver.style.fontSize = s.toFixed(2) + 'px';
     var subW = subEm * s;
@@ -3649,11 +3663,6 @@ function fitHeaderSubtitle() {
     sub.style.left = left.toFixed(1) + 'px';
 
     // 2. 標題字級
-    var subH = s * SUB_LH;
-    var titleEm = measureTextEm(h1.textContent, h1, 0) / 100;   // 不含字距的寬度（每 1px 字級）
-    var fByWidth = (W - 2 * SIDE + 3.5) / titleEm;          // 字距 -0.5px × 7 字
-    var fByHeight = (HEADER_H - subH) / H1_LH;
-    var f = Math.min(fByWidth, fByHeight);
     h1.style.fontSize = f.toFixed(2) + 'px';
 
     // 3. 多出的高度平均分配在標題上方與標題、副標題之間
