@@ -507,33 +507,30 @@
             color: #8a6d1d; cursor: pointer; padding: 4px;
         }
 
-        /* ===== 🌸 頁首：頭像在左上、安裝鈕與版本在右上（頁首高度維持 60px） ===== */
-        .header-avatar { margin-left: 0 !important; margin-right: auto !important; }
+        /* ===== 🌸 頁首：安裝鈕與版本在左上、頭像在右上（頁首高度維持 60px） ===== */
         .install-area {
-            position: absolute; right: 0; top: 0; width: 76px; height: 60px; z-index: 2;
+            position: absolute; left: 0; top: 0; width: 60px; height: 60px; z-index: 2;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
         }
-        /* 安裝鈕：和「獲得啟發」鈕同寬、同字級字距；圖示佔「獲得」兩字的寬度，所以「安裝」和「啟發」上下對齊 */
+        /* 安裝鈕：寬度與頭像相同（60px）、高度與「獲得啟發」鈕相同（32px）；上緣比標題上緣低一點（由程式自動計算） */
         .btn-install {
-            width: 76px; height: 42px; padding: 0; border: none; border-radius: 8px;
+            width: 60px; height: 32px; margin-top: 7px; padding: 0; border: none; border-radius: 8px; gap: 2px;
             background-color: var(--primary-color); color: #ffffff;
             font-size: 14px; letter-spacing: 0.3px; font-weight: bold; white-space: nowrap; cursor: pointer;
             display: flex; align-items: center; justify-content: center; box-sizing: border-box;
             user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; outline: none;
         }
         .btn-install:active { opacity: 0.8; }
-        .btn-install .install-icon { width: calc(2em + 0.6px); display: inline-flex; align-items: center; justify-content: center; }
-        .btn-install .install-icon svg { width: 18px; height: 18px; }
+        .btn-install .install-icon { display: inline-flex; align-items: center; justify-content: center; }
+        .btn-install .install-icon svg { width: 17px; height: 17px; }
         .btn-install.is-hidden { visibility: hidden; }
-        .app-version { font-size: 11px; line-height: 18px; height: 18px; color: #888; letter-spacing: 0.2px; }
+        /* 版本資訊：下緣貼齊輸入格上緣 */
+        .app-version { margin-top: auto; margin-bottom: -2px; font-size: 11px; line-height: 14px; height: 14px; color: #888; letter-spacing: 0.2px; }
 
-        /* 副標題：整行寬度和「靜思語錄產生器」相同（標題 7 字、字距 -0.5px；副標 27 字） */
+        /* 副標題：在安裝區右側與頭像左緣之間，依空間自動調整字級（由程式計算）；放不下一行時自動兩行 */
         .subtitle-one-line {
-            padding-left: 0 !important; padding-right: 0 !important; letter-spacing: 0 !important;
-            font-size: calc((7 * 1.8rem - 3.5px) / 27) !important;
-        }
-        @media (max-width: 680px) {
-            .subtitle-one-line { font-size: calc((7 * 1.55rem - 3.5px) / 27) !important; }
+            padding-left: 66px !important; padding-right: 66px !important; letter-spacing: 0 !important;
+            line-height: 1.2 !important; font-size: 10.8px;
         }
 
         /* 安裝教學視窗 */
@@ -3506,7 +3503,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261116';
+var APP_VERSION = 'v261117';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
@@ -3584,6 +3581,57 @@ function handleInstallClick() {
 }
 
 updateInstallButton();
+
+// 🌸 副標題自動字級：
+//   最小＝關鍵詞字級小兩號；最大＝標題字級小兩號，且標題＋副標總高不超過頁首 60px
+//   最小字級仍放不下一行時，拆成兩行
+var SUBTITLE_LINES = ['輸入當下境遇或任選核心重點後', '按獲得啟發即可得到智慧指引'];
+function measureTextEm(text, refEl) {
+    var span = document.createElement('span');
+    span.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:100px;letter-spacing:0;';
+    span.style.fontFamily = getComputedStyle(refEl).fontFamily;
+    span.textContent = text;
+    document.body.appendChild(span);
+    var w = span.getBoundingClientRect().width / 100;
+    document.body.removeChild(span);
+    return w;
+}
+function fitHeaderSubtitle() {
+    var header = document.querySelector('.header-area');
+    var h1 = header && header.querySelector('h1');
+    var sub = header && header.querySelector('.subtitle-one-line');
+    if (!header || !h1 || !sub) return;
+
+    var HEADER_H = 60, GAP = 3, LH = 1.2;
+    var h1Font = parseFloat(getComputedStyle(h1).fontSize);
+    var kw = document.querySelector('.keyword-badge');
+    var kwFont = kw ? parseFloat(getComputedStyle(kw).fontSize) : 12.8;
+    var minF = kwFont - 2;
+    var maxF = h1Font - 2;
+    var h1H = h1.getBoundingClientRect().height;
+    var avail = header.clientWidth - 132;  // 左右各讓出 66px（安裝區／頭像 60px＋間距 6px）
+
+    var oneText = SUBTITLE_LINES.join('');
+    var oneEm = measureTextEm(oneText, sub);
+    var oneF = Math.min(maxF, avail / oneEm, (HEADER_H - h1H - GAP) / LH - 1);
+
+    if (oneF >= minF) {
+        sub.textContent = oneText;
+        sub.style.setProperty('font-size', oneF.toFixed(2) + 'px', 'important');
+    } else {
+        // 兩行時固定用最小字級
+        sub.innerHTML = SUBTITLE_LINES[0] + '<br>' + SUBTITLE_LINES[1];
+        sub.style.setProperty('font-size', minF.toFixed(2) + 'px', 'important');
+    }
+
+    // 安裝鈕上緣：比標題上緣低 4px
+    var top = h1.getBoundingClientRect().top - header.getBoundingClientRect().top + 4;
+    installBtn.style.marginTop = Math.max(4, Math.round(top)) + 'px';
+}
+fitHeaderSubtitle();
+window.addEventListener('resize', fitHeaderSubtitle);
+window.addEventListener('load', fitHeaderSubtitle);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeaderSubtitle);
 </script>
 </body>
 </html>
