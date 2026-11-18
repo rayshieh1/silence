@@ -488,6 +488,10 @@
         @media (max-width: 680px) {
             .input-action-tools { padding-right: 6px; }
         }
+        /* 輸入格右邊的喇叭與方塊：可見的下緣貼齊輸入格的下緣線
+           （實測：方塊原本比下緣線高 3px、喇叭圖案高約 3.75px，取 4px，所以各往下移；只動垂直位置，左右欄位不變） */
+        .input-action-tools .btn-speak { position: relative; top: 4px; }
+        .input-action-tools .card-checkbox { position: relative; top: 3px; }
 
         /* 最上方關鍵詞列的左緣，對齊金句卡片內標籤的左緣 */
         #keywordsContainer { padding-left: 8px !important; }
@@ -1248,7 +1252,7 @@ var aphorismsData = [
     {id:404, origId:404, content:"做人要有踏實感，不要只有成就感；踏踏實實地做人，心中多舒服。", semanticTags:["做人","態度","心情"], lines:["做人要有踏實感，", "不要只有成就感；", "踏踏實實地做人，", "心中多舒服。"]},
     {id:405, origId:405, content:"做人要做到三不靠：不靠權力，不靠地位，不靠金錢。", semanticTags:["做人","自律","尊嚴"], lines:["做人要做到三不靠：","不靠權力，","不靠地位，","不靠金錢。"]},
     {id:406, origId:406, content:"難行能行、難捨能捨、難為能為，才能昇華自我的人格。", semanticTags:["努力","堅持","修養","人格"], lines:["難行能行、難捨能捨、","難為能為，才能","昇華自我的人格。"]},
-    {id:407, origId:407, content:"不要把陰影覆藏在心裡，要散發光和熱，生命才有意義。", semanticTags:["解脫","轉念","光明"], lines:["不要把陰影覆藏在心裡，","要散發光和熱，","生命才有意義。"]},
+    {id:407, origId:407, content:"用鼓掌的雙手做環保。", semanticTags:["行動","珍惜","付出"], lines:["用鼓掌的雙手做環保。"]},
     {id:408, origId:408, content:"善於利用時間的人，無時無刻不是修持參禪的好機緣。", semanticTags:["時間", "珍惜", "專注"], lines:["善於利用時間的人，", "無時無刻不是", "修持參禪的好機緣。"]},
     {id:409, origId:409, content:"心平靜，當下就是淨土。", semanticTags:["平靜", "安定", "心情"], lines:["心平靜，", "當下就是淨土。"]},
     {id:410, origId:410, content:"真正的心好，應該是非常自然，沒有一絲一毫地考慮，馬上伸出援手去扶助別人。", semanticTags:["善念", "行動", "關懷", "付出"], lines:["真正的心好，應該是非常自然，", "沒有一絲一毫地考慮，", "馬上伸出援手去扶助別人。"]},
@@ -1316,8 +1320,7 @@ var aphorismsData = [
     {id:472, origId:472, content:"真正的禪，是在日常生活中不起煩惱妄想。", semanticTags:["平靜", "煩惱", "正念"], lines:["真正的禪，", "是在日常生活中", "不起煩惱妄想。"]},
     {id:473, origId:473, content:"心如鏡。雖外在景物不斷轉變，鏡面卻不會轉動，此即境轉而心不轉。", semanticTags:["平靜", "安定", "修養"], lines:["心如鏡。雖外在", "景物不斷轉變，", "鏡面卻不會轉動，", "此即境轉而心不轉。"]},
     {id:474, origId:474, content:"無量功德是在日積月累中，分毫累積聚集而成。", semanticTags:["功德", "堅持", "善念"], lines:["無量功德是在日積月累中，", "分毫累積聚集而成。"]},
-    {id:475, origId:475, content:"聽到好話要感恩，聽到壞話要善解。", semanticTags:["感恩", "包容", "說話"], lines:["聽到好話要感恩，", "聽到壞話要善解。"]},
-    {id:476, origId:476, content:"用鼓掌的雙手做環保。", semanticTags:["行動","珍惜","付出"], lines:["用鼓掌的雙手做環保。"]}
+    {id:475, origId:475, content:"聽到好話要感恩，聽到壞話要善解。", semanticTags:["感恩", "包容", "說話"], lines:["聽到好話要感恩，", "聽到壞話要善解。"]}
 ];
 
 for (var i = 0; i < aphorismsData.length; i++) {
@@ -1779,17 +1782,18 @@ function handleNumberDirectSearch(targetNum, inputElem) {
 
     var relatedTags = targetCard.semanticTags || [];
     var poolCards = aphorismsData.filter(function(item) {
-        if (usedMap[item.id]) return false;
+        if (usedMap[item.id] || areSimilarQuotes(targetCard, item)) return false;
         return relatedTags.some(function(t) { return item.semanticTags && item.semanticTags.indexOf(t) !== -1; });
     });
 
     for (var r = 0; r < poolCards.length && selected.length < 3; r++) {
+        if (isSimilarToAny(selected, poolCards[r])) continue;
         selected.push(poolCards[r]);
         usedMap[poolCards[r].id] = true;
     }
 
     for (var g = 0; g < aphorismsData.length && selected.length < 3; g++) {
-        if (!usedMap[aphorismsData[g].id]) {
+        if (!usedMap[aphorismsData[g].id] && !isSimilarToAny(selected, aphorismsData[g])) {
             selected.push(aphorismsData[g]);
             usedMap[aphorismsData[g].id] = true;
         }
@@ -1931,7 +1935,7 @@ function cardHasExactTag(item, tag) {
 }
 
 function pushUniqueCard(targetArr, item, usedMap) {
-    if (item && !usedMap[item.id] && targetArr.length < 3) {
+    if (item && !usedMap[item.id] && targetArr.length < 3 && !isSimilarToAny(targetArr, item)) {
         targetArr.push(item);
         usedMap[item.id] = true;
         return true;
@@ -3237,12 +3241,48 @@ function shareTextToLine() {
 //    多出來的卡片只往後補，補到「獲得啟發」下方的兩顆按鈕還在第一屏、且最下面還留得下一張自創結緣語卡片為止
 var MIN_CARDS = 3, MAX_CARDS = 6;
 
+// ===== 🌸 同一頁不同時出現「重複或很像」的金句 =====
+// 判斷方式：去掉標點後，兩句完全相同，或 2 字詞重疊度（Jaccard）≥ 0.5，或其中一句幾乎整句被另一句包含（≥ 95%）。
+// 資料裡共 17 組（含 CLAUDE.md 列的 7 組刻意重複）；金句資料有增減或重新編號時，請重新檢查這份清單。
+var SIMILAR_QUOTE_PAIRS = [
+    [7, 284], [72, 238], [73, 239], [87, 214], [117, 205], [124, 317], [154, 224],   // 完全相同（#248/#407 已合併，刪掉 #407）
+    [89, 316], [182, 371], [158, 344], [35, 179],                                                  // 只差幾個字
+    [164, 270], [175, 386], [91, 189], [173, 345], [33, 69], [69, 207]                             // 同一句的長短版
+];
+var SIMILAR_QUOTE_MAP = {};
+SIMILAR_QUOTE_PAIRS.forEach(function(pr) {
+    (SIMILAR_QUOTE_MAP[pr[0]] = SIMILAR_QUOTE_MAP[pr[0]] || {})[pr[1]] = true;
+    (SIMILAR_QUOTE_MAP[pr[1]] = SIMILAR_QUOTE_MAP[pr[1]] || {})[pr[0]] = true;
+});
+function areSimilarQuotes(a, b) {
+    if (!a || !b) return false;
+    if (a.id === b.id) return true;
+    if (a.content === b.content) return true;
+    return !!(SIMILAR_QUOTE_MAP[a.id] && SIMILAR_QUOTE_MAP[a.id][b.id]);
+}
+function isSimilarToAny(list, item) {
+    return list.some(function(x) { return areSimilarQuotes(x, item); });
+}
+// 把已挑好的金句裡「和前面重複或很像」的換掉：從候選中依相關度、出現次數補回到原本的則數
+function dedupeSelected(selected, relevantTags) {
+    var kept = [];
+    selected.forEach(function(it) { if (!isSimilarToAny(kept, it)) kept.push(it); });
+    if (kept.length === selected.length) return selected;
+    var cands = pickExtraCandidates(kept, relevantTags);
+    while (kept.length < selected.length && cands.length) {
+        var c = cands.shift();
+        if (!isSimilarToAny(kept, c)) kept.push(c);
+    }
+    return kept;
+}
+
 // ===== 🌸 每日金句 =====
-// 每天固定一句（台灣時間），每年 1/1 是 #1、12/31 是 #476；重複或太像的金句不列入：
-//   ① 只差標點（完全相同）→ 跳過編號大的；② 約 90% 像（只差一兩個字）→ 跳過編號大的；③ 約 70% 像 → 留較長的
-var DAILY_EXCLUDE_IDS = [205, 214, 224, 238, 239, 284, 317, 407,   // 完全相同（和 #7 #72 #73 #87 #117 #124 #154 #248 重複）
-                         316,                                      // 和 #89 約 93% 像，只差幾個字 → 跳過編號大的
-                         371, 158, 35];                            // 和 #182（同長度）、#344（較長）、#179（較長）約 70~85% 像 → 留長的
+// 每天固定一句（台灣時間），每年 1/1 是 #1、12/31 是最後一號（目前 #475）；重複或太像的金句不列入：
+//   ① 只差標點（完全相同）→ 跳過編號大的；② 約 90% 像（只差一兩個字）→ 跳過編號大的；③ 很像（約 50% 以上或整句被包含）→ 留完整較長的
+var DAILY_EXCLUDE_IDS = [205, 214, 224, 238, 239, 284, 317,   // 完全相同（和 #117 #87 #154 #72 #73 #7 #124 重複）→ 跳過編號大的
+                         316,                                  // 和 #89 約 93% 像、只差幾個字 → 跳過編號大的
+                         371, 158, 35,                         // 和 #182（同長度）、#344、#179 約 75～85% 像 → 留完整較長的
+                         270, 175, 189, 345, 33, 207];         // 和 #164、#386、#91、#173、#69 是同一句的長短版 → 留完整較長的                            // 和 #182（同長度）、#344（較長）、#179（較長）約 70~85% 像 → 留長的
 function taiwanToday() {
     var t = new Date(Date.now() + 8 * 3600 * 1000);   // 一律以台灣時間（UTC+8）算日期
     return { y: t.getUTCFullYear(), m: t.getUTCMonth(), d: t.getUTCDate() };
@@ -3257,7 +3297,7 @@ function seededRandom(seed) {
     };
 }
 // 這一年每天的金句編號：從候選金句（依編號由小到大）中，固定選出 365（閏年 366）句，
-// 1/1 一定是最小編號（#1）、12/31 一定是最大編號（#476）；中間哪些句子被跳過，每年用年份當種子換一批
+// 1/1 一定是最小編號（#1）、12/31 一定是最大編號（目前 #475）；中間哪些句子被跳過，每年用年份當種子換一批
 function buildDailyIds(year) {
     var ids = aphorismsData.map(function(x) { return x.id; })
         .filter(function(id) { return DAILY_EXCLUDE_IDS.indexOf(id) === -1; })
@@ -3309,14 +3349,14 @@ function pickCardsToFit(pinned, candidates) {
     list.innerHTML = '';
     var row = document.getElementById('buttonsRow');
     var room = window.innerHeight - aiReservePx() - (row ? row.getBoundingClientRect().bottom + (window.pageYOffset || 0) : 0);
-    var chosen = [], used = 0, usedContents = {};
-    if (pinned) { chosen.push(pinned); usedContents[pinned.content] = true; used = measureCardHeight(pinned); }
+    var chosen = [], used = 0;
+    if (pinned) { chosen.push(pinned); used = measureCardHeight(pinned); }
     var tries = 0;
     for (var i = 0; i < candidates.length && chosen.length < MAX_CARDS && tries < 40; i++) {
         var c = candidates[i];
-        if (usedContents[c.content] || (pinned && c.id === pinned.id)) continue;
+        if (isSimilarToAny(chosen, c)) continue;                 // 重複或很像的不放同一頁
         var add = (chosen.length ? 4 : 0) + measureCardHeight(c);
-        if (used + add <= room) { chosen.push(c); used += add; usedContents[c.content] = true; }
+        if (used + add <= room) { chosen.push(c); used += add; }
         else tries++;
     }
     if (chosen.length === 0 && candidates.length) chosen.push(candidates[0]);   // 螢幕再小也至少 1 則
@@ -3328,7 +3368,7 @@ var extraCardCounted = {};        // 已計入出現次數的補充金句，避�
 function pickExtraCandidates(shownCards, relevantTags) {
     var usedIds = {}, usedContents = {};
     shownCards.forEach(function(it) { usedIds[it.id] = true; usedContents[it.content] = true; });
-    var pool = aphorismsData.filter(function(it) { return !usedIds[it.id] && !usedContents[it.content]; });
+    var pool = aphorismsData.filter(function(it) { return !usedIds[it.id] && !usedContents[it.content] && !isSimilarToAny(shownCards, it); });
     var scored = pool.map(function(it) {
         var hits = (relevantTags || []).filter(function(t) { return cardHasExactTag(it, t); }).length;
         return { item: it, hits: hits, exp: aphorismShowCounts[it.id] || 0, rnd: Math.random() };
@@ -3410,14 +3450,19 @@ function fitCardsToScreen() {
     var avail = window.innerHeight - aiReservePx();   // 最下面要保留空間給「自創結緣語」卡片
     var n = list.querySelectorAll('.card').length;
     var tries = 0;
+    var shownNow = [].slice.call(list.querySelectorAll('.card .card-checkbox')).map(function(cb) {
+        var id = parseInt(cb.getAttribute('data-card-id'), 10);
+        return aphorismsData.find(function(x) { return x.id === id; });
+    }).filter(Boolean);
     for (var i = 0; i < extraCardCandidates.length && n < MAX_CARDS && tries < 12; i++) {
         var item = extraCardCandidates[i];
+        if (isSimilarToAny(shownNow, item)) continue;            // 和畫面上已有的金句重複或很像：跳過
         var card = createExtraCardElement(item);
         list.appendChild(card);
         if (actionButtonsBottom() > avail) {            // 這張放不下：換下一句試（最多試 12 句），兩顆按鈕要留在第一屏
             list.removeChild(card); tries++; continue;
         }
-        n++;
+        n++; shownNow.push(item);
         if (checkedIds[String(item.id)]) card.querySelector('.card-checkbox').checked = true;
         if (!extraCardCounted[item.id]) {
             extraCardCounted[item.id] = true;
@@ -3538,6 +3583,8 @@ function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlacehold
             }
         }
     }
+
+    selected = dedupeSelected(selected, (explicitPickedTags || []).concat(hitTagsFromInput || []));   // 同一頁不放重複或很像的金句
 
     var currentIds = selected.map(function(item) { return item.id; });
     if (currentIds.length === 3 && lastDisplayedIds.length === 3) {
@@ -3766,7 +3813,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261118';
+var APP_VERSION = 'v261118b';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
