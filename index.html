@@ -461,12 +461,19 @@
         .ai-card .bottom-buttons-row:empty { display: none; }
 
         .quote-number {
-            justify-self: end; font-size: 11px; line-height: 22px; color: #888; white-space: nowrap;
-            /* 喇叭圖案約 18px 置中在 28px 的欄位裡，編號往左內縮 5px，尾數右緣切齊喇叭圖案右緣 */
-            padding-right: 5px;
+            /* #編號靠左：「#」的左緣切齊上方「獲得啟發」鈕的左緣，不管幾位數（偏移量 --qn-shift 由程式量出） */
+            justify-self: start; margin-left: var(--qn-shift, -2px);
+            font-size: 11px; line-height: 22px; color: #888; white-space: nowrap;
             cursor: pointer; letter-spacing: -0.2px;
         }
         .quote-number:active { opacity: 0.6; }
+        /* 「今日」標籤：藍框、白底、藍字（不是按鈕） */
+        .today-tag {
+            display: inline-flex; align-items: center; justify-content: center; flex: none;
+            height: 26px; padding: 0 8px; margin-right: 6px; box-sizing: border-box;
+            border: 1.5px solid var(--primary-color); border-radius: 6px; background: #ffffff; color: var(--primary-color);
+            font-size: 12.8px; font-weight: bold; line-height: 1;
+        }
         .btn-copy.quote-copy-btn, .ai-card .btn-copy { width: 22px; height: 22px; }
         .btn-copy.quote-copy-btn svg, .ai-card .btn-copy svg { width: 20px; height: 20px; }
 
@@ -507,7 +514,7 @@
             color: #8a6d1d; cursor: pointer; padding: 4px;
         }
 
-        /* ===== 🌸 頁首：安裝鈕與版本在左上、頭像在右上（頁首高度維持 60px） ===== */
+        /* ===== 🌸 頁首：安裝鈕在左上、頭像在右上（頁首高度維持 60px） ===== */
         .install-area {
             position: absolute; left: 0; top: 0; width: 60px; height: 60px; z-index: 2;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
@@ -524,10 +531,10 @@
         .btn-install .install-icon { display: inline-flex; align-items: center; justify-content: center; }
         .btn-install .install-icon svg { width: 17px; height: 17px; }
         .btn-install.is-hidden { visibility: hidden; }
-        /* 版本資訊：從最左邊開始，和副標題同一列、同字級，下緣切齊頭像下緣（字級由程式計算） */
+        /* 版本資訊：在右欄最上面（頭像下面、獲得啟發鈕上面），寬度同頭像、置中 */
         .app-version {
-            position: absolute; left: 0; bottom: 0; margin: 0; text-align: left; white-space: nowrap;
-            font-size: 10px; line-height: 1.2; color: #888; letter-spacing: 0;
+            width: 60px; height: 12px; margin: 0; flex: none; text-align: center; white-space: nowrap;
+            font-size: 10.5px; line-height: 12px; color: #888; letter-spacing: 0;
         }
         .header-avatar { cursor: pointer; }
 
@@ -585,12 +592,11 @@
             <p class="subtitle subtitle-one-line">輸入心境或選關鍵詞後按獲得啟發鈕得到智慧指引</p>
         </div>
         <img src="avatar.jpg" alt="Header Avatar" class="header-avatar" title="前往 www.rayshieh.com" onclick="window.open('https://www.rayshieh.com', '_blank', 'noopener')">
-        <!-- 🌸 左上：安裝鈕；版本在左下 -->
+        <!-- 🌸 左上：安裝鈕（版本資訊在右欄：頭像下面、獲得啟發鈕上面） -->
         <div class="install-area">
             <button class="btn-install is-hidden" id="btnInstall" type="button" onclick="handleInstallClick()" title="加到主畫面">
                 <span class="install-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M12 7v7"></path><polyline points="9 11.5 12 14.5 15 11.5"></polyline><path d="M10.5 18.5h3"></path></svg></span><span>安裝</span>
             </button>
-            <div class="app-version" id="appVersion"></div>
         </div>
     </div>
 
@@ -598,6 +604,7 @@
     <div class="input-group">
         <textarea id="userPrompt" placeholder="可直接：選取下方關鍵詞，或於此輸入每列十字內、&#10;最多三行的文字後，按獲得啟發鈕找出最貼切的語錄；&#10;亦可勾選任何方塊產生自創佳句或生成問候圖。" onkeydown="checkLineLimitOnKeyDown(event, this)" oninput="enforceMaxCharsPerLine(this)"></textarea>
         <div class="input-right-control">
+            <div class="app-version" id="appVersion"></div>
             <button class="btn-submit" id="searchBtn" type="button" onclick="doSearch()">獲得啟發</button>
             <div class="input-action-tools">
                 <button class="btn-speak" id="btnSpeakInput" type="button" onclick="speakInputText(this)" title="點擊朗讀輸入內容">🔊</button>
@@ -1869,6 +1876,11 @@ function renderCardsDirectly(selected, primaryCard) {
 
     ensureButtonsInDefaultPos();
     updateAiButtonState();
+
+    // 🌸 依螢幕高度補更多則（和這句同主題的優先）
+    extraCardCounted = {};
+    extraCardCandidates = pickExtraCandidates(selected, primaryCard.semanticTags || []);
+    fitCardsToScreen();
 }
 
 // 🌸 主搜尋點擊事件
@@ -2132,7 +2144,7 @@ function updateAiButtonState() {
         if (count >= 2 && !isCustomChecked) {
             aiBtn.disabled = false;
             aiBtn.classList.add('active');
-            var numText = (count === 2) ? '兩' : '三';
+            var numText = ['', '', '兩', '三', '四', '五', '六'][Math.min(count, 6)];   // 最多 6 則
             aiBtn.textContent = '✨ 融合所選' + numText + '句自創結緣語';
         } else {
             aiBtn.disabled = true;
@@ -2176,8 +2188,14 @@ function fitButtonUsingLabel(btn, baseLabel, maxPx, minPx) {
 }
 
 function fitBottomButtonText() {
-    fitButtonUsingLabel(document.getElementById('aiGenerateBtn'), '✨ 勾選多個金句自創結緣語', 15, 10);
-    fitButtonUsingLabel(document.getElementById('morningImageBtn'), '🌸 勾選一句生成自創問候圖', 15, 10);
+    var aiBtn = document.getElementById('aiGenerateBtn'), morningBtn = document.getElementById('morningImageBtn');
+    // 這兩顆按鈕的 CSS 有 transition: all，字級會慢慢變，量到的是變化中的大小，偶爾會讓文字被截；
+    // 所以量測時先關掉 transition，量完強制重算讓字級立刻定案，再恢復
+    [aiBtn, morningBtn].forEach(function(b) { if (b) b.style.transition = 'none'; });
+    fitButtonUsingLabel(aiBtn, '✨ 勾選多個金句自創結緣語', 15, 10);
+    fitButtonUsingLabel(morningBtn, '🌸 勾選一句生成自創問候圖', 15, 10);
+    [aiBtn, morningBtn].forEach(function(b) { if (b) { void b.offsetWidth; getComputedStyle(b).fontSize; } });
+    [aiBtn, morningBtn].forEach(function(b) { if (b) b.style.transition = ''; });
 }
 
 function triggerMorningModalFromSelected() {
@@ -3215,6 +3233,217 @@ function shareTextToLine() {
     window.open(lineUrl, '_blank');
 }
 
+// 🌸 依手機可視高度自動決定金句則數：最少 3 則（原本的挑句邏輯）、最多 6 則；
+//    多出來的卡片只往後補，補到「獲得啟發」下方的兩顆按鈕還在第一屏、且最下面還留得下一張自創結緣語卡片為止
+var MIN_CARDS = 3, MAX_CARDS = 6;
+
+// ===== 🌸 每日金句 =====
+// 每天固定一句（台灣時間），每年 1/1 是 #1、12/31 是 #476；重複或太像的金句不列入：
+//   ① 只差標點（完全相同）→ 跳過編號大的；② 約 90% 像（只差一兩個字）→ 跳過編號大的；③ 約 70% 像 → 留較長的
+var DAILY_EXCLUDE_IDS = [205, 214, 224, 238, 239, 284, 317, 407,   // 完全相同（和 #7 #72 #73 #87 #117 #124 #154 #248 重複）
+                         316,                                      // 和 #89 約 93% 像，只差幾個字 → 跳過編號大的
+                         371, 158, 35];                            // 和 #182（同長度）、#344（較長）、#179（較長）約 70~85% 像 → 留長的
+function taiwanToday() {
+    var t = new Date(Date.now() + 8 * 3600 * 1000);   // 一律以台灣時間（UTC+8）算日期
+    return { y: t.getUTCFullYear(), m: t.getUTCMonth(), d: t.getUTCDate() };
+}
+function seededRandom(seed) {
+    var a = seed >>> 0;
+    return function() {
+        a = (a + 0x6D2B79F5) | 0;
+        var t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+// 這一年每天的金句編號：從候選金句（依編號由小到大）中，固定選出 365（閏年 366）句，
+// 1/1 一定是最小編號（#1）、12/31 一定是最大編號（#476）；中間哪些句子被跳過，每年用年份當種子換一批
+function buildDailyIds(year) {
+    var ids = aphorismsData.map(function(x) { return x.id; })
+        .filter(function(id) { return DAILY_EXCLUDE_IDS.indexOf(id) === -1; })
+        .sort(function(a, b) { return a - b; });
+    var leap = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+    var days = leap ? 366 : 365, n = ids.length;
+    if (n <= days) return ids;
+    var inner = []; for (var i = 1; i < n - 1; i++) inner.push(i);
+    var rnd = seededRandom(year);
+    for (var k = inner.length - 1; k > 0; k--) {
+        var j = Math.floor(rnd() * (k + 1)); var tmp = inner[k]; inner[k] = inner[j]; inner[j] = tmp;
+    }
+    var picked = inner.slice(0, days - 2).sort(function(a, b) { return a - b; });
+    return [ids[0]].concat(picked.map(function(i) { return ids[i]; }), [ids[n - 1]]);
+}
+function getDailyQuote(dateObj) {
+    var t = dateObj || taiwanToday();
+    var dayIndex = Math.round((Date.UTC(t.y, t.m, t.d) - Date.UTC(t.y, 0, 1)) / 86400000);
+    var id = buildDailyIds(t.y)[dayIndex];
+    return aphorismsData.find(function(x) { return x.id === id; }) || null;
+}
+
+// 最下面要保留給「自創結緣語」卡片的高度（實測：寬 375 以上約 104px，窄螢幕最高約 129px，各多留一點）
+function aiReservePx() { return window.innerWidth < 370 ? 140 : 110; }
+
+// 🌸 #編號靠左：「#」的左緣切齊上方「獲得啟發」鈕的左緣（量出獲得啟發鈕與喇叭欄的左緣差）
+function alignQuoteNumbers() {
+    var btn = document.getElementById('searchBtn');
+    var sp = document.querySelector('#resultsList .card .btn-speak');
+    if (!btn || !sp) return;
+    var shift = btn.getBoundingClientRect().left - sp.getBoundingClientRect().left;
+    document.documentElement.style.setProperty('--qn-shift', shift.toFixed(1) + 'px');
+}
+
+// 量一張卡片放進清單後的高度
+function measureCardHeight(item) {
+    var list = document.getElementById('resultsList');
+    var card = createExtraCardElement(item);
+    card.style.visibility = 'hidden';
+    list.appendChild(card);
+    var h = card.getBoundingClientRect().height;
+    list.removeChild(card);
+    return h;
+}
+// 首頁（隨機顯示）用：先挑「放得下」的金句，保證兩顆按鈕在第一屏、而且下面還留得下自創語卡片
+//   pinned：一定要顯示的那句（今日金句），其餘從 candidates 依序挑，太高放不下的跳過（最多試 40 句）
+function pickCardsToFit(pinned, candidates) {
+    var list = document.getElementById('resultsList');
+    list.innerHTML = '';
+    var row = document.getElementById('buttonsRow');
+    var room = window.innerHeight - aiReservePx() - (row ? row.getBoundingClientRect().bottom + (window.pageYOffset || 0) : 0);
+    var chosen = [], used = 0, usedContents = {};
+    if (pinned) { chosen.push(pinned); usedContents[pinned.content] = true; used = measureCardHeight(pinned); }
+    var tries = 0;
+    for (var i = 0; i < candidates.length && chosen.length < MAX_CARDS && tries < 40; i++) {
+        var c = candidates[i];
+        if (usedContents[c.content] || (pinned && c.id === pinned.id)) continue;
+        var add = (chosen.length ? 4 : 0) + measureCardHeight(c);
+        if (used + add <= room) { chosen.push(c); used += add; usedContents[c.content] = true; }
+        else tries++;
+    }
+    if (chosen.length === 0 && candidates.length) chosen.push(candidates[0]);   // 螢幕再小也至少 1 則
+    return chosen;
+}
+var extraCardCandidates = [];     // 這一輪可補的金句（已排好順序）
+var extraCardCounted = {};        // 已計入出現次數的補充金句，避免重新計算時重複計數
+
+function pickExtraCandidates(shownCards, relevantTags) {
+    var usedIds = {}, usedContents = {};
+    shownCards.forEach(function(it) { usedIds[it.id] = true; usedContents[it.content] = true; });
+    var pool = aphorismsData.filter(function(it) { return !usedIds[it.id] && !usedContents[it.content]; });
+    var scored = pool.map(function(it) {
+        var hits = (relevantTags || []).filter(function(t) { return cardHasExactTag(it, t); }).length;
+        return { item: it, hits: hits, exp: aphorismShowCounts[it.id] || 0, rnd: Math.random() };
+    });
+    scored.sort(function(a, b) {
+        if (b.hits !== a.hits) return b.hits - a.hits;       // 符合關鍵詞多的優先
+        if (a.exp !== b.exp) return a.exp - b.exp;           // 出現次數少的優先
+        return a.rnd - b.rnd;                                 // 再隨機
+    });
+    return scored.map(function(o) { return o.item; });
+}
+
+function createExtraCardElement(item) {
+    var card = document.createElement('div'); card.className = 'card'; card.setAttribute('data-extra', '1');
+    var mainBody = document.createElement('div'); mainBody.className = 'card-main-body';
+    var contentP = document.createElement('p'); contentP.className = 'card-content'; contentP.textContent = item.content;
+    var rightSide = document.createElement('div'); rightSide.className = 'card-right-side';
+
+    var speakBtn = document.createElement('button');
+    speakBtn.className = 'btn-speak'; speakBtn.innerHTML = '🔊'; speakBtn.type = 'button'; speakBtn.title = '點擊朗讀';
+    (function(textToSpeak, btn){ speakBtn.onclick = function() { speakText(textToSpeak, btn); }; })(item.content, speakBtn);
+
+    var checkbox = document.createElement('input');
+    checkbox.type = 'checkbox'; checkbox.className = 'card-checkbox'; checkbox.setAttribute('data-card-id', item.id);
+    checkbox.onchange = function() {
+        var customCb = document.getElementById('customInputCheckbox');
+        if (customCb && customCb.checked) customCb.checked = false;
+        var aiCheckbox = document.querySelector('.ai-card .card-checkbox');
+        if (aiCheckbox && aiCheckbox.checked) aiCheckbox.checked = false;
+        updateAiButtonState();
+    };
+
+    rightSide.appendChild(speakBtn);
+    rightSide.appendChild(checkbox);
+    rightSide.appendChild(createQuoteLinkSpan(item.origId));
+    rightSide.appendChild(createQuoteCopyButton(item.origId));
+    mainBody.appendChild(contentP);
+    mainBody.appendChild(rightSide);
+
+    var metaDiv = document.createElement('div'); metaDiv.className = 'card-meta';
+    var tagContainer = document.createElement('div'); tagContainer.className = 'tag-list-container';
+    var ordered = [];
+    (selectedUserTags || []).forEach(function(ut) {
+        if (cardHasExactTag(item, ut) && ordered.indexOf(ut) === -1) ordered.push(ut);
+    });
+    (item.semanticTags || []).forEach(function(t) { if (ordered.indexOf(t) === -1) ordered.push(t); });
+    ordered.forEach(function(tag) {
+        var tb = document.createElement('button'); tb.className = 'card-tag-btn';
+        if (selectedUserTags.indexOf(tag) !== -1) tb.classList.add('active');
+        tb.textContent = tag; tb.type = 'button';
+        tb.onclick = function() { toggleTagSelection(tag); };
+        tagContainer.appendChild(tb);
+    });
+    metaDiv.appendChild(tagContainer);
+    card.appendChild(mainBody); card.appendChild(metaDiv);
+    return card;
+}
+
+// 兩顆按鈕的下緣（從頁面最上方算起）
+function actionButtonsBottom() {
+    var row = document.getElementById('buttonsRow');
+    if (!row) return 0;
+    return row.getBoundingClientRect().bottom + (window.pageYOffset || 0);
+}
+
+// 把補充卡片補到剛好放得下；primaryCount 張以外的卡片都是補的，先清掉再重補（順序固定，不洗牌）
+function fitCardsToScreen() {
+    var list = document.getElementById('resultsList');
+    if (!list) return;
+    var aiBox = document.getElementById('aiResultBox');
+    if (aiBox && aiBox.children.length > 0) return;       // 正在顯示自創結緣語時不動
+    var checkedIds = {};
+    [].slice.call(list.querySelectorAll('.card[data-extra]')).forEach(function(c) {
+        var cb = c.querySelector('.card-checkbox');
+        if (cb && cb.checked) checkedIds[cb.getAttribute('data-card-id')] = true;   // 重算時保留已勾選的方塊
+        list.removeChild(c);
+    });
+
+    var avail = window.innerHeight - aiReservePx();   // 最下面要保留空間給「自創結緣語」卡片
+    var n = list.querySelectorAll('.card').length;
+    var tries = 0;
+    for (var i = 0; i < extraCardCandidates.length && n < MAX_CARDS && tries < 12; i++) {
+        var item = extraCardCandidates[i];
+        var card = createExtraCardElement(item);
+        list.appendChild(card);
+        if (actionButtonsBottom() > avail) {            // 這張放不下：換下一句試（最多試 12 句），兩顆按鈕要留在第一屏
+            list.removeChild(card); tries++; continue;
+        }
+        n++;
+        if (checkedIds[String(item.id)]) card.querySelector('.card-checkbox').checked = true;
+        if (!extraCardCounted[item.id]) {
+            extraCardCounted[item.id] = true;
+            aphorismShowCounts[item.id] = (aphorismShowCounts[item.id] || 0) + 1;
+        }
+    }
+    updateAiButtonState();
+    alignQuoteNumbers();
+}
+
+// 轉向或寬度改變時重新計算（只動補充卡片）；只有高度改變（例如網址列收起）不處理，避免卡片跳動
+var lastFitWidth = window.innerWidth;
+var fitResizeTimer = null;
+function onViewportChangeForCards() {
+    clearTimeout(fitResizeTimer);
+    fitResizeTimer = setTimeout(function() {
+        if (window.innerWidth === lastFitWidth) return;
+        lastFitWidth = window.innerWidth;
+        fitCardsToScreen();
+    }, 200);
+}
+window.addEventListener('resize', onViewportChangeForCards);
+window.addEventListener('orientationchange', onViewportChangeForCards);
+window.addEventListener('load', fitCardsToScreen);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCardsToScreen);
+
 function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlaceholderToDefault, activeInputText) {
     var list = document.getElementById('resultsList');
     if (!list) return;
@@ -3228,21 +3457,22 @@ function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlacehold
     var usedIdMap = {};
     var hitTagsFromInput = []; 
 
+    var dailyItem = null;
     if (isInitial) {
+        // 🌸 首頁：最上面是今日金句，其餘隨機；依螢幕高度挑放得下的（兩顆按鈕與自創語的空間都要留）
+        dailyItem = getDailyQuote();
         var shuffledPool = aphorismsData.slice().sort(function() { return 0.5 - Math.random(); });
-        for (var i = 0; i < shuffledPool.length; i++) {
-            if (selected.length >= 3) break;
-            pushUniqueCard(selected, shuffledPool[i], usedIdMap);
-        }
+        selected = pickCardsToFit(dailyItem, shuffledPool);
+        selected.forEach(function(it) { usedIdMap[it.id] = true; });
     } else {
         var hasInput = (activeInputText && activeInputText !== "");
         var handTags = explicitPickedTags.slice();
 
         if (isLeastShowMode) {
+            // 🌸 沒選關鍵詞也沒輸入文字：出現次數少的優先、隨機；依螢幕高度挑放得下的
             var leastExposedCards = sortByExposureAndRandom(aphorismsData);
-            for (var lc = 0; lc < leastExposedCards.length && selected.length < 3; lc++) {
-                pushUniqueCard(selected, leastExposedCards[lc], usedIdMap);
-            }
+            selected = pickCardsToFit(null, leastExposedCards);
+            selected.forEach(function(it) { usedIdMap[it.id] = true; });
         } else if (!hasInput) {
             selected = pickCardsByCoverage(handTags, 3, usedIdMap, null);
             if (selected.length < 3) {
@@ -3399,6 +3629,21 @@ function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlacehold
 
     ensureButtonsInDefaultPos();
     updateAiButtonState();
+
+    // 🌸 首頁第一張是今日金句：加上「今日」標籤（放在關鍵詞標籤最前面）
+    if (dailyItem) {
+        var firstTagBox = list.querySelector('.card .tag-list-container');
+        if (firstTagBox) {
+            var todayTag = document.createElement('span');
+            todayTag.className = 'today-tag'; todayTag.textContent = '今日';
+            firstTagBox.insertBefore(todayTag, firstTagBox.firstChild);
+        }
+    }
+
+    // 🌸 依螢幕高度補更多則（關鍵詞與輸入文字命中的優先）
+    extraCardCounted = {};
+    extraCardCandidates = pickExtraCandidates(selected, (explicitPickedTags || []).concat(hitTagsFromInput || []));
+    fitCardsToScreen();
 }
 
 // 🌸 是否在 LINE 內建瀏覽器中開啟
@@ -3521,7 +3766,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261117d';
+var APP_VERSION = 'v261118';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
@@ -3542,6 +3787,7 @@ function updateInstallButton() {
     // 已安裝（從主畫面開啟）：隱藏按鈕；手機一律顯示；電腦只在瀏覽器支援安裝時顯示
     var show = !isStandaloneApp() && (isMobileDevice() || !!deferredInstallPrompt);
     installBtn.classList.toggle('is-hidden', !show);
+    if (typeof fitHeaderSubtitle === 'function') fitHeaderSubtitle();
 }
 
 window.addEventListener('beforeinstallprompt', function (e) {
@@ -3552,6 +3798,7 @@ window.addEventListener('beforeinstallprompt', function (e) {
 window.addEventListener('appinstalled', function () {
     deferredInstallPrompt = null;
     installBtn.classList.add('is-hidden');
+    if (typeof fitHeaderSubtitle === 'function') fitHeaderSubtitle();
 });
 
 function showInstallModal(title, html) {
@@ -3621,56 +3868,61 @@ function fitHeaderSubtitle() {
     var header = document.querySelector('.header-area');
     var h1 = header && header.querySelector('h1');
     var sub = header && header.querySelector('.subtitle-one-line');
-    var ver = document.getElementById('appVersion');
     var input = document.getElementById('userPrompt');
-    if (!header || !h1 || !sub || !ver || !input) return;
+    if (!header || !h1 || !sub || !input) return;
 
-    var HEADER_H = 60, SIDE = 66, GAP = 6, SUB_LH = 1.2, H1_LH = 1.05;
+    var HEADER_H = 60, SIDE = 66, AV_GAP = 6, SUB_LH = 1.2, H1_LH = 1.05;
     var hRect = header.getBoundingClientRect();
     var W = header.clientWidth;
-    var inputRight = input.getBoundingClientRect().right - hRect.left;
+    var inRect = input.getBoundingClientRect();
+    var left0 = inRect.left - hRect.left;            // 輸入框左線
+    var inputRight = inRect.right - hRect.left;
+    var avatar = header.querySelector('.header-avatar');
+    var avatarLeft = avatar ? avatar.getBoundingClientRect().left - hRect.left : W - 68;
+    var instBtn = header.querySelector('.btn-install');
+    var instVisible = !!(instBtn && !instBtn.classList.contains('is-hidden'));
+    var instRight = instBtn ? instBtn.getBoundingClientRect().right - hRect.left : left0 + 60;
     var kw = document.querySelector('.keyword-badge');
     var kwFont = kw ? parseFloat(getComputedStyle(kw).fontSize) : 12.8;
 
-    // 1. 副標題與版本字級（副標題的中心對齊標題「錄」「產」之間的縫隙；縫隙位置隨標題字級而變，所以反覆算 3 次）
     var subEm = measureTextEm(sub.textContent, sub) / 100;
-    var verEm = measureTextEm(ver.textContent || 'v000000', ver) / 100;
     var titleText = h1.textContent;
     var titleEm = measureTextEm(titleText, h1, 0) / 100;   // 不含字距的寬度（每 1px 字級）
     var gapIdx = titleText.indexOf('錄產');
-    var preEm = gapIdx >= 0 ? measureTextEm(titleText.slice(0, gapIdx + 1), h1, 0) / 100 : titleEm / 2;
-    var preN = gapIdx >= 0 ? gapIdx + 1 : titleText.length / 2;
-    var fByWidth = (W - 2 * SIDE + 3.5) / titleEm;          // 字距 -0.5px
-    var s, f = fByWidth, center = W / 2, subH;
-    for (var pass = 0; pass < 3; pass++) {
-        // 標題置中：縫隙位置＝標題左緣＋「…錄」的寬度（含字距 -0.5px）
-        center = W / 2 - (titleEm * f - 0.5 * titleText.length) / 2 + (preEm * f - 0.5 * preN);
-        s = Math.min(
-            kwFont,
-            (inputRight - GAP) / (subEm + verEm),        // 右緣貼齊輸入格時，左邊不碰到版本
-            (center - GAP) / (subEm / 2 + verEm),        // 置中時，左邊不碰到版本
-            (inputRight) / subEm
-        );
-        subH = s * SUB_LH;
-        f = Math.min(fByWidth, (HEADER_H - subH) / H1_LH);
-    }
-    center = W / 2 - (titleEm * f - 0.5 * titleText.length) / 2 + (preEm * f - 0.5 * preN);
-    s = Math.floor(s * 100) / 100;   // 字級無條件捨去到小數 2 位，避免進位後版本與副標題間隔小於 6px
+    var preN = gapIdx >= 0 ? gapIdx + 1 : Math.floor(titleText.length / 2);
+    var postN = titleText.length - preN;
+    var preEm = measureTextEm(titleText.slice(0, preN), h1, 0) / 100;
+    var postEm = titleEm - preEm;
+
+    // 提示句：字級上限＝關鍵詞字級；左邊至少留到輸入框左線，右端不超過輸入框右緣（不碰頭像）
+    var s = Math.floor(Math.min(kwFont, (inputRight - left0) / subEm) * 100) / 100;
     sub.style.setProperty('font-size', s.toFixed(2) + 'px', 'important');
-    ver.style.fontSize = s.toFixed(2) + 'px';
-    var subW = subEm * s;
-    var left = Math.min(center - subW / 2, inputRight - subW);
-    sub.style.left = left.toFixed(1) + 'px';
-
-    // 2. 標題字級
+    var subW = subEm * s, subH = s * SUB_LH;
+    var f, subLeft;
+    if (!instVisible) {
+        // 沒有安裝鈕（已安裝的 app）：標題與提示句都靠左，左緣對齊輸入框左線，向右延伸到頭像左邊
+        subLeft = left0;
+        f = Math.min((avatarLeft - AV_GAP - left0 + 0.5 * titleText.length) / titleEm, (HEADER_H - subH) / H1_LH);
+        h1.style.textAlign = 'left';
+        h1.style.position = 'relative'; h1.style.left = '0px';
+        h1.style.paddingLeft = '0px'; h1.style.boxSizing = 'border-box';
+    } else {
+        // 有安裝鈕：標題「錄」「產」之間對齊螢幕中線；提示句中心對齊中線（不超過輸入框右緣）
+        subLeft = Math.min(W / 2 - subW / 2, inputRight - subW);
+        var fByWidth = Math.min((W / 2 - SIDE + 0.5 * preN) / preEm, (W / 2 - SIDE + 0.5 * postN) / postEm);
+        f = Math.min(fByWidth, (HEADER_H - subH) / H1_LH);
+        var preW = preEm * f - 0.5 * preN, totalW = titleEm * f - 0.5 * titleText.length;
+        h1.style.textAlign = 'center';
+        h1.style.position = 'relative'; h1.style.left = (totalW / 2 - preW).toFixed(1) + 'px';
+        h1.style.paddingLeft = '0px';
+    }
+    sub.style.left = subLeft.toFixed(1) + 'px';
     h1.style.fontSize = f.toFixed(2) + 'px';
-
-    // 3. 多出的高度平均分配在標題上方與標題、副標題之間
-    var spare = Math.max(0, HEADER_H - subH - f * H1_LH);
-    h1.style.marginTop = (spare / 2).toFixed(1) + 'px';
+    h1.style.marginTop = (Math.max(0, HEADER_H - subH - f * H1_LH) / 2).toFixed(1) + 'px';
 }
+
 fitHeaderSubtitle();
-window.addEventListener('resize', fitHeaderSubtitle);
+window.addEventListener('resize', function() { fitHeaderSubtitle(); alignQuoteNumbers(); });
 window.addEventListener('load', fitHeaderSubtitle);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeaderSubtitle);
 </script>
