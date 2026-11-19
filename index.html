@@ -423,10 +423,13 @@
             font-size: clamp(8px, calc((100vw - 112px) / 24.5), 16px); line-height: 20px;
         }
         .card-content { font-size: 1.22rem; line-height: 1.38; }
+        /* 字大小：只放大首頁金句卡片的文字（倍率由 --fs-scale 決定：標準 1、大 1.2、特大 1.4） */
+        #resultsList .card .card-content { font-size: calc(1.22rem * var(--fs-scale, 1)); }
         .btn-generate-ai, .btn-morning-image { min-width: 0; overflow: hidden; font-size: 15px; }
         @media (max-width: 680px) {
             textarea::placeholder { font-size: clamp(8px, calc((100vw - 110px) / 24.5), 16px); line-height: 20px; }
             .card-content { font-size: 1.15rem; line-height: 1.33; }
+            #resultsList .card .card-content { font-size: calc(1.15rem * var(--fs-scale, 1)); }
             .btn-generate-ai, .btn-morning-image { font-size: 15px; }
         }
 
@@ -524,8 +527,24 @@
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
         }
         /* 安裝鈕：寬度與頭像相同（60px）、高度與「獲得啟發」鈕相同（32px）；上緣比標題上緣低一點（由程式自動計算） */
+        /* 字大小鈕：和安裝鈕同寬（60px），在安裝鈕上面；兩個合計 26 + 2 + 32 = 60px，和頭像同高 */
+        .font-ctl {
+            width: 60px; height: 26px; flex: none; box-sizing: border-box; padding: 2px;
+            display: flex; align-items: stretch; justify-content: space-between;
+            border-radius: 6px; background: var(--primary-color);
+        }
+        .fs-seg {
+            flex: 1; min-width: 0; margin: 0; padding: 0; border: none; border-radius: 4px; background: transparent; color: #ffffff;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; outline: none;
+            -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
+        }
+        /* 三個 A 是畫出來的（小、中、大），底線都在同一條（svg 內 y=15），不受字型影響 */
+        .fs-seg svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+        /* 沒有安裝鈕（已安裝的 app）：三個 A 直排在最左上角，最小的在最上面；寬 28、高 60，和頭像同高 */
+        .font-ctl.vertical { width: 28px; height: 60px; flex-direction: column; justify-content: flex-start; align-self: flex-start; gap: 1px; }
+        .fs-seg.active { background: #ffffff; color: var(--primary-color); }
         .btn-install {
-            width: 60px; height: 32px; margin-top: 0; padding: 0; border: none; border-radius: 8px; gap: 2px;
+            width: 60px; height: 32px; margin-top: 2px; padding: 0; border: none; border-radius: 8px; gap: 2px;
             background-color: var(--primary-color); color: #ffffff;
             font-size: 14px; letter-spacing: 0.3px; font-weight: bold; white-space: nowrap; cursor: pointer;
             display: flex; align-items: center; justify-content: center; box-sizing: border-box;
@@ -534,7 +553,7 @@
         .btn-install:active { opacity: 0.8; }
         .btn-install .install-icon { display: inline-flex; align-items: center; justify-content: center; }
         .btn-install .install-icon svg { width: 17px; height: 17px; }
-        .btn-install.is-hidden { visibility: hidden; }
+        .btn-install.is-hidden { display: none; }
         /* 版本資訊：在右欄最上面（頭像下面、獲得啟發鈕上面），寬度同頭像、置中 */
         .app-version {
             width: 60px; height: 12px; margin: 0; flex: none; text-align: center; white-space: nowrap;
@@ -598,6 +617,12 @@
         <img src="avatar.jpg" alt="Header Avatar" class="header-avatar" title="前往 www.rayshieh.com" onclick="window.open('https://www.rayshieh.com', '_blank', 'noopener')">
         <!-- 🌸 左上：安裝鈕（版本資訊在右欄：頭像下面、獲得啟發鈕上面） -->
         <div class="install-area">
+            <!-- 🌸 字大小鈕：三個 A（小、中、大），目前選到的那個 A 是藍框白底，其餘實心藍；只放大金句卡片的文字 -->
+            <div class="font-ctl" id="fontSizeCtl" role="group" aria-label="字大小">
+                <button type="button" class="fs-seg" data-level="0" onclick="setFontLevel(0)" title="字小（標準）" aria-label="字小"><svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true" focusable="false"><path d="M6.06 14.3 L9.0 8.7 L11.94 14.3 M7.0 12.51 L11.0 12.51" stroke-width="1.4"/></svg></button>
+                <button type="button" class="fs-seg" data-level="1" onclick="setFontLevel(1)" title="字大" aria-label="字大"><svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4.8 14.0 L9.0 6.0 L13.2 14.0 M6.14 11.44 L11.86 11.44" stroke-width="2.0"/></svg></button>
+                <button type="button" class="fs-seg" data-level="2" onclick="setFontLevel(2)" title="字特大" aria-label="字特大"><svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true" focusable="false"><path d="M3.54 13.7 L9.0 3.3 L14.46 13.7 M5.29 10.37 L12.71 10.37" stroke-width="2.6"/></svg></button>
+            </div>
             <button class="btn-install is-hidden" id="btnInstall" type="button" onclick="handleInstallClick()" title="加到主畫面">
                 <span class="install-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M12 7v7"></path><polyline points="9 11.5 12 14.5 15 11.5"></polyline><path d="M10.5 18.5h3"></path></svg></span><span>安裝</span>
             </button>
@@ -721,7 +746,44 @@
 </div>
 
 <script>
-var defaultPlaceholderText = "可直接：選取下方關鍵詞，或於此輸入每列十字內、\n最多三行的文字後，按獲得啟發鈕找出最貼切的語錄；\n亦可勾選任何方塊產生自創佳句或生成問候圖。";
+// 🌸 輸入格預設灰字：依輸入格寬度換排法（窄螢幕三行；筆電一行；中間自動換行）
+var PLACEHOLDER_THREE = "可直接：選取下方關鍵詞，或於此輸入每列十字內、\n最多三行的文字後，按獲得啟發鈕找出最貼切的語錄；\n亦可勾選任何方塊產生自創佳句或生成問候圖。";
+var PLACEHOLDER_ONE = "可直接：選取下方關鍵詞，或於此輸入每列十字內、最多三行的文字後，按獲得啟發鈕找出最貼切的語錄；亦可勾選任何方塊產生自創佳句或生成問候圖。";
+var PLACEHOLDER_WRAP_RATIO = 1.3;   // 輸入格寬度超過「最長一行」的 1.3 倍，三行的硬換行就太空，改成自動換行
+var defaultPlaceholderText = PLACEHOLDER_THREE;
+function measurePlaceholderEm(text, ta) {
+    var span = document.createElement('span');
+    span.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-size:100px;letter-spacing:normal;';
+    span.style.fontFamily = getComputedStyle(ta).fontFamily;
+    span.textContent = text;
+    document.body.appendChild(span);
+    var w = span.getBoundingClientRect().width / 100;
+    document.body.removeChild(span);
+    return w;
+}
+function updateDefaultPlaceholder() {
+    var ta = document.getElementById('userPrompt');
+    if (!ta) return;
+    var cs = getComputedStyle(ta);
+    var inner = ta.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if (!(inner > 0)) return;
+    var vw = window.innerWidth;
+    var fs = Math.max(8, Math.min(16, (vw - (vw <= 680 ? 110 : 112)) / 24.5));   // 提示字字級（CSS 的 clamp 算法）
+    var oneEm = measurePlaceholderEm(PLACEHOLDER_ONE, ta);
+    var threeEm = Math.max.apply(null, PLACEHOLDER_THREE.split('\n').map(function(t) { return measurePlaceholderEm(t, ta); }));
+    var next;
+    if (inner >= oneEm * fs) next = PLACEHOLDER_ONE;                                // 放得下整句：一行
+    else if (inner < threeEm * fs * PLACEHOLDER_WRAP_RATIO) next = PLACEHOLDER_THREE;   // 窄螢幕：三行
+    else next = PLACEHOLDER_ONE;                                                    // 中間：一整句，讓瀏覽器自動換行
+    var old = defaultPlaceholderText;
+    defaultPlaceholderText = next;
+    // 目前顯示的是預設灰字才換（顯示上次輸入的文字或 #編號時不動）
+    if (ta.placeholder === old || ta.placeholder === PLACEHOLDER_THREE || ta.placeholder === PLACEHOLDER_ONE) ta.placeholder = next;
+}
+updateDefaultPlaceholder();
+window.addEventListener('resize', updateDefaultPlaceholder);
+window.addEventListener('load', updateDefaultPlaceholder);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(updateDefaultPlaceholder);
 var aphorismShowCounts = {}; 
 var tagShowCounts = {}; 
 var lastDisplayedIds = []; 
@@ -1812,6 +1874,7 @@ function handleNumberDirectSearch(targetNum, inputElem) {
 function renderCardsDirectly(selected, primaryCard) {
     var list = document.getElementById('resultsList');
     if (!list) return;
+    currentListMode = 'search';
 
     currentDisplayedCards = selected.slice();
     lastDisplayedIds = selected.map(function(item) { return item.id; });
@@ -3320,6 +3383,41 @@ function getDailyQuote(dateObj) {
     return aphorismsData.find(function(x) { return x.id === id; }) || null;
 }
 
+// ===== 🌸 字大小（只放大金句卡片的文字）=====
+var FONT_LEVELS = [{ scale: 1 }, { scale: 1.2 }, { scale: 1.4 }];   // 標準、大、特大
+var fontLevel = 0;
+var currentListMode = 'home';    // 'home'（首頁）、'random'（隨機）、'search'（搜尋結果）
+function applyFontLevel() {
+    var lv = FONT_LEVELS[fontLevel] || FONT_LEVELS[0];
+    document.documentElement.style.setProperty('--fs-scale', String(lv.scale));
+    [].slice.call(document.querySelectorAll('#fontSizeCtl .fs-seg')).forEach(function(b) {
+        var on = parseInt(b.getAttribute('data-level'), 10) === fontLevel;
+        b.classList.toggle('active', on);                 // 選到的 A：藍框白底；其餘實心藍
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+}
+function initFontLevel() {
+    try { var v = parseInt(localStorage.getItem('jsFontLevel'), 10); if (v >= 0 && v < FONT_LEVELS.length) fontLevel = v; } catch (e) {}
+    applyFontLevel();
+}
+function setFontLevel(level) {
+    if (!(level >= 0 && level < FONT_LEVELS.length) || level === fontLevel) return;
+    fontLevel = level;
+    try { localStorage.setItem('jsFontLevel', String(fontLevel)); } catch (e) {}
+    applyFontLevel();
+    var list = document.getElementById('resultsList');
+    if (!list) return;
+    // 首頁與隨機顯示：字變大後從最後一張開始拿掉，直到兩顆按鈕與自創語空間又在第一屏（至少留 1 張）
+    if (currentListMode !== 'search') {
+        var guard = 0;
+        while (list.querySelectorAll('.card').length > 1 && actionButtonsBottom() + aiReservePx() > window.innerHeight && guard < 12) {
+            list.removeChild(list.lastElementChild); guard++;
+        }
+    }
+    fitCardsToScreen();      // 字變小時再補卡片；搜尋結果的前 3 句不動
+    alignQuoteNumbers();
+}
+
 // 最下面要保留給「自創結緣語」卡片的高度（實測：寬 375 以上約 104px，窄螢幕最高約 129px，各多留一點）
 function aiReservePx() { return window.innerWidth < 370 ? 140 : 110; }
 
@@ -3502,6 +3600,7 @@ function renderUI(isInitial, explicitPickedTags, isLeastShowMode, resetPlacehold
     var usedIdMap = {};
     var hitTagsFromInput = []; 
 
+    currentListMode = isInitial ? 'home' : (isLeastShowMode ? 'random' : 'search');
     var dailyItem = null;
     if (isInitial) {
         // 🌸 首頁：最上面是今日金句，其餘隨機；依螢幕高度挑放得下的（兩顆按鈕與自創語的空間都要留）
@@ -3790,6 +3889,8 @@ if (isLineInAppBrowser()) {
     if (lineLink) lineLink.href = location.origin + location.pathname + '?openExternalBrowser=1' + (location.hash || '');
 }
 
+initFontLevel();
+
 if (!openFromUrlHash()) {
     renderUI(true);
 }
@@ -3813,7 +3914,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261118b';
+var APP_VERSION = 'v261118c';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
@@ -3918,56 +4019,39 @@ function fitHeaderSubtitle() {
     var input = document.getElementById('userPrompt');
     if (!header || !h1 || !sub || !input) return;
 
-    var HEADER_H = 60, SIDE = 66, AV_GAP = 6, SUB_LH = 1.2, H1_LH = 1.05;
+    var HEADER_H = 60, AV_GAP = 6, SUB_LH = 1.2, H1_LH = 1.05;
     var hRect = header.getBoundingClientRect();
-    var W = header.clientWidth;
     var inRect = input.getBoundingClientRect();
     var left0 = inRect.left - hRect.left;            // 輸入框左線
     var inputRight = inRect.right - hRect.left;
     var avatar = header.querySelector('.header-avatar');
-    var avatarLeft = avatar ? avatar.getBoundingClientRect().left - hRect.left : W - 68;
+    var avatarLeft = avatar ? avatar.getBoundingClientRect().left - hRect.left : header.clientWidth - 68;
+    var ctl = header.querySelector('.font-ctl');
     var instBtn = header.querySelector('.btn-install');
     var instVisible = !!(instBtn && !instBtn.classList.contains('is-hidden'));
-    var instRight = instBtn ? instBtn.getBoundingClientRect().right - hRect.left : left0 + 60;
+    if (ctl) ctl.classList.toggle('vertical', !instVisible);     // 沒有安裝鈕：三個 A 直排在最左上角
+    var ctlRight = ctl ? ctl.getBoundingClientRect().right - hRect.left : left0 + 60;
     var kw = document.querySelector('.keyword-badge');
     var kwFont = kw ? parseFloat(getComputedStyle(kw).fontSize) : 12.8;
 
-    var subEm = measureTextEm(sub.textContent, sub) / 100;
     var titleText = h1.textContent;
     var titleEm = measureTextEm(titleText, h1, 0) / 100;   // 不含字距的寬度（每 1px 字級）
-    var gapIdx = titleText.indexOf('錄產');
-    var preN = gapIdx >= 0 ? gapIdx + 1 : Math.floor(titleText.length / 2);
-    var postN = titleText.length - preN;
-    var preEm = measureTextEm(titleText.slice(0, preN), h1, 0) / 100;
-    var postEm = titleEm - preEm;
+    var subEm = measureTextEm(sub.textContent, sub) / 100;
 
-    // 提示句：字級上限＝關鍵詞字級；左邊至少留到輸入框左線，右端不超過輸入框右緣（不碰頭像）
-    var s = Math.floor(Math.min(kwFont, (inputRight - left0) / subEm) * 100) / 100;
+    // 標題與提示句：左緣都接在左上角字大小鈕右邊（留 6px）；有安裝鈕時鈕是橫排（寬 60），沒有安裝鈕時三個 A 直排（寬 28），所以標題與提示句會往左
+    var titleLeft = ctlRight + AV_GAP;
+    var subLeft = titleLeft;
+    var s = Math.floor(Math.min(kwFont, (inputRight - subLeft) / subEm) * 100) / 100;   // 字級上限＝關鍵詞字級，右端不超過輸入框右緣
     sub.style.setProperty('font-size', s.toFixed(2) + 'px', 'important');
-    var subW = subEm * s, subH = s * SUB_LH;
-    var f, subLeft;
-    if (!instVisible) {
-        // 沒有安裝鈕（已安裝的 app）：標題與提示句都靠左，左緣對齊輸入框左線，向右延伸到頭像左邊
-        subLeft = left0;
-        f = Math.min((avatarLeft - AV_GAP - left0 + 0.5 * titleText.length) / titleEm, (HEADER_H - subH) / H1_LH);
-        h1.style.textAlign = 'left';
-        h1.style.position = 'relative'; h1.style.left = '0px';
-        h1.style.paddingLeft = '0px'; h1.style.boxSizing = 'border-box';
-    } else {
-        // 有安裝鈕：標題「錄」「產」之間對齊螢幕中線；提示句中心對齊中線（不超過輸入框右緣）
-        subLeft = Math.min(W / 2 - subW / 2, inputRight - subW);
-        var fByWidth = Math.min((W / 2 - SIDE + 0.5 * preN) / preEm, (W / 2 - SIDE + 0.5 * postN) / postEm);
-        f = Math.min(fByWidth, (HEADER_H - subH) / H1_LH);
-        var preW = preEm * f - 0.5 * preN, totalW = titleEm * f - 0.5 * titleText.length;
-        h1.style.textAlign = 'center';
-        h1.style.position = 'relative'; h1.style.left = (totalW / 2 - preW).toFixed(1) + 'px';
-        h1.style.paddingLeft = '0px';
-    }
     sub.style.left = subLeft.toFixed(1) + 'px';
+    var subH = s * SUB_LH;
+    var f = Math.min((avatarLeft - AV_GAP - titleLeft + 0.5 * titleText.length) / titleEm, (HEADER_H - subH) / H1_LH);
+    h1.style.textAlign = 'left';
+    h1.style.position = 'relative'; h1.style.left = '0px';
+    h1.style.boxSizing = 'border-box'; h1.style.paddingLeft = (titleLeft - left0).toFixed(1) + 'px';
     h1.style.fontSize = f.toFixed(2) + 'px';
     h1.style.marginTop = (Math.max(0, HEADER_H - subH - f * H1_LH) / 2).toFixed(1) + 'px';
 }
-
 fitHeaderSubtitle();
 window.addEventListener('resize', function() { fitHeaderSubtitle(); alignQuoteNumbers(); });
 window.addEventListener('load', fitHeaderSubtitle);
