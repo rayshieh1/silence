@@ -308,6 +308,39 @@
         .btn-greeting-option.active { background-color: #1b365d !important; color: #ffffff !important; }
         .btn-greeting-option svg { width: 28px; height: 28px; flex-shrink: 0; display: block; }
 
+        /* 🌸 自選照片鈕：選了照片後，按鈕變成照片縮圖，右上角有 ✕（改回預設背景圖） */
+        .btn-custom-bg { position: relative; background-size: cover; background-position: center; }
+        .btn-custom-bg.has-photo { outline: 2px solid #1b365d; outline-offset: -2px; }
+        .btn-custom-bg.has-photo svg { display: none; }
+        .custom-bg-clear {
+            display: none; position: absolute; top: 0; right: 0; width: 17px; height: 17px; align-items: center; justify-content: center;
+            background: #1b365d; color: #ffffff; font-size: 11px; line-height: 1; border-radius: 0 5px 0 6px; cursor: pointer;
+        }
+        .btn-custom-bg.has-photo .custom-bg-clear { display: inline-flex; }
+        /* 🌸 自選照片的調整面板（縮放、明暗、重設） */
+        .custom-bg-panel { width: 100%; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #334155; }
+        .cbp-row { display: flex; align-items: center; gap: 6px; margin: 0; }
+        .cbp-row input[type=range] { flex: 1; min-width: 0; height: 22px; margin: 0; accent-color: #1b365d; }
+        .cbp-label { width: 28px; flex: none; font-weight: bold; }
+        .cbp-val { width: 34px; flex: none; text-align: right; }
+        .cbp-end { flex: none; color: #64748b; }
+        .cbp-hint { display: flex; align-items: center; gap: 6px; line-height: 1.3; color: #64748b; }
+        .cbp-hint span { flex: 1; }
+        .cbp-reset { flex: none; height: 24px; padding: 0 10px; border: none; border-radius: 6px; background: #e5e5e5; color: #333333; font-size: 12px; font-weight: bold; cursor: pointer; }
+        #morningImgOverlay.adjusting { cursor: grab; touch-action: none; -webkit-touch-callout: none !important; user-select: none; -webkit-user-select: none; }
+        #morningModal.has-custom .modal-canvas-wrapper, #morningModal.has-custom #morningCanvas, #morningModal.has-custom #morningImgOverlay { max-height: calc(72vh - 96px); }
+        /* 最下列現在有 8 個控制項：窄螢幕把按鈕縮小一點，並把「橫幅」鈕的字拿掉只留圖示，才排得下 */
+        @media (max-width: 419px) {
+            .modal-actions .btn-greeting-option, .modal-actions .btn-square-action { width: 36px !important; min-width: 36px !important; max-width: 36px !important; height: 36px !important; min-height: 36px !important; max-height: 36px !important; }
+            .modal-actions .btn-toggle-aspect { height: 36px; }
+        }
+        @media (max-width: 379px) { .btn-toggle-aspect span { display: none; } }
+        @media (max-width: 359px) {
+            .modal-actions .btn-greeting-option, .modal-actions .btn-square-action { width: 32px !important; min-width: 32px !important; max-width: 32px !important; height: 32px !important; min-height: 32px !important; max-height: 32px !important; }
+            .modal-actions .btn-toggle-aspect { height: 32px; }
+            .modal-actions .btn-greeting-option svg { width: 24px; height: 24px; }
+        }
+
         /* 🌸 正方形按鈕標準規格：寬高 38px、灰色底 #e5e5e5、圓角 6px */
         .btn-square-action { 
             width: 38px !important; min-width: 38px !important; max-width: 38px !important; 
@@ -544,17 +577,19 @@
         .font-ctl.vertical { width: 28px; height: 60px; flex-direction: column; justify-content: flex-start; align-self: flex-start; gap: 1px; }
         .fs-seg.active { background: #ffffff; color: var(--primary-color); }
         .btn-install {
-            width: 60px; height: 26px; margin-top: 0; padding: 0 2px; border: none; border-radius: 8px; gap: 0;
+            width: 60px; height: 26px; margin-top: 0; padding: 0; border: none; border-radius: 8px; gap: 0;
             background-color: var(--primary-color); color: #ffffff;
             font-size: 14px; letter-spacing: 0; font-weight: bold; white-space: nowrap; cursor: pointer;
-            display: flex; align-items: flex-end; justify-content: center; box-sizing: border-box;
+            display: flex; align-items: center; justify-content: center; box-sizing: border-box;
             user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; outline: none;
         }
         .btn-install:active { opacity: 0.8; }
-        /* 鈕裡排成「四個字」寬：右邊兩個字的位置放「安裝」（14px×2＝28px），左邊兩個字的位置（28px）留給符號，符號在這兩個字的正中間；符號與「安裝」的上下中線在同一條線 */
-        .btn-install .install-icon { flex: none; width: 28px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 4.5px; }   /* 實測：符號與「安裝」字形的上下中線在同一條線（都在鈕的正中間 53px），各自上下留白相同 */
-        .btn-install .install-icon svg { display: block; width: 18px; height: 18px; }   /* 18px 比 28px 格子左右各剩 5px，正好置中（17px 會落在半像素，被四捨五入後偏 0.5px） */
-        .btn-install .install-text { flex: none; width: 28px; text-align: center; line-height: 14px; margin-bottom: 6px; }
+        /* 鈕裡排成「三個字」寬：符號算一個字、「安」「裝」各一個字，把 60px 三等份（各 20px），每個字都在自己那一格的正中間；
+           符號與「安裝」的上下中線在同一條線（鈕的正中間） */
+        .btn-install .install-icon { flex: none; width: 20px; display: flex; align-items: center; justify-content: center; }
+        .btn-install .install-icon svg { display: block; width: 18px; height: 18px; }
+        .btn-install .install-text { flex: none; display: flex; align-items: center; }
+        .btn-install .install-text span { flex: none; width: 20px; text-align: center; font-size: 18px; line-height: 18px; }
         .btn-install.is-hidden { display: none; }
         /* 版本資訊：在右欄最上面（頭像下面、獲得啟發鈕上面），寬度同頭像、置中 */
         .app-version {
@@ -626,7 +661,7 @@
                 <button type="button" class="fs-seg" data-level="2" onclick="setFontLevel(2)" title="字特大" aria-label="字特大"><svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true" focusable="false"><path d="M5.5 13.88 L9.0 2.12 L12.5 13.88 M6.62 10.12 L11.38 10.12" stroke-width="2.24"/></svg></button>
             </div>
             <button class="btn-install is-hidden" id="btnInstall" type="button" onclick="handleInstallClick()" title="加到主畫面">
-                <span class="install-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M12 7v7"></path><polyline points="9 11.5 12 14.5 15 11.5"></polyline><path d="M10.5 18.5h3"></path></svg></span><span class="install-text">安裝</span>
+                <span class="install-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M12 7v7"></path><polyline points="9 11.5 12 14.5 15 11.5"></polyline><path d="M10.5 18.5h3"></path></svg></span><span class="install-text"><span>安</span><span>裝</span></span>
             </button>
         </div>
     </div>
@@ -680,6 +715,18 @@
             <img id="morningImgOverlay" alt="問候圖（長按可儲存）" />
             <div id="bgNoLabel" class="bg-no-label"></div>
         </div>
+        <input type="file" id="customBgInput" accept="image/*" style="display:none" onchange="onCustomBgFile(this)">
+        <div class="custom-bg-panel" id="customBgPanel" style="display:none">
+            <label class="cbp-row"><span class="cbp-label">縮放</span>
+                <input type="range" id="customBgZoom" min="100" max="400" step="1" value="100" oninput="onCustomBgZoomInput(this.value)" aria-label="縮放照片">
+                <span class="cbp-val" id="customBgZoomVal">1.0×</span></label>
+            <label class="cbp-row"><span class="cbp-label">明暗</span>
+                <span class="cbp-end">暗</span>
+                <input type="range" id="customBgTone" min="-100" max="100" step="1" value="-30" oninput="onCustomBgToneInput(this.value)" aria-label="調整照片明暗">
+                <span class="cbp-end">亮</span></label>
+            <div class="cbp-hint"><span>拖動圖片調整位置，兩指可縮放。照片只在這支手機處理，不會上傳。</span>
+                <button type="button" class="cbp-reset" onclick="resetCustomBackgroundAdjust()">重設</button></div>
+        </div>
         <div class="modal-actions">
             <button class="btn-greeting-option" id="btnGreetMorning" onclick="selectGreetingText('早安')" title="早安">
                 <svg viewBox="0 0 100 100">
@@ -716,6 +763,16 @@
                         <path d="M 18,84 C 10,84 4,77 4,68 C 4,59 11,53 18,52 C 21,42 31,37 41,37 C 51,37 60,43 62,52 C 70,52 76,59 76,67 C 76,76 70,84 61,84 Z" fill="#FFFFFF" opacity="0.95"></path>
                     </g>
                 </svg>
+            </button>
+
+            <!-- 🌸 用自己的照片當背景：照片只在這支手機裡處理，不會上傳、不會儲存；選了之後按鈕變成縮圖，右上角 ✕ 可改回預設背景圖 -->
+            <button class="btn-greeting-option btn-custom-bg" id="btnCustomBg" type="button" onclick="chooseCustomBackground()" title="用自己的照片當背景（照片只在這支手機裡處理，不會上傳）" aria-label="用自己的照片當背景">
+                <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <rect x="8" y="16" width="84" height="68" rx="10" fill="#ffffff" stroke="#64748b" stroke-width="6"></rect>
+                    <circle cx="31" cy="38" r="8" fill="#F59E0B"></circle>
+                    <path d="M14 78 L38 52 L54 68 L68 54 L88 78 Z" fill="#82C341" stroke="#4B8820" stroke-width="3" stroke-linejoin="round"></path>
+                </svg>
+                <span class="custom-bg-clear" id="customBgClear" onclick="clearCustomBackground(event)" title="改回預設背景圖" role="button" aria-label="改回預設背景圖">✕</span>
             </button>
 
             <button class="btn-toggle-aspect" id="toggleAspectBtn" onclick="toggleImageAspectMode()">
@@ -807,6 +864,9 @@ var SHOW_BACKGROUND_NO = false;
 // 🌸 問候圖以 2 倍解析度繪製（900×1600／1600×900），文字更銳利；
 //    背景圖仍讀原本的網址（不加尺寸參數），背景樣子與之前相同或更清楚
 var CANVAS_SCALE = 2;
+var customBg = null;        // 使用者自己的照片（只在記憶體裡）：{ src(畫布), w, h, zoom, fx, fy, tone }
+var renderSeq = 0;          // 問候圖每重畫一次加 1，過期的重畫結果會丟掉
+var quickPreview = false;   // true＝拖動、縮放中，先畫小張預覽
 
 // 🌸 英數為主時，日安改用的英文問候語（隨機挑一個）
 var englishDaytimeGreetingsPool = ["Good Day~", "Have a Nice Day~", "Stay Well~", "Keep Smiling~", "Best Wishes~"];
@@ -2028,6 +2088,8 @@ function generateAiAphorism() {
 }
 
 function drawLandscapeBackground(ctx, width, height, callback) {
+    if (customBg) { drawCustomBackground(ctx, width, height, callback); return; }
+    var seqAtCall = renderSeq;
     function imagesFor(uses) {
         return backgroundImages.filter(function(b) { return uses.indexOf(b.use) !== -1; });
     }
@@ -2079,6 +2141,7 @@ function drawLandscapeBackground(ctx, width, height, callback) {
         if (hasResponded) return;
         hasResponded = true;
         clearTimeout(loadTimeout);
+        if (seqAtCall !== renderSeq) return;     // 已經有更新的重畫，這次的結果不用了
 
         var imgAspect = img.width / img.height;
         var canvasAspect = width / height;
@@ -2166,6 +2229,257 @@ function drawFallbackCanvasBackground(ctx, width, height, callback) {
 
     if (callback) callback();
 }
+
+// ===== 🌸 用自己的照片當背景 =====
+// 照片只在這支手機的瀏覽器裡處理：不上傳、不存檔、不放進 localStorage；關掉圖頁就清掉。
+// 位置與縮放：zoom（1～4）、fx／fy（0～1，0＝最左／最上，1＝最右／最下，和內建背景圖的 focusX／focusY 同一個意思）
+// 明暗：tone（-1～1）；負的＝加黑色罩（最多 75%），正的＝加白色罩（最多 50%）；選照片時依照片亮度自動給一個預設值，讓白字看得清楚
+var CUSTOM_BG_MAX_SIDE = 2400;      // 照片最長邊縮到這個大小，避免手機記憶體不夠
+var CUSTOM_BG_MAX_BYTES = 40 * 1024 * 1024;
+var customBgRaf = 0, customBgFinalTimer = 0;
+
+function chooseCustomBackground() {
+    var input = document.getElementById('customBgInput');
+    if (input) input.click();
+}
+
+function decodeImageFile(file) {
+    return new Promise(function(resolve, reject) {
+        function viaImgElement() {
+            var url = URL.createObjectURL(file);
+            var im = new Image();
+            im.onload = function() { URL.revokeObjectURL(url); resolve(im); };
+            im.onerror = function() { URL.revokeObjectURL(url); reject(new Error('decode')); };
+            im.src = url;
+        }
+        if (window.createImageBitmap) {
+            try { createImageBitmap(file, { imageOrientation: 'from-image' }).then(resolve, viaImgElement); }
+            catch (e) { viaImgElement(); }
+        } else {
+            viaImgElement();
+        }
+    });
+}
+
+function prepareCustomBgSource(decoded) {
+    var iw = decoded.naturalWidth || decoded.width, ih = decoded.naturalHeight || decoded.height;
+    if (!iw || !ih) throw new Error('empty');
+    var k = Math.min(1, CUSTOM_BG_MAX_SIDE / Math.max(iw, ih));
+    var w = Math.max(1, Math.round(iw * k)), h = Math.max(1, Math.round(ih * k));
+    var c = document.createElement('canvas'); c.width = w; c.height = h;
+    var cx = c.getContext('2d');
+    cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, w, h);          // 透明背景的 PNG 墊白底
+    cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = 'high';
+    cx.drawImage(decoded, 0, 0, w, h);
+    if (decoded.close) { try { decoded.close(); } catch (e) {} }
+    // 算平均亮度（縮成 32×32 取樣）
+    var sm = document.createElement('canvas'); sm.width = 32; sm.height = 32;
+    var sx = sm.getContext('2d'); sx.drawImage(c, 0, 0, 32, 32);
+    var d = sx.getImageData(0, 0, 32, 32).data, sum = 0;
+    for (var i = 0; i < d.length; i += 4) sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+    var lum = sum / (1024 * 255);
+    return { src: c, w: w, h: h, lum: lum, origMax: Math.max(iw, ih) };
+}
+
+// 預設的明暗：照片越亮罩越深（暗罩 15%～62%），白字才看得清楚
+function autoCustomTone(lum) {
+    var alpha = Math.min(0.62, Math.max(0.15, 0.28 + (lum - 0.4) * 0.7));
+    return -alpha / 0.75;
+}
+
+function onCustomBgFile(input) {
+    var file = input.files && input.files[0];
+    input.value = '';                                   // 讓同一張照片可以再選一次
+    if (!file) return;
+    if (file.type && file.type.indexOf('image/') !== 0) { showToast('請選一張照片（JPG、PNG 等圖片檔）。', 4000); return; }
+    if (file.size > CUSTOM_BG_MAX_BYTES) { showToast('這張照片太大（超過 40MB），請換一張小一點的。', 4500); return; }
+    decodeImageFile(file).then(function(decoded) {
+        var info = prepareCustomBgSource(decoded);
+        customBg = { src: info.src, w: info.w, h: info.h, zoom: 1, fx: 0.5, fy: 0.5, lum: info.lum, tone: autoCustomTone(info.lum) };
+        updateCustomBgUI();
+        if (info.origMax < 800) showToast('這張照片比較小，放大後畫面可能不夠清楚。', 4500);
+        quickPreview = false;
+        openMorningModal(currentModalText, currentAspectMode, currentSelectedCardId);
+    }).catch(function() {
+        showToast('這張照片無法開啟，請換一張 JPG 或 PNG。', 4500);
+    });
+}
+
+function customCanvasSize() {
+    return (currentAspectMode === 'landscape') ? { w: 800, h: 450 } : { w: 450, h: 800 };
+}
+function customGeom(W, H) {
+    var b = customBg, s0 = Math.max(W / b.w, H / b.h), sc = s0 * b.zoom;
+    var rw = b.w * sc, rh = b.h * sc;
+    return { sc: sc, rw: rw, rh: rh, ox: (W - rw) * b.fx, oy: (H - rh) * b.fy };
+}
+function setCustomOffset(W, H, ox, oy) {
+    var g = customGeom(W, H), minX = W - g.rw, minY = H - g.rh;      // 最小值 ≤ 0
+    ox = Math.min(0, Math.max(minX, ox)); oy = Math.min(0, Math.max(minY, oy));
+    if (minX < -0.0001) customBg.fx = ox / minX;
+    if (minY < -0.0001) customBg.fy = oy / minY;
+}
+// 以 (ax, ay)（畫布座標）為中心縮放，讓那一點留在原位
+function zoomCustomAt(newZoom, ax, ay) {
+    var size = customCanvasSize(), W = size.w, H = size.h;
+    newZoom = Math.min(4, Math.max(1, newZoom));
+    var g = customGeom(W, H), px = (ax - g.ox) / g.sc, py = (ay - g.oy) / g.sc;
+    customBg.zoom = newZoom;
+    var sc2 = Math.max(W / customBg.w, H / customBg.h) * newZoom;
+    setCustomOffset(W, H, ax - px * sc2, ay - py * sc2);
+}
+
+function drawCustomBackground(ctx, width, height, callback) {
+    currentBackgroundNo = null;
+    var g = customGeom(width, height);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = quickPreview ? 'low' : 'high';
+    ctx.drawImage(customBg.src, g.ox, g.oy, g.rw, g.rh);
+    var t = customBg.tone;
+    if (t < 0) { ctx.fillStyle = 'rgba(0, 0, 0, ' + (0.75 * -t).toFixed(3) + ')'; ctx.fillRect(0, 0, width, height); }
+    else if (t > 0) { ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.5 * t).toFixed(3) + ')'; ctx.fillRect(0, 0, width, height); }
+    if (callback) callback();
+}
+
+// 拖動、縮放、調明暗時：先用小張預覽（跟得上手指），停下來約 0.3 秒後再畫完整大小
+function requestCustomRender() {
+    if (customBgRaf) return;
+    customBgRaf = requestAnimationFrame(function() {
+        customBgRaf = 0;
+        if (!customBg) return;
+        quickPreview = true;
+        openMorningModal(currentModalText, currentAspectMode, currentSelectedCardId);
+        clearTimeout(customBgFinalTimer);
+        customBgFinalTimer = setTimeout(function() {
+            if (!customBg) return;
+            quickPreview = false;
+            openMorningModal(currentModalText, currentAspectMode, currentSelectedCardId);
+        }, 300);
+    });
+}
+
+function syncCustomBgControls() {
+    if (!customBg) return;
+    var z = document.getElementById('customBgZoom'), zv = document.getElementById('customBgZoomVal'), tn = document.getElementById('customBgTone');
+    if (z) z.value = String(Math.round(customBg.zoom * 100));
+    if (zv) zv.textContent = customBg.zoom.toFixed(1) + '×';
+    if (tn) tn.value = String(Math.round(customBg.tone * 100));
+}
+function onCustomBgZoomInput(v) {
+    if (!customBg) return;
+    var size = customCanvasSize();
+    zoomCustomAt(parseInt(v, 10) / 100, size.w / 2, size.h / 2);
+    syncCustomBgControls();
+    requestCustomRender();
+}
+function onCustomBgToneInput(v) {
+    if (!customBg) return;
+    customBg.tone = Math.min(1, Math.max(-1, parseInt(v, 10) / 100));
+    requestCustomRender();
+}
+function resetCustomBackgroundAdjust() {
+    if (!customBg) return;
+    customBg.zoom = 1; customBg.fx = 0.5; customBg.fy = 0.5; customBg.tone = autoCustomTone(customBg.lum);
+    syncCustomBgControls();
+    requestCustomRender();
+}
+
+// 按鈕外觀（有照片時顯示縮圖與 ✕）、調整面板、圖頁高度
+function updateCustomBgUI() {
+    var on = !!customBg;
+    var btn = document.getElementById('btnCustomBg'), panel = document.getElementById('customBgPanel'), modal = document.getElementById('morningModal'), ov = document.getElementById('morningImgOverlay');
+    if (btn) {
+        btn.classList.toggle('has-photo', on);
+        if (on) {
+            var th = document.createElement('canvas'); th.width = 76; th.height = 76;
+            var tx = th.getContext('2d'), k = Math.max(76 / customBg.w, 76 / customBg.h);
+            tx.drawImage(customBg.src, (76 - customBg.w * k) / 2, (76 - customBg.h * k) / 2, customBg.w * k, customBg.h * k);
+            btn.style.backgroundImage = 'url(' + th.toDataURL('image/jpeg', 0.7) + ')';
+            btn.title = '換一張照片（照片只在這支手機裡處理，不會上傳）';
+        } else {
+            btn.style.backgroundImage = '';
+            btn.title = '用自己的照片當背景（照片只在這支手機裡處理，不會上傳）';
+        }
+    }
+    if (panel) panel.style.display = on ? 'flex' : 'none';
+    if (modal) modal.classList.toggle('has-custom', on);
+    if (ov) ov.classList.toggle('adjusting', on);
+    syncCustomBgControls();
+}
+
+// ✕：改回預設背景圖（silent＝關圖頁時使用，不重畫）
+function clearCustomBackground(ev, silent) {
+    if (ev && ev.stopPropagation) ev.stopPropagation();
+    if (!customBg) return;
+    clearTimeout(customBgFinalTimer);
+    customBg = null;
+    quickPreview = false;
+    updateCustomBgUI();
+    if (!silent) openMorningModal(currentModalText, currentAspectMode, currentSelectedCardId);
+}
+
+// 在問候圖上用手指／滑鼠拖動、兩指縮放、滾輪縮放
+var customBgPointers = {};
+function initCustomBgGestures() {
+    var el = document.getElementById('morningImgOverlay');
+    if (!el) return;
+    function ids() { return Object.keys(customBgPointers); }
+    function info() {
+        var list = ids().map(function(k) { return customBgPointers[k]; });
+        if (list.length >= 2) {
+            var a = list[0], b = list[1];
+            return { n: 2, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, d: Math.hypot(a.x - b.x, a.y - b.y) };
+        }
+        return { n: list.length, x: list.length ? list[0].x : 0, y: list.length ? list[0].y : 0, d: 0 };
+    }
+    var last = null;
+    function toCanvas(clientX, clientY) {
+        var r = el.getBoundingClientRect(), size = customCanvasSize();
+        return { x: (clientX - r.left) * size.w / r.width, y: (clientY - r.top) * size.h / r.height, k: size.w / r.width };
+    }
+    el.addEventListener('pointerdown', function(e) {
+        if (!customBg) return;
+        e.preventDefault();
+        try { el.setPointerCapture(e.pointerId); } catch (err) {}
+        customBgPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        last = info();
+    });
+    el.addEventListener('pointermove', function(e) {
+        if (!customBg || !customBgPointers[e.pointerId]) return;
+        e.preventDefault();
+        customBgPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+        var cur = info(), size = customCanvasSize();
+        if (last && cur.n === last.n) {
+            var k = toCanvas(0, 0).k;
+            if (cur.n === 2 && last.d > 0) {
+                var c = toCanvas(cur.x, cur.y);
+                zoomCustomAt(customBg.zoom * (cur.d / last.d), c.x, c.y);
+            }
+            var g = customGeom(size.w, size.h);
+            setCustomOffset(size.w, size.h, g.ox + (cur.x - last.x) * k, g.oy + (cur.y - last.y) * k);
+            syncCustomBgControls();
+            requestCustomRender();
+        }
+        last = cur;
+    });
+    function end(e) {
+        if (customBgPointers[e.pointerId]) { delete customBgPointers[e.pointerId]; last = info(); }
+    }
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    el.addEventListener('lostpointercapture', end);
+    el.addEventListener('wheel', function(e) {
+        if (!customBg) return;
+        e.preventDefault();
+        var c = toCanvas(e.clientX, e.clientY);
+        var f = Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0015));   // 依滾動量縮放：滑鼠滾一格約 16%，觸控板小幅滾動就小幅縮放
+        zoomCustomAt(customBg.zoom * Math.min(2, Math.max(0.5, f)), c.x, c.y);
+        syncCustomBgControls();
+        requestCustomRender();
+    }, { passive: false });
+}
+initCustomBgGestures();
 
 // 🌸 金句畫布斷句：依「新的版本」為每句指定的斷句（lines）
 function splitTextSmartRhythm(text, cardId) {
@@ -2296,6 +2610,8 @@ function toggleImageAspectMode() {
 }
 
 function openMorningModal(aphorismText, aspectMode, cardId) {
+    var mySeq = ++renderSeq;                 // 每次重畫加 1；比較慢的舊重畫（字型、背景圖還在載入時）結果會丟掉
+    CANVAS_SCALE = quickPreview ? 1 : 2;     // 拖動、縮放時先畫小張預覽，放開後再畫完整大小
     currentShareFile = null;
     currentModalText = aphorismText;
     currentAspectMode = aspectMode || 'portrait'; 
@@ -2336,7 +2652,9 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
     });
 
     ensureKaiFontLoaded(lines.join('')).then(function() {
+    if (mySeq !== renderSeq) return;
     drawLandscapeBackground(ctx, canvasW, canvasH, function() {
+        if (mySeq !== renderSeq) return;
         var fontKai = '"DFKai-SB", "Microsoft DFKai-SB", "標楷體", "BiauKai", "Kaiti TC", "Kaiti SC", "LXGW WenKai TC", "楷體", serif';
         ctx.fillStyle = '#ffffff';
         ctx.shadowColor = 'rgba(0, 0, 0, 0.95)'; 
@@ -2667,34 +2985,38 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
         }
         
         // 🌸 網址浮水印：小字、半透明；橫式放左下角，直式放右下角（避開「靜思語錄」字樣）
-        ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-        ctx.shadowBlur = 3 * CANVAS_SCALE;
-        ctx.textBaseline = 'bottom';
-        if (currentAspectMode === 'landscape') {
-            ctx.textAlign = 'left';
-            ctx.fillText(WATERMARK_TEXT, 16, canvasH - 10);
-        } else {
-            ctx.textAlign = 'right';
-            ctx.fillText(WATERMARK_TEXT, canvasW - 14, canvasH - 10);
+        //    用自己的照片當背景時，圖上不放我的網址（「靜思語錄」出處字樣仍保留）
+        if (!customBg) {
+            ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+            ctx.shadowBlur = 3 * CANVAS_SCALE;
+            ctx.textBaseline = 'bottom';
+            if (currentAspectMode === 'landscape') {
+                ctx.textAlign = 'left';
+                ctx.fillText(WATERMARK_TEXT, 16, canvasH - 10);
+            } else {
+                ctx.textAlign = 'right';
+                ctx.fillText(WATERMARK_TEXT, canvasW - 14, canvasH - 10);
+            }
         }
 
         ctx.shadowBlur = 0; 
         
         if (imgOverlay) {
-            imgOverlay.src = canvas.toDataURL('image/jpeg', 0.95);
+            imgOverlay.src = canvas.toDataURL('image/jpeg', quickPreview ? 0.6 : 0.95);
             // 🌸 電腦上滑鼠停在圖上，會顯示背景圖編號，方便指定要調整哪一張
             imgOverlay.title = (SHOW_BACKGROUND_NO && currentBackgroundNo) ? ('背景圖 #' + currentBackgroundNo) : '';
             var bgNoLabel = document.getElementById('bgNoLabel');
             if (bgNoLabel) {
-                bgNoLabel.textContent = currentBackgroundNo ? ('背景圖 #' + currentBackgroundNo) : '漸層背景';
+                bgNoLabel.textContent = customBg ? '自選照片' : (currentBackgroundNo ? ('背景圖 #' + currentBackgroundNo) : '漸層背景');
                 bgNoLabel.style.display = SHOW_BACKGROUND_NO ? 'block' : 'none';
             }
         }
         // 🌸 先把問候圖轉成檔案備用，按 LINE 鈕時才能立刻交給手機分享
-        if (canvas.toBlob) {
+        if (canvas.toBlob && !quickPreview) {
             canvas.toBlob(function(blob) {
+                if (mySeq !== renderSeq) return;
                 currentShareFile = blob ? new File([blob], 'JS問候圖.jpg', { type: 'image/jpeg' }) : null;
             }, 'image/jpeg', 0.95);
         }
@@ -2706,6 +3028,7 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
 
 function closeMorningModal() {
     document.getElementById('morningModal').style.display = 'none';
+    clearCustomBackground(null, true);       // 關掉圖頁就把使用者的照片從記憶體清掉
 }
 
 function downloadCurrentMorningImage() {
@@ -3444,7 +3767,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261120';
+var APP_VERSION = 'v261120b';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
