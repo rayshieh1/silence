@@ -1,6 +1,6 @@
 // 🌸 JS語錄產生器 Service Worker
-// ⚠️ 每次更新 index.html 時，請把下面的版本號改成當天日期（例：v261117，同一天第二次改 v261117b），並和 index.html 的 APP_VERSION 一致，並與 index.html 一起上傳
-const VERSION = 'v261118c';
+// ⚠️ 每次更新 index.html 或 quotes.js 時，請把下面的版本號改成當天日期（例：v261117，同一天第二次改 v261117b），並和 index.html 的 APP_VERSION 一致，並一起上傳（index.html、sw.js，有改的話再加 quotes.js）
+const VERSION = 'v261120';
 
 const CORE_CACHE = 'core-' + VERSION;   // 網頁本體與圖示（隨版本更新）
 const IMG_CACHE = 'images';             // 背景圖：看過才存，跨版本保留
@@ -9,6 +9,7 @@ const FONT_CACHE = 'fonts';             // 楷體字型：跨版本保留
 const CORE_FILES = [
   './',
   'index.html',
+  'quotes.js',
   'manifest.json',
   'avatar.jpg',
   'icon-192.png',
@@ -83,10 +84,12 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 5. 其他同網域檔案（圖示等）：先網路，失敗用快取
+  // 5. 其他同網域檔案（金句檔 quotes.js、圖示等）：先網路，失敗用快取；
+  //    quotes.js 每次都向伺服器確認有沒有更新（no-cache），改了金句後使用者很快就會看到新的
   if (url.origin === location.origin) {
+    const opts = url.pathname.endsWith('/quotes.js') ? { cache: 'no-cache' } : undefined;
     event.respondWith(
-      fetch(req).catch(() => caches.match(req, { ignoreSearch: true }))
+      fetch(req, opts).catch(() => caches.match(req, { ignoreSearch: true }))
     );
   }
 });
