@@ -317,26 +317,41 @@
             background: #1b365d; color: #ffffff; font-size: 11px; line-height: 1; border-radius: 0 5px 0 6px; cursor: pointer;
         }
         .btn-custom-bg.has-photo .custom-bg-clear { display: inline-flex; }
-        /* 🌸 自選照片的調整面板（縮放、明暗、重設） */
-        .custom-bg-panel { width: 100%; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #334155; }
-        .cbp-row { display: flex; align-items: center; gap: 6px; margin: 0; }
-        .cbp-row input[type=range] { flex: 1; min-width: 0; height: 22px; margin: 0; accent-color: #1b365d; }
-        .cbp-label { width: 28px; flex: none; font-weight: bold; }
-        .cbp-val { width: 34px; flex: none; text-align: right; }
-        .cbp-end { flex: none; color: #64748b; }
-        .cbp-hint { display: flex; align-items: center; gap: 6px; line-height: 1.3; color: #64748b; }
-        .cbp-hint span { flex: 1; }
-        .cbp-reset { flex: none; height: 24px; padding: 0 10px; border: none; border-radius: 6px; background: #e5e5e5; color: #333333; font-size: 12px; font-weight: bold; cursor: pointer; }
+        /* 🌸 自選照片的調整面板：左邊兩條滑桿（縮放、明暗），右邊「圖片重設」鈕（在 ✕ 正上方、同樣大小），下面一行說明 */
+        .custom-bg-panel { width: 100%; display: grid; grid-template-columns: 1fr auto; column-gap: 8px; row-gap: 2px; align-items: center; color: #334155; }
+        .cbp-sliders { display: flex; flex-direction: column; min-width: 0; }
+        /* 滑桿：縮放條的圓點從「比條粗一點」（14px）隨縮放變到兩倍大（28px）；明暗條的圓點從「藍底藍圈」往右漸漸變淺，到最右邊是「白底藍圈」 */
+        .cbp-range { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; margin: 0; padding: 0; background: transparent; cursor: pointer; --thumb: 14px; --fill: #1b365d; }
+        .cbp-range:focus { outline: none; }
+        .cbp-range::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: #cbd5e1; }
+        .cbp-range::-moz-range-track { height: 6px; border-radius: 3px; background: #cbd5e1; }
+        .cbp-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; box-sizing: border-box; width: var(--thumb); height: var(--thumb); border-radius: 50%; background: var(--fill); border: 3px solid #1b365d; margin-top: calc((6px - var(--thumb)) / 2); }
+        .cbp-range::-moz-range-thumb { box-sizing: border-box; width: var(--thumb); height: var(--thumb); border-radius: 50%; background: var(--fill); border: 3px solid #1b365d; }
+        /* 圖片重設鈕：逆時針圓箭頭（和「詞句重設」的順時針箭頭成對），和 ✕ 同大小 */
+        .cbp-reset-sq { align-self: end; color: #333333; }
+        .cbp-reset-sq svg { display: block; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+        /* 第一次選照片前的說明視窗（蓋在圖頁上面） */
+        .notice-overlay { display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.55); align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
+        .notice-overlay.show { display: flex; }
+        .notice-box { background: #ffffff; color: var(--primary-color); border-radius: 12px; width: 100%; max-width: 340px; max-height: 92vh; overflow-y: auto; padding: 16px 18px; box-sizing: border-box; box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+        .notice-box h3 { margin: 0 0 8px 0; font-size: 1.05rem; text-align: center; }
+        .notice-list { margin: 0; padding-left: 1.3em; font-size: 14px; line-height: 1.7; color: #334155; }
+        .notice-actions { display: flex; gap: 8px; margin-top: 14px; }
+        .notice-actions button { flex: 1; height: 38px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .notice-cancel { background: #e5e5e5; color: #333333; }
+        .notice-ok { background: var(--primary-color); color: #ffffff; flex: 2 !important; }
+        .cbp-hint { grid-column: 1 / -1; line-height: 1.3; font-size: 12px; color: #64748b; }
         #morningImgOverlay.adjusting { cursor: grab; touch-action: none; -webkit-touch-callout: none !important; user-select: none; -webkit-user-select: none; }
-        #morningModal.has-custom .modal-canvas-wrapper, #morningModal.has-custom #morningCanvas, #morningModal.has-custom #morningImgOverlay { max-height: calc(72vh - 96px); }
+        #morningModal.has-custom .modal-canvas-wrapper, #morningModal.has-custom #morningCanvas, #morningModal.has-custom #morningImgOverlay { max-height: calc(72vh - 112px); }
         /* 最下列現在有 8 個控制項：窄螢幕把按鈕縮小一點，並把「橫幅」鈕的字拿掉只留圖示，才排得下 */
         @media (max-width: 419px) {
-            .modal-actions .btn-greeting-option, .modal-actions .btn-square-action { width: 36px !important; min-width: 36px !important; max-width: 36px !important; height: 36px !important; min-height: 36px !important; max-height: 36px !important; }
+            .modal-actions .btn-greeting-option, .modal-actions .btn-square-action, .custom-bg-panel .btn-square-action { width: 36px !important; min-width: 36px !important; max-width: 36px !important; height: 36px !important; min-height: 36px !important; max-height: 36px !important; }
             .modal-actions .btn-toggle-aspect { height: 36px; }
         }
         @media (max-width: 379px) { .btn-toggle-aspect span { display: none; } }
         @media (max-width: 359px) {
-            .modal-actions .btn-greeting-option, .modal-actions .btn-square-action { width: 32px !important; min-width: 32px !important; max-width: 32px !important; height: 32px !important; min-height: 32px !important; max-height: 32px !important; }
+            .modal-actions .btn-greeting-option, .modal-actions .btn-square-action, .custom-bg-panel .btn-square-action { width: 32px !important; min-width: 32px !important; max-width: 32px !important; height: 32px !important; min-height: 32px !important; max-height: 32px !important; }
+            .cbp-reset-sq svg { width: 21px; height: 21px; }
             .modal-actions .btn-toggle-aspect { height: 32px; }
             .modal-actions .btn-greeting-option svg { width: 24px; height: 24px; }
         }
@@ -717,15 +732,12 @@
         </div>
         <input type="file" id="customBgInput" accept="image/*" style="display:none" onchange="onCustomBgFile(this)">
         <div class="custom-bg-panel" id="customBgPanel" style="display:none">
-            <label class="cbp-row"><span class="cbp-label">縮放</span>
-                <input type="range" id="customBgZoom" min="100" max="400" step="1" value="100" oninput="onCustomBgZoomInput(this.value)" aria-label="縮放照片">
-                <span class="cbp-val" id="customBgZoomVal">1.0×</span></label>
-            <label class="cbp-row"><span class="cbp-label">明暗</span>
-                <span class="cbp-end">暗</span>
-                <input type="range" id="customBgTone" min="-100" max="100" step="1" value="-30" oninput="onCustomBgToneInput(this.value)" aria-label="調整照片明暗">
-                <span class="cbp-end">亮</span></label>
-            <div class="cbp-hint"><span>拖動圖片調整位置，兩指可縮放。照片只在這支手機處理，不會上傳。</span>
-                <button type="button" class="cbp-reset" onclick="resetCustomBackgroundAdjust()">重設</button></div>
+            <div class="cbp-hint">可拖動或縮放圖片調整位置。照片只在這支手機處理，本站不會儲存或使用。選用之照片須自行負責。</div>
+            <div class="cbp-sliders">
+                <input type="range" class="cbp-range" id="customBgZoom" min="100" max="400" step="1" value="100" oninput="onCustomBgZoomInput(this.value)" aria-label="縮放照片" title="縮放（圓點越大，照片放得越大）">
+                <input type="range" class="cbp-range" id="customBgTone" min="-100" max="100" step="1" value="-30" oninput="onCustomBgToneInput(this.value)" aria-label="調整照片明暗" title="明暗（往右越亮）">
+            </div>
+            <button type="button" class="btn-square-action cbp-reset-sq" onclick="resetCustomBackgroundAdjust()" title="圖片重設" aria-label="圖片重設"><svg viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(24,0) scale(-1,1)"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></g></svg></button>
         </div>
         <div class="modal-actions">
             <button class="btn-greeting-option" id="btnGreetMorning" onclick="selectGreetingText('早安')" title="早安">
@@ -766,7 +778,7 @@
             </button>
 
             <!-- 🌸 用自己的照片當背景：照片只在這支手機裡處理，不會上傳、不會儲存；選了之後按鈕變成縮圖，右上角 ✕ 可改回預設背景圖 -->
-            <button class="btn-greeting-option btn-custom-bg" id="btnCustomBg" type="button" onclick="chooseCustomBackground()" title="用自己的照片當背景（照片只在這支手機裡處理，不會上傳）" aria-label="用自己的照片當背景">
+            <button class="btn-greeting-option btn-custom-bg" id="btnCustomBg" type="button" onclick="chooseCustomBackground()" title="自行選用圖片當背景（照片只在這支手機上處理，不會上傳或備份）" aria-label="自行選用圖片當背景">
                 <svg viewBox="0 0 100 100" aria-hidden="true">
                     <rect x="8" y="16" width="84" height="68" rx="10" fill="#ffffff" stroke="#64748b" stroke-width="6"></rect>
                     <circle cx="31" cy="38" r="8" fill="#F59E0B"></circle>
@@ -2238,9 +2250,27 @@ var CUSTOM_BG_MAX_SIDE = 2400;      // 照片最長邊縮到這個大小，避�
 var CUSTOM_BG_MAX_BYTES = 40 * 1024 * 1024;
 var customBgRaf = 0, customBgFinalTimer = 0;
 
-function chooseCustomBackground() {
+var CUSTOM_BG_ACK_KEY = 'jsCustomBgAck';
+function openCustomBgPicker() {
     var input = document.getElementById('customBgInput');
     if (input) input.click();
+}
+// 第一次按相片鈕：先顯示說明視窗，按「我了解」後才開選檔視窗，並記在這支手機上，之後不再詢問（記不下來時就每次都問）
+function chooseCustomBackground() {
+    var acked = false;
+    try { acked = localStorage.getItem(CUSTOM_BG_ACK_KEY) === '1'; } catch (e) {}
+    if (acked) { openCustomBgPicker(); return; }
+    var box = document.getElementById('customBgNotice');
+    if (box) box.classList.add('show'); else openCustomBgPicker();
+}
+function closeCustomBgNotice() {
+    var box = document.getElementById('customBgNotice');
+    if (box) box.classList.remove('show');
+}
+function acceptCustomBgNotice() {
+    try { localStorage.setItem(CUSTOM_BG_ACK_KEY, '1'); } catch (e) {}
+    closeCustomBgNotice();
+    openCustomBgPicker();
 }
 
 function decodeImageFile(file) {
@@ -2291,17 +2321,17 @@ function onCustomBgFile(input) {
     var file = input.files && input.files[0];
     input.value = '';                                   // 讓同一張照片可以再選一次
     if (!file) return;
-    if (file.type && file.type.indexOf('image/') !== 0) { showToast('請選一張照片（JPG、PNG 等圖片檔）。', 4000); return; }
-    if (file.size > CUSTOM_BG_MAX_BYTES) { showToast('這張照片太大（超過 40MB），請換一張小一點的。', 4500); return; }
+    if (file.type && file.type.indexOf('image/') !== 0) { showToast('限 JPG、PNG 等圖檔。', 4000); return; }
+    if (file.size > CUSTOM_BG_MAX_BYTES) { showToast('限 40MB 以下圖檔。', 4500); return; }
     decodeImageFile(file).then(function(decoded) {
         var info = prepareCustomBgSource(decoded);
         customBg = { src: info.src, w: info.w, h: info.h, zoom: 1, fx: 0.5, fy: 0.5, lum: info.lum, tone: autoCustomTone(info.lum) };
         updateCustomBgUI();
-        if (info.origMax < 800) showToast('這張照片比較小，放大後畫面可能不夠清楚。', 4500);
+        if (info.origMax < 800) showToast('照片較小，放大後畫面可能會不清楚。', 4500);
         quickPreview = false;
         openMorningModal(currentModalText, currentAspectMode, currentSelectedCardId);
     }).catch(function() {
-        showToast('這張照片無法開啟，請換一張 JPG 或 PNG。', 4500);
+        showToast('該圖檔無法開啟。', 4500);
     });
 }
 
@@ -2361,10 +2391,19 @@ function requestCustomRender() {
 
 function syncCustomBgControls() {
     if (!customBg) return;
-    var z = document.getElementById('customBgZoom'), zv = document.getElementById('customBgZoomVal'), tn = document.getElementById('customBgTone');
-    if (z) z.value = String(Math.round(customBg.zoom * 100));
-    if (zv) zv.textContent = customBg.zoom.toFixed(1) + '×';
-    if (tn) tn.value = String(Math.round(customBg.tone * 100));
+    var z = document.getElementById('customBgZoom'), tn = document.getElementById('customBgTone');
+    if (z) {
+        z.value = String(Math.round(customBg.zoom * 100));
+        // 縮放條的圓點：1 倍時 14px（比條粗一點），4 倍時 28px（兩倍大），用來標示照片放大了多少
+        z.style.setProperty('--thumb', (14 + 14 * (customBg.zoom - 1) / 3).toFixed(1) + 'px');
+    }
+    if (tn) {
+        tn.value = String(Math.round(customBg.tone * 100));
+        // 明暗條的圓點：最左邊藍底（和藍圈同色），越往右越淺，最右邊白底
+        var t = (customBg.tone + 1) / 2, r = Math.round(27 + (255 - 27) * t), g = Math.round(54 + (255 - 54) * t), b = Math.round(93 + (255 - 93) * t);
+        tn.style.setProperty('--thumb', '22px');
+        tn.style.setProperty('--fill', 'rgb(' + r + ',' + g + ',' + b + ')');
+    }
 }
 function onCustomBgZoomInput(v) {
     if (!customBg) return;
@@ -2376,6 +2415,7 @@ function onCustomBgZoomInput(v) {
 function onCustomBgToneInput(v) {
     if (!customBg) return;
     customBg.tone = Math.min(1, Math.max(-1, parseInt(v, 10) / 100));
+    syncCustomBgControls();
     requestCustomRender();
 }
 function resetCustomBackgroundAdjust() {
@@ -2396,13 +2436,13 @@ function updateCustomBgUI() {
             var tx = th.getContext('2d'), k = Math.max(76 / customBg.w, 76 / customBg.h);
             tx.drawImage(customBg.src, (76 - customBg.w * k) / 2, (76 - customBg.h * k) / 2, customBg.w * k, customBg.h * k);
             btn.style.backgroundImage = 'url(' + th.toDataURL('image/jpeg', 0.7) + ')';
-            btn.title = '換一張照片（照片只在這支手機裡處理，不會上傳）';
+            btn.title = '換一張自己的照片（照片只在這支手機上處理，不會上傳或備份）';
         } else {
             btn.style.backgroundImage = '';
-            btn.title = '用自己的照片當背景（照片只在這支手機裡處理，不會上傳）';
+            btn.title = '自行選用圖片當背景（照片只在這支手機上處理，不會上傳或備份）';
         }
     }
-    if (panel) panel.style.display = on ? 'flex' : 'none';
+    if (panel) panel.style.display = on ? 'grid' : 'none';
     if (modal) modal.classList.toggle('has-custom', on);
     if (ov) ov.classList.toggle('adjusting', on);
     syncCustomBgControls();
@@ -3749,6 +3789,24 @@ if (!openFromUrlHash()) {
 }
 </script>
 
+<!-- 🌸 第一次選自己的照片前的說明視窗（按「我了解」後記在這支手機上，之後不再詢問） -->
+<div class="notice-overlay" id="customBgNotice" onclick="if(event.target===this)closeCustomBgNotice()">
+    <div class="notice-box" role="dialog" aria-modal="true" aria-labelledby="customBgNoticeTitle">
+        <h3 id="customBgNoticeTitle">選用自己的照片前，請先看一下</h3>
+        <ul class="notice-list">
+            <li>請使用自己拍攝或有權使用的照片。</li>
+            <li>所選圖片僅於這個瀏覽器裡處理，關掉畫面即清除。</li>
+            <li>勿使用不雅、暴力、侵犯他人肖像、隱私、著作權的圖片。</li>
+            <li>本站不會儲存、蒐集、備份於任何地方或使用。</li>
+            <li>出圖的內容、使用、分享，由用戶自行負責，與本站無關。</li>
+        </ul>
+        <div class="notice-actions">
+            <button type="button" class="notice-cancel" onclick="closeCustomBgNotice()">取消</button>
+            <button type="button" class="notice-ok" onclick="acceptCustomBgNotice()">我已了解，開始選擇照片</button>
+        </div>
+    </div>
+</div>
+
 <!-- 🌸 安裝教學視窗 -->
 <div class="install-modal" id="installModal" onclick="if(event.target===this)closeInstallModal()">
     <div class="install-modal-box">
@@ -3767,7 +3825,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261120b';
+var APP_VERSION = 'v261120c';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
