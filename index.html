@@ -318,17 +318,17 @@
         }
         .btn-custom-bg.has-photo .custom-bg-clear { display: inline-flex; }
         /* 🌸 自選照片的調整面板：左邊兩條滑桿（縮放、明暗），右邊「圖片重設」鈕（在 ✕ 正上方、同樣大小），下面一行說明 */
-        .custom-bg-panel { width: 100%; display: grid; grid-template-columns: 1fr auto; column-gap: 8px; row-gap: 2px; align-items: center; color: #334155; }
+        .custom-bg-panel { width: 100%; display: grid; grid-template-columns: 1fr auto; column-gap: 8px; row-gap: 2px; align-items: center; color: #334155; margin-bottom: -6px; }   /* 負的下邊距：讓整個面板往下靠，離最下列只剩 2px */
         .cbp-sliders { display: flex; flex-direction: column; min-width: 0; }
         /* 滑桿：縮放條的圓點從「比條粗一點」（14px）隨縮放變到兩倍大（28px）；明暗條的圓點從「藍底藍圈」往右漸漸變淺，到最右邊是「白底藍圈」 */
-        .cbp-range { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; margin: 0; padding: 0; background: transparent; cursor: pointer; --thumb: 14px; --fill: #1b365d; }
+        .cbp-range { -webkit-appearance: none; appearance: none; width: 100%; height: 26px; margin: 0; padding: 0; background: transparent; cursor: pointer; --thumb: 14px; --fill: #1b365d; }
         .cbp-range:focus { outline: none; }
         .cbp-range::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: #cbd5e1; }
         .cbp-range::-moz-range-track { height: 6px; border-radius: 3px; background: #cbd5e1; }
         .cbp-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; box-sizing: border-box; width: var(--thumb); height: var(--thumb); border-radius: 50%; background: var(--fill); border: 3px solid #1b365d; margin-top: calc((6px - var(--thumb)) / 2); }
         .cbp-range::-moz-range-thumb { box-sizing: border-box; width: var(--thumb); height: var(--thumb); border-radius: 50%; background: var(--fill); border: 3px solid #1b365d; }
         /* 圖片重設鈕：逆時針圓箭頭（和「詞句重設」的順時針箭頭成對），和 ✕ 同大小 */
-        .cbp-reset-sq { align-self: end; color: #333333; }
+        .cbp-reset-sq { align-self: center; color: #333333; }   /* 在兩條滑桿的正中間（兩條都在它的左邊），版面整齊 */
         .cbp-reset-sq svg { display: block; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
         /* 第一次選照片前的說明視窗（蓋在圖頁上面） */
         .notice-overlay { display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.55); align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
@@ -340,7 +340,7 @@
         .notice-actions button { flex: 1; height: 38px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
         .notice-cancel { background: #e5e5e5; color: #333333; }
         .notice-ok { background: var(--primary-color); color: #ffffff; flex: 2 !important; }
-        .cbp-hint { grid-column: 1 / -1; line-height: 1.3; font-size: 12px; color: #64748b; }
+        .cbp-hint { grid-column: 1 / -1; line-height: 1.25; font-size: clamp(9px, calc((100vw - 36px) / 24.4), 12px); white-space: nowrap; color: #64748b; }   /* 固定兩行（「本站」起換行）；較長的第一行有 24 個字，字級隨螢幕寬度縮小，保證不會再被換成三行 */
         #morningImgOverlay.adjusting { cursor: grab; touch-action: none; -webkit-touch-callout: none !important; user-select: none; -webkit-user-select: none; }
         #morningModal.has-custom .modal-canvas-wrapper, #morningModal.has-custom #morningCanvas, #morningModal.has-custom #morningImgOverlay { max-height: calc(72vh - 112px); }
         /* 最下列現在有 8 個控制項：窄螢幕把按鈕縮小一點，並把「橫幅」鈕的字拿掉只留圖示，才排得下 */
@@ -732,7 +732,7 @@
         </div>
         <input type="file" id="customBgInput" accept="image/*" style="display:none" onchange="onCustomBgFile(this)">
         <div class="custom-bg-panel" id="customBgPanel" style="display:none">
-            <div class="cbp-hint">可拖動或縮放圖片調整位置。照片只在這支手機處理，本站不會儲存或使用。選用之照片須自行負責。</div>
+            <div class="cbp-hint">可拖動或縮放圖片調整位置。照片只在這支手機處理，<br>本站不會儲存或使用。選用之照片須自行負責。</div>
             <div class="cbp-sliders">
                 <input type="range" class="cbp-range" id="customBgZoom" min="100" max="400" step="1" value="100" oninput="onCustomBgZoomInput(this.value)" aria-label="縮放照片" title="縮放（圓點越大，照片放得越大）">
                 <input type="range" class="cbp-range" id="customBgTone" min="-100" max="100" step="1" value="-30" oninput="onCustomBgToneInput(this.value)" aria-label="調整照片明暗" title="明暗（往右越亮）">
@@ -3825,7 +3825,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261120c';
+var APP_VERSION = 'v261120e';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
