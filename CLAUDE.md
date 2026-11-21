@@ -20,14 +20,16 @@
 - `quotes.js`：金句資料（`var aphorismsData = [...]`，475 句），在 `index.html` 主程式前用 `<script src="quotes.js">` 載入；載入失敗時頁面會顯示提示
 - `manifest.json`、`sw.js`：PWA（加到主畫面、離線快取）
 - `CNAME`、`avatar.jpg`、`icon-192.png`、`icon-512.png`、`apple-touch-icon.png`
-- `images/01.jpg` ~ `images/50.jpg`：問候圖背景
+- `images/01.jpg` ~ `images/50.jpg`：問候圖背景，編號 #N 對應 `NN.jpg`（#10、#11、#18、#19、#20、#24、#27～#30、#41～#50 已換成新圖，沿用原檔名）
   - 01–10 早安、11–20 晚安、21–30 日安、31–40 心情、41–50 隨機
+  - 50 張都齊了（#1～#50）。
+  - 換圖流程（我的習慣）：我先在 GitHub 刪掉舊圖，再給新圖；新圖存成被刪掉那張的檔名（一換一）。因為手機會快取舊圖，**沿用舊檔名時一定要把 `sw.js` 的 `IMG_CACHE` 名稱改版**（目前 `images-v13`，下次改 `images-v14`…），啟用時會刪掉舊名稱的圖快取
   - 橫式圖預設取偏上 1/3；可個別設定 focusX / focusY
 
 ## 三包分開：程式、金句、圖檔（平常不要碰金句包與圖檔包）
 - **程式包**：`index.html`、`sw.js`、`manifest.json`、`CLAUDE.md`。平常改版面、功能只動這包。
 - **金句包**：`quotes.js`（占原本 `index.html` 的 38%）。**平常不要讀、不要改**；只有我說要新增、修改、刪除金句時才動。
-- **圖檔包**：`images/`（01~50.jpg 問候圖背景）、`avatar.jpg`、`icon-192.png`、`icon-512.png`、`apple-touch-icon.png`。**平常不要讀、不要改**；只有我說要換圖時才動，新圖一律用新檔名。
+- **圖檔包**：`images/`（01~50.jpg 問候圖背景）、`avatar.jpg`、`icon-192.png`、`icon-512.png`、`apple-touch-icon.png`。**平常不要讀、不要改**；只有我說要換圖時才動，換圖流程見上方「檔案結構」。
 - 需要查金句內容時，只用搜尋（grep）找那一句，不要整檔讀。
 - 測試與驗證：金句資料的檢查（句數、編號連續、關鍵詞條件）只在改了 `quotes.js` 時才跑。
 
@@ -36,7 +38,7 @@
 - 每次回覆都要寫清楚：**要上傳哪幾個檔、哪些檔不用傳**，並打包成 zip 給我（`.js` 單檔我有時下載不了）。
 - 只改版面或功能：上傳 `index.html`、`sw.js`（有改規格的話加 `CLAUDE.md`）。**不用傳** `quotes.js`、圖檔。
 - 改金句：上傳 `quotes.js`、`index.html`、`sw.js`（版本號三處要同步，`CLAUDE.md` 有改規格才加）。**不用傳**圖檔。
-- 換圖：上傳新圖（放進 `images` 資料夾，新檔名）、`index.html`（登記新圖）、`sw.js`。**不用傳** `quotes.js`。
+- 換圖：上傳新圖（放進 `images` 資料夾，檔名同被我刪掉的那張）、`index.html`（有改裁切位置 focusX／focusY 或編號才需要，但版本號要改）、`sw.js`（`IMG_CACHE` 名稱改版＋版本號）。**不用傳** `quotes.js`。
 - 上傳後提醒我：開 https://s.rayshieh.com/?openExternalBrowser=1 確認版本號；沒更新就強制重新整理；已安裝的 app 要關掉重開一兩次。
 - 如果漏傳 `quotes.js`，網站會顯示「金句檔 quotes.js 沒有載入」，不會是一片空白。
 
@@ -45,7 +47,7 @@
 - 格式：`v` + 年後兩碼 + 月 + 日，例如 `v261117`；同一天第二次改加 `b`、第三次加 `c`（`v261117b`）。
 - `sw.js` 快取策略：
   - 網頁本體：網路優先，離線才用快取。
-  - `images/`：看過才存、存了不更新 → **要換背景圖請用新檔名，不要覆蓋舊檔**。
+  - `images/`：看過才存、存了不更新（快取名 `images-v13`）→ **換背景圖若沿用舊檔名，要把 `IMG_CACHE` 名稱改版**，否則已看過的手機會一直顯示舊圖。
   - 字型：快取優先。
   - 改了 avatar 或 icon 圖，也要更新版本號。
 

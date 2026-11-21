@@ -917,27 +917,27 @@ var backgroundImages = [
     { no: 7, url: "images/07.jpg", use: "早安" },
     { no: 8, url: "images/08.jpg", use: "早安" },
     { no: 9, url: "images/09.jpg", use: "早安" },
-    { no: 10, url: "images/10.jpg", use: "早安", focusX: 0.8 },
-    { no: 11, url: "images/11.jpg", use: "晚安" },
+    { no: 10, url: "images/10.jpg", use: "早安", focusY: 0.05 },
+    { no: 11, url: "images/11.jpg", use: "晚安", focusY: 0.23 },
     { no: 12, url: "images/12.jpg", use: "晚安" },
     { no: 13, url: "images/13.jpg", use: "晚安", focusY: 0.1 },
     { no: 14, url: "images/14.jpg", use: "晚安" },
     { no: 15, url: "images/15.jpg", use: "晚安" },
     { no: 16, url: "images/16.jpg", use: "晚安" },
     { no: 17, url: "images/17.jpg", use: "晚安" },
-    { no: 18, url: "images/18.jpg", use: "晚安" },
-    { no: 19, url: "images/19.jpg", use: "晚安" },
-    { no: 20, url: "images/20.jpg", use: "晚安" },
+    { no: 18, url: "images/18.jpg", use: "晚安", focusY: 0.5 },
+    { no: 19, url: "images/19.jpg", use: "晚安", focusY: 0.55 },
+    { no: 20, url: "images/20.jpg", use: "晚安", focusY: 0.73 },
     { no: 21, url: "images/21.jpg", use: "日安" },
     { no: 22, url: "images/22.jpg", use: "日安" },
     { no: 23, url: "images/23.jpg", use: "日安" },
     { no: 24, url: "images/24.jpg", use: "日安" },
     { no: 25, url: "images/25.jpg", use: "日安" },
     { no: 26, url: "images/26.jpg", use: "日安" },
-    { no: 27, url: "images/27.jpg", use: "日安" },
+    { no: 27, url: "images/27.jpg", use: "日安", focusX: 0.55, focusY: 0 },
     { no: 28, url: "images/28.jpg", use: "日安" },
     { no: 29, url: "images/29.jpg", use: "日安" },
-    { no: 30, url: "images/30.jpg", use: "日安" },
+    { no: 30, url: "images/30.jpg", use: "日安", focusX: 0.6, focusY: 0.15 },
     { no: 31, url: "images/31.jpg", use: "心情" },
     { no: 32, url: "images/32.jpg", use: "心情" },
     { no: 33, url: "images/33.jpg", use: "心情" },
@@ -951,13 +951,13 @@ var backgroundImages = [
     { no: 41, url: "images/41.jpg", use: "隨機" },
     { no: 42, url: "images/42.jpg", use: "隨機" },
     { no: 43, url: "images/43.jpg", use: "隨機" },
-    { no: 44, url: "images/44.jpg", use: "隨機" },
-    { no: 45, url: "images/45.jpg", use: "隨機" },
-    { no: 46, url: "images/46.jpg", use: "隨機" },
-    { no: 47, url: "images/47.jpg", use: "隨機" },
-    { no: 48, url: "images/48.jpg", use: "隨機" },
-    { no: 49, url: "images/49.jpg", use: "隨機" },
-    { no: 50, url: "images/50.jpg", use: "隨機", focusY: 0.2 }
+    { no: 44, url: "images/44.jpg", use: "隨機", focusY: 0.2 },
+    { no: 45, url: "images/45.jpg", use: "隨機", focusX: 0.55, focusY: 0 },
+    { no: 46, url: "images/46.jpg", use: "隨機", focusX: 0.7, focusY: 0.7 },
+    { no: 47, url: "images/47.jpg", use: "隨機", focusX: 0.6, focusY: 0.14 },
+    { no: 48, url: "images/48.jpg", use: "隨機", focusX: 0.44 },
+    { no: 49, url: "images/49.jpg", use: "隨機", focusX: 0.52 },
+    { no: 50, url: "images/50.jpg", use: "隨機", focusY: 0.75 }
 ];
 
 // 🌸 沒選早午晚安時，金句（或輸入的文字）帶有這些心情相關的關鍵詞，就用「心情」圖，否則用「隨機」圖
@@ -3825,7 +3825,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261120e';
+var APP_VERSION = 'v261121l';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
