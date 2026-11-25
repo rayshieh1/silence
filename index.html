@@ -1895,6 +1895,7 @@ function triggerMorningModalFromSelected() {
     currentModalText = targetText;
     currentAspectMode = 'portrait'; 
     currentSelectedGreeting = '';
+    currentFestivalStep = 0;
     openMorningModal(targetText, currentAspectMode, cardId);
 }
 
@@ -2607,7 +2608,9 @@ function adaptQuotationMarks(text, aspectMode) {
 // 🌸 畫問候圖前，先讓瀏覽器下載霞鶩文楷（只抓用得到的字，最多等 3 秒，逾時改用系統字體）
 function ensureKaiFontLoaded(sampleText) {
     if (!document.fonts || !document.fonts.load) return Promise.resolve();
-    var sample = (sampleText || '') + '靜思語錄早安晚安!~' + daytimeGreetingsPool.join('');
+    var festSample = '';
+    try { festivalsToday().forEach(function(f) { festSample += f.zh + f.en; }); } catch (e) {}   // 今天節日的字也要載入
+    var sample = (sampleText || '') + '靜思語錄早安晚安!~' + daytimeGreetingsPool.join('') + festSample;
     var loadPromise = document.fonts.load('bold 36px "LXGW WenKai TC"', sample).catch(function() {});
     var timeoutPromise = new Promise(function(resolve) { setTimeout(resolve, 3000); });
     return Promise.race([loadPromise, timeoutPromise]);
@@ -2615,9 +2618,15 @@ function ensureKaiFontLoaded(sampleText) {
 
 function selectGreetingText(greetingCategory) {
     if (currentSelectedGreeting === greetingCategory) {
-        currentSelectedGreeting = ""; 
+        // 🌸 節日那天按「日安」：先出今天的節日祝福，再按一次換下一個；都出完是原本的日安字，再按一次才取消
+        if (greetingCategory === '日安' && currentFestivalStep < festivalsToday().length) {
+            currentFestivalStep++;
+        } else {
+            currentSelectedGreeting = "";
+        }
     } else {
         currentSelectedGreeting = greetingCategory;
+        currentFestivalStep = 0;
     }
 
     updateGreetingButtonsUI();
@@ -2958,6 +2967,14 @@ function openMorningModal(aphorismText, aspectMode, cardId) {
                 greetingFontSize = (currentAspectMode === 'landscape') ? 64 : 56;
             }
 
+            // 🌸 節日那天按「日安」：圖上的字換成節日祝福（自己輸入英文為主的文字時用英文）；字句比較長，放不下就先縮小
+            var festNow = currentFestivalGreeting();
+            if (festNow) {
+                renderGreetingStr = useEnglishGreeting ? festNow.en : festNow.zh;
+                greetingFontSize = fitFestivalGreetingSize(ctx, renderGreetingStr, greetingFontSize, useEnglishGreeting, lines.length === 0, isSingleAphorism, finalFontSize, canvasW, canvasH, fontKai);
+                if (!useEnglishGreeting && currentAspectMode !== 'landscape') renderGreetingStr = renderGreetingStr.replace(/\s+/g, '');
+            }
+
             ctx.font = 'bold ' + greetingFontSize + 'px ' + fontKai;
             ctx.fillStyle = '#ffffff';
 
@@ -3228,6 +3245,284 @@ function dedupeSelected(selected, relevantTags) {
         if (!isSimilarToAny(kept, c)) kept.push(c);
     }
     return kept;
+}
+
+// ===== 🌸 節日問候 =====
+// 節日那天按「日安」鈕，圖上的字先出節日祝福；同一天有好幾個節日時，再按一次換下一個，都出完才是原本的日安字，再按一次取消。
+// 早安、晚安不受影響；自己輸入英文為主的文字時，出英文節日字句。
+// 日期：國曆固定日期、每年規則算出的（母親節、感恩節、復活節…）、農曆與節氣（2026～2035 年對照表，來源：香港天文台）。
+//   2035 年以後沒有對照表，農曆與節氣的節日先不出，其餘照常。
+// 同一天有多個節日的先後：先談定的在前、後來新增的在後；另有幾條指定先後（見 FEST_RULES、FEST_EXPLICIT）。
+var FEST = {   // id: [中文, 英文, 群組（o＝先談定的，n＝後來新增的）]
+    "元旦 一元復始": ["一元復始", "A Fresh Start", "o"],
+    "司法節": ["司法節順心", "All the Best on Judicial Day", "o"],
+    "消防節": ["消防節平安", "Firefighters' Day, Stay Safe", "o"],
+    "情人節": ["情人節快樂", "Happy Valentine's Day", "o"],
+    "和平紀念日": ["和平紀念日順心", "Peace Memorial Day, All the Best", "o"],
+    "婦女節": ["婦女節快樂", "Happy Women's Day", "o"],
+    "植樹節": ["植樹節平安", "Stay Safe on Arbor Day", "o"],
+    "義理情人節": ["義理情人節快樂", "Happy White Day", "o"],
+    "聖派翠克節": ["聖派翠克節快樂", "Happy St. Patrick's Day", "o"],
+    "郵政節": ["郵政節快樂", "Happy Postal Day", "o"],
+    "青年節": ["青年節順心", "Youth Day, All the Best", "o"],
+    "愚人節": ["愚人節最快樂", "Happy April Fools' Day", "o"],
+    "社工日": ["社工日平安", "Social Workers' Day, Stay Safe", "o"],
+    "兒童節": ["兒童節快樂", "Happy Children's Day", "o"],
+    "清明節": ["清明節安康", "Tomb-Sweeping Day, Stay Well", "o"],
+    "世界地球日": ["世界地球日順心", "All the Best on Earth Day", "o"],
+    "勞動節": ["勞動節快樂", "Happy Labor Day", "o"],
+    "護理師節": ["護理師節快樂", "Happy Nurses' Day", "o"],
+    "工程節": ["工程節快樂", "Happy Engineers' Day", "o"],
+    "警察節": ["警察節快樂", "Happy Police Day", "o"],
+    "會計師節": ["會計師節快樂", "Happy Accountants' Day", "o"],
+    "漁民節": ["漁民節快樂", "Happy Fishermen's Day", "o"],
+    "父親節": ["父親節快樂", "Happy Father's Day", "o"],
+    "記者節": ["記者節快樂", "Happy Journalists' Day", "o"],
+    "軍人節": ["軍人節快樂", "Happy Armed Forces Day", "o"],
+    "教師節": ["教師節快樂", "Happy Teachers' Day", "o"],
+    "國慶日": ["國慶日快樂", "Happy National Day", "o"],
+    "廚師節": ["廚師節快樂", "Happy Chefs' Day", "o"],
+    "光復節": ["光復節快樂", "Happy Taiwan Restoration Day", "o"],
+    "萬聖節": ["萬聖節平安", "Safe Halloween", "o"],
+    "商人節": ["商人節快樂", "Happy Merchants' Day", "o"],
+    "購物節": ["購物節快樂", "Happy Shopping Day", "o"],
+    "醫師節": ["醫師節快樂", "Happy Doctors' Day", "o"],
+    "聖誕夜": ["聖誕夜快樂", "Happy X'mas Eve", "o"],
+    "聖誕節": ["聖誕節快樂", "Merry Christmas", "o"],
+    "建築師節": ["建築師節快樂", "Happy Architects' Day", "o"],
+    "跨年夜": ["跨年夜平安", "Safe New Year's Eve", "o"],
+    "小年夜": ["小年夜快樂", "Happy Eve of CNY's Eve", "o"],
+    "除夕": ["除夕快樂", "Happy CNY's Eve", "o"],
+    "大年初一 新年": ["新年快樂", "Happy CNY", "o"],
+    "初二 回娘家": ["回娘家平安", "Safe Trip Back", "o"],
+    "初五 開工": ["開工順利", "Wishing a Great Start at Work", "o"],
+    "元宵節": ["元宵節快樂", "Happy Lantern Festival", "o"],
+    "土地公生日": ["土地公生日快樂", "Happy Earth God's Birthday", "o"],
+    "觀音菩薩聖誕": ["觀音菩薩聖誕", "Guanyin Bodhisattva's Birthday", "o"],
+    "上人生日": ["上人生日快樂", "Master Cheng Yen HBD", "o"],
+    "佛誕日": ["佛誕日平安", "Buddha's Birthday, Peace", "o"],
+    "端午": ["端午佳節平安", "Peaceful Dragon Boat Festival", "o"],
+    "七夕": ["七夕快樂", "Happy Qixi", "o"],
+    "中元普渡": ["中元普渡", "Be Well on Ghost Festival", "o"],
+    "中秋": ["中秋佳節快樂", "Happy Mid-Autumn Festival", "o"],
+    "重陽節": ["重陽節快樂", "Happy Double Ninth Festival", "o"],
+    "春分": ["春分", "Spring Equinox", "o"],
+    "夏至": ["夏至", "Summer Solstice", "o"],
+    "秋分": ["秋分", "Autumn Equinox", "o"],
+    "冬至": ["冬至", "Winter Solstice", "o"],
+    "復活節": ["復活節快樂", "Happy Easter", "o"],
+    "耶穌受難日": ["耶穌受難日平安", "Peaceful Good Friday", "o"],
+    "母親節": ["母親節快樂", "Happy Mother's Day", "o"],
+    "祖父母節": ["祖父母節快樂", "Happy Grandparents' Day", "o"],
+    "感恩節": ["感恩節快樂", "Happy Thanksgiving", "o"],
+    "圓周率日": ["圓周率日快樂", "Happy Pi Day", "n"],
+    "國際快樂日": ["國際快樂日", "International Day of Happiness", "n"],
+    "世界閱讀日": ["世界閱讀日快樂", "Happy World Book Day", "n"],
+    "星戰日": ["星戰日快樂", "May the 4th Be With You", "n"],
+    "520 我愛你": ["520 我愛你", "520 I Love You", "n"],
+    "國際茶日": ["國際茶日快樂", "Happy International Tea Day", "n"],
+    "親親情人節": ["親親情人節快樂", "Happy Kiss Day", "n"],
+    "國際接吻節": ["國際接吻節快樂", "Happy Kissing Day", "n"],
+    "國際貓日": ["國際貓日快樂", "Happy International Cat Day", "n"],
+    "國際左撇子日": ["國際左撇子日快樂", "Happy Left-Handers Day", "n"],
+    "國際感恩日": ["國際感恩日快樂", "Happy World Gratitude Day", "n"],
+    "國際咖啡日": ["國際咖啡日快樂", "Happy International Coffee Day", "n"],
+    "光棍節": ["光棍節快樂", "Happy 1111 Day", "n"],
+    "世界善良日": ["世界善良日快樂", "Happy World Kindness Day", "n"],
+    "世界問候日": ["世界問候日快樂", "Happy World Hello Day", "n"],
+    "國際志工日": ["國際志工日快樂", "Happy International Volunteer Day", "n"],
+    "雙十二": ["雙十二快樂", "Happy 12.12 Shopping Day", "n"],
+    "世界睡眠日": ["世界睡眠日晚安", "Sleep Well on World Sleep Day", "n"],
+    "世界微笑日": ["世界微笑日快樂", "Happy World Smile Day", "n"],
+    "黑五": ["黑五快樂", "Happy Black Friday", "n"],
+    "網購星期一": ["網購星期一快樂", "Happy Cyber Monday", "n"]
+};
+var FEST_FIXED = [   // [月, 日, id]：國曆固定日期（先談定的在前，後來新增的在後）
+    [1, 1, "元旦 一元復始"],
+    [1, 11, "司法節"],
+    [1, 19, "消防節"],
+    [2, 14, "情人節"],
+    [2, 28, "和平紀念日"],
+    [3, 8, "婦女節"],
+    [3, 12, "植樹節"],
+    [3, 14, "義理情人節"],
+    [3, 17, "聖派翠克節"],
+    [3, 20, "郵政節"],
+    [3, 29, "青年節"],
+    [4, 1, "愚人節"],
+    [4, 2, "社工日"],
+    [4, 4, "兒童節"],
+    [4, 5, "清明節"],
+    [4, 22, "世界地球日"],
+    [5, 1, "勞動節"],
+    [5, 12, "護理師節"],
+    [6, 6, "工程節"],
+    [6, 15, "警察節"],
+    [6, 30, "會計師節"],
+    [7, 1, "漁民節"],
+    [8, 8, "父親節"],
+    [9, 1, "記者節"],
+    [9, 3, "軍人節"],
+    [9, 28, "教師節"],
+    [10, 10, "國慶日"],
+    [10, 20, "廚師節"],
+    [10, 25, "光復節"],
+    [10, 31, "萬聖節"],
+    [11, 1, "商人節"],
+    [11, 11, "購物節"],
+    [11, 12, "醫師節"],
+    [12, 24, "聖誕夜"],
+    [12, 25, "聖誕節"],
+    [12, 27, "建築師節"],
+    [12, 31, "跨年夜"],
+    [3, 14, "圓周率日"],
+    [3, 20, "國際快樂日"],
+    [4, 23, "世界閱讀日"],
+    [5, 4, "星戰日"],
+    [5, 20, "520 我愛你"],
+    [5, 21, "國際茶日"],
+    [6, 14, "親親情人節"],
+    [7, 6, "國際接吻節"],
+    [8, 8, "國際貓日"],
+    [8, 13, "國際左撇子日"],
+    [9, 21, "國際感恩日"],
+    [10, 1, "國際咖啡日"],
+    [11, 11, "光棍節"],
+    [11, 13, "世界善良日"],
+    [11, 21, "世界問候日"],
+    [12, 5, "國際志工日"],
+    [12, 12, "雙十二"]
+];
+var FEST_LUNAR_IDS = ["小年夜", "除夕", "大年初一 新年", "初二 回娘家", "初五 開工", "元宵節", "土地公生日", "觀音菩薩聖誕", "上人生日", "佛誕日", "端午", "七夕", "中元普渡", "中秋", "重陽節", "春分", "夏至", "秋分", "冬至"];   // 農曆與節氣的節日，順序對應下面的表
+var FEST_LUNAR_TABLE = {   // 年: 各節日的國曆「月日」（月*100+日）
+    2026: [215, 216, 217, 218, 221, 303, 320, 406, 510, 524, 619, 819, 827, 925, 1018, 320, 621, 923, 1222],
+    2027: [204, 205, 206, 207, 210, 220, 309, 326, 430, 513, 609, 808, 816, 915, 1008, 321, 621, 923, 1222],
+    2028: [124, 125, 126, 127, 130, 209, 226, 314, 418, 502, 528, 826, 903, 1003, 1026, 320, 621, 922, 1221],
+    2029: [211, 212, 213, 214, 217, 227, 316, 402, 507, 520, 616, 816, 824, 922, 1016, 320, 621, 923, 1221],
+    2030: [201, 202, 203, 204, 207, 217, 305, 322, 426, 509, 605, 805, 813, 912, 1005, 320, 621, 923, 1222],
+    2031: [121, 122, 123, 124, 127, 206, 222, 311, 415, 528, 624, 824, 901, 1001, 1024, 321, 621, 923, 1222],
+    2032: [209, 210, 211, 212, 215, 225, 313, 330, 503, 516, 612, 812, 820, 919, 1012, 320, 621, 922, 1221],
+    2033: [129, 130, 131, 201, 204, 214, 302, 319, 423, 506, 601, 801, 809, 908, 1001, 320, 621, 923, 1221],
+    2034: [217, 218, 219, 220, 223, 305, 321, 407, 512, 525, 620, 820, 828, 927, 1020, 320, 621, 923, 1222],
+    2035: [206, 207, 208, 209, 212, 222, 311, 328, 501, 515, 610, 810, 818, 916, 1009, 321, 621, 923, 1222]
+};
+var FEST_NEW_FLOAT = ["世界睡眠日", "世界微笑日", "黑五", "網購星期一"];   // 後來新增、日期每年不同的節日
+var FEST_RULES = [['母親節','上人生日'],['母親節','護理師節'],['上人生日','護理師節'],['春分','郵政節'],['春分','土地公生日'],['郵政節','土地公生日'],['情人節','初二 回娘家'],['重陽節','廚師節']];
+var FEST_EXPLICIT = [['520 我愛你','佛誕日'],['父親節','國際貓日'],['國際貓日','七夕']];
+var FEST_JESUS = ['耶穌受難日','復活節'];
+var FEST_CNY_TOP = ['小年夜','除夕','大年初一 新年'];
+var FEST_OLDLIST = ['七夕','中元普渡','中秋','祖父母節'];
+var FEST_NEWORDER = [];
+(function() {
+    FEST_FIXED.forEach(function(f) { if (FEST[f[2]][2] === 'n') FEST_NEWORDER.push(f[2]); });
+    FEST_NEW_FLOAT.forEach(function(n) { FEST_NEWORDER.push(n); });
+})();
+function festIsFixed(id) { return FEST_FIXED.some(function(f) { return f[2] === id; }); }
+function festPair(list, a, b) { return list.some(function(p) { return p[0] === a && p[1] === b; }); }
+function festBefore(a, b) {   // a 是否排在 b 前面：true／false／null（沒有指定）
+    if (festPair(FEST_RULES, a, b)) return true;
+    if (festPair(FEST_RULES, b, a)) return false;
+    var ja = FEST_JESUS.indexOf(a) !== -1, jb = FEST_JESUS.indexOf(b) !== -1;
+    if (ja && !jb) return true;
+    if (jb && !ja) return false;
+    if (FEST_CNY_TOP.indexOf(a) !== -1 && b === '情人節') return true;
+    if (FEST_CNY_TOP.indexOf(b) !== -1 && a === '情人節') return false;
+    return null;
+}
+function festCompare(a, b) {
+    if (festPair(FEST_EXPLICIT, a, b)) return -1;
+    if (festPair(FEST_EXPLICIT, b, a)) return 1;
+    var na = FEST_NEWORDER.indexOf(a) !== -1, nb = FEST_NEWORDER.indexOf(b) !== -1;
+    if (na !== nb) return na ? 1 : -1;                    // 先談定的在前
+    if (!na) {
+        var r = festBefore(a, b);
+        if (r !== null) return r ? -1 : 1;
+        var fa = festIsFixed(a), fb = festIsFixed(b);
+        if (fa !== fb) return fa ? -1 : 1;                // 固定國曆的先出
+        var ia = FEST_OLDLIST.indexOf(a), ib = FEST_OLDLIST.indexOf(b);
+        if (ia === -1) ia = 99; if (ib === -1) ib = 99;
+        return ia === ib ? 0 : (ia < ib ? -1 : 1);
+    }
+    var fa2 = festIsFixed(a), fb2 = festIsFixed(b);
+    if (fa2 !== fb2) return fa2 ? -1 : 1;
+    return FEST_NEWORDER.indexOf(a) - FEST_NEWORDER.indexOf(b);
+}
+// 某年某月（1～12）的第 n 個星期幾（dow：0＝週日）是幾號
+function festNthDow(y, m, dow, n) {
+    var first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
+    return 1 + ((dow - first + 7) % 7) + (n - 1) * 7;
+}
+function festEaster(y) {   // 復活節（國曆）：回傳 [月, 日]
+    var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
+        g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4,
+        l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+        mon = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+    return [mon, day];
+}
+function festShift(y, m, d, delta) {   // 國曆日期加減幾天，回傳 [月, 日]
+    var t = new Date(Date.UTC(y, m - 1, d + delta));
+    return [t.getUTCMonth() + 1, t.getUTCDate()];
+}
+// 某天的所有節日 id（還沒排先後）：順序與預期結果一致
+function festivalIdsOn(y, m, d) {
+    var out = [], md = m * 100 + d;
+    FEST_FIXED.forEach(function(f) { if (f[0] === m && f[1] === d) out.push(f[2]); });
+    var tbl = FEST_LUNAR_TABLE[y];
+    if (tbl) FEST_LUNAR_IDS.forEach(function(id, i) { if (tbl[i] === md) out.push(id); });
+    var e = festEaster(y), easter = e[0] * 100 + e[1], gf = festShift(y, e[0], e[1], -2);
+    if (md === easter) out.push('復活節');
+    if (md === gf[0] * 100 + gf[1]) out.push('耶穌受難日');
+    if (m === 5 && d === festNthDow(y, 5, 0, 2)) out.push('母親節');
+    if (m === 8 && d === festNthDow(y, 8, 0, 4)) out.push('祖父母節');
+    var tg = festNthDow(y, 11, 4, 4);
+    if (m === 11 && d === tg) out.push('感恩節');
+    if (tbl) {   // 世界睡眠日：春分前（不含當天）最近的週五；春分日期來自對照表
+        var eq = tbl[FEST_LUNAR_IDS.indexOf('春分')], em = Math.floor(eq / 100), ed = eq % 100;
+        var s = festShift(y, em, ed, -1), dow = new Date(Date.UTC(y, s[0] - 1, s[1])).getUTCDay();
+        s = festShift(y, s[0], s[1], -((dow - 5 + 7) % 7));
+        if (m === s[0] && d === s[1]) out.push('世界睡眠日');
+    }
+    if (m === 10 && d === festNthDow(y, 10, 5, 1)) out.push('世界微笑日');
+    var bf = festShift(y, 11, tg, 1), cm = festShift(y, 11, tg, 4);
+    if (m === bf[0] && d === bf[1]) out.push('黑五');
+    if (m === cm[0] && d === cm[1]) out.push('網購星期一');
+    return out;
+}
+function festivalsOnDate(y, m, d) {   // 回傳排好先後的 [{id, zh, en}]
+    return festivalIdsOn(y, m, d).sort(festCompare).map(function(id) { return { id: id, zh: FEST[id][0], en: FEST[id][1] }; });
+}
+var festTodayCache = null;
+function festivalsToday() {   // 今天（台灣時間）的節日
+    try {
+        var t = taiwanToday(), key = t.y + '-' + t.m + '-' + t.d;
+        if (!festTodayCache || festTodayCache.key !== key) festTodayCache = { key: key, list: festivalsOnDate(t.y, t.m + 1, t.d) };
+        return festTodayCache.list;
+    } catch (e) { return []; }
+}
+var currentFestivalStep = 0;   // 日安鈕目前出到今天的第幾個節日（0＝第一個；等於節日數＝原本的日安字）
+function currentFestivalGreeting() {   // 現在圖上該出的節日；不是節日、或已經出完就回傳 null
+    if (currentSelectedGreeting !== '日安') return null;
+    var list = festivalsToday();
+    if (!list.length || currentFestivalStep >= list.length) return null;
+    return list[currentFestivalStep];
+}
+// 節日字句比「日安」長：放不下時先縮小節日字，避免蓋到金句、「靜思語錄」或超出畫面
+function fitFestivalGreetingSize(ctx, str, size, isEnglish, noQuote, isSingle, finalFontSize, canvasW, canvasH, fontFamily) {
+    if (currentAspectMode === 'landscape') {
+        ctx.font = 'bold ' + size + 'px ' + fontFamily;
+        var w = ctx.measureText(str).width, maxW = canvasW - 60;
+        if (w > maxW) size = Math.floor(size * maxW / w);
+    } else if (!isEnglish) {
+        var chars = Array.from(str.replace(/\s+/g, '')).length, availH;
+        if (noQuote) availH = canvasH - 120;
+        else if (isSingle) {
+            var tf = Math.max(18, Math.floor(finalFontSize * 0.65));
+            availH = (canvasH - 50 - 4 * tf * 1.1) - 60 - 12;      // 到「靜思語錄」上方
+        } else availH = canvasH - 120;
+        var maxS = Math.floor(availH / (chars * 1.1));
+        if (size > maxS) size = maxS;
+    }
+    return size < 22 ? 22 : size;      // 英文直式之後還會由 fitEnglishGreetingFont 縮到放得下
 }
 
 // ===== 🌸 每日金句 =====
@@ -3825,7 +4120,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261121q';
+var APP_VERSION = 'v261125b';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
