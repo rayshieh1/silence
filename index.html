@@ -908,26 +908,26 @@ var daytimeGreetingsPool = [
 //          「心情」＝沒選早午晚安、金句和心情有關時；「隨機」＝沒選早午晚安、其他金句時
 //    裁切位置（選填）：focusY＝上下（0 最上、0.5 置中、1 最下）；focusX＝左右（0 最左、0.5 置中、1 最右）
 var backgroundImages = [
-    { no: 1, url: "images/01.jpg", use: "早安" },
-    { no: 2, url: "images/02.jpg", use: "早安" },
-    { no: 3, url: "images/03.jpg", use: "早安" },
-    { no: 4, url: "images/04.jpg", use: "早安" },
-    { no: 5, url: "images/05.jpg", use: "早安" },
-    { no: 6, url: "images/06.jpg", use: "早安" },
-    { no: 7, url: "images/07.jpg", use: "早安" },
-    { no: 8, url: "images/08.jpg", use: "早安" },
-    { no: 9, url: "images/09.jpg", use: "早安" },
-    { no: 10, url: "images/10.jpg", use: "早安", focusY: 0.05 },
-    { no: 11, url: "images/11.jpg", use: "晚安", focusY: 0.23 },
-    { no: 12, url: "images/12.jpg", use: "晚安" },
-    { no: 13, url: "images/13.jpg", use: "晚安", focusY: 0.1 },
-    { no: 14, url: "images/14.jpg", use: "晚安" },
-    { no: 15, url: "images/15.jpg", use: "晚安" },
-    { no: 16, url: "images/16.jpg", use: "晚安" },
-    { no: 17, url: "images/17.jpg", use: "晚安" },
-    { no: 18, url: "images/18.jpg", use: "晚安", focusY: 0.5 },
-    { no: 19, url: "images/19.jpg", use: "晚安", focusY: 0.55 },
-    { no: 20, url: "images/20.jpg", use: "晚安", focusY: 0.73 },
+    { no: 1, url: "images/01.jpg", use: "早安", focusY: 0.4 },
+    { no: 2, url: "images/02.jpg", use: "早安", focusY: 0.4 },
+    { no: 3, url: "images/03.jpg", use: "早安", focusY: 0.42 },
+    { no: 4, url: "images/04.jpg", use: "早安", focusY: 0.4 },
+    { no: 5, url: "images/05.jpg", use: "早安", focusY: 0.33 },
+    { no: 6, url: "images/06.jpg", use: "早安", focusY: 0.6 },
+    { no: 7, url: "images/07.jpg", use: "早安", focusY: 0.4 },
+    { no: 8, url: "images/08.jpg", use: "早安", focusY: 0.5 },
+    { no: 9, url: "images/09.jpg", use: "早安", focusY: 0.62 },
+    { no: 10, url: "images/10.jpg", use: "早安", focusY: 0.42 },
+    { no: 11, url: "images/11.jpg", use: "晚安", focusY: 0.25 },
+    { no: 12, url: "images/12.jpg", use: "晚安", focusY: 0.15 },
+    { no: 13, url: "images/13.jpg", use: "晚安", focusY: 0.44 },
+    { no: 14, url: "images/14.jpg", use: "晚安", focusY: 0.32 },
+    { no: 15, url: "images/15.jpg", use: "晚安", focusY: 0.29 },
+    { no: 16, url: "images/16.jpg", use: "晚安", focusY: 0.2 },
+    { no: 17, url: "images/17.jpg", use: "晚安", focusY: 0.15 },
+    { no: 18, url: "images/18.jpg", use: "晚安", focusY: 0.21 },
+    { no: 19, url: "images/19.jpg", use: "晚安", focusY: 0.25 },
+    { no: 20, url: "images/20.jpg", use: "晚安", focusY: 0.45 },
     { no: 21, url: "images/21.jpg", use: "日安" },
     { no: 22, url: "images/22.jpg", use: "日安" },
     { no: 23, url: "images/23.jpg", use: "日安" },
@@ -4120,7 +4120,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // 🌸 版本序號（每次更新改這裡，sw.js 的 VERSION 也改成同一個）
-var APP_VERSION = 'v261125b';
+var APP_VERSION = 'v261126e';
 document.getElementById('appVersion').textContent = APP_VERSION;
 
 // 🌸 安裝鈕
