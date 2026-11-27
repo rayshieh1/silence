@@ -1,9 +1,9 @@
 // 🌸 JS語錄產生器 Service Worker
 // ⚠️ 每次更新 index.html 或 quotes.js 時，請把下面的版本號改成當天日期（例：v261117，同一天第二次改 v261117b），並和 index.html 的 APP_VERSION 一致，並一起上傳（index.html、sw.js，有改的話再加 quotes.js）
-const VERSION = 'v261127b';
+const VERSION = 'v261127d';
 
 const CORE_CACHE = 'core-' + VERSION;   // 網頁本體與圖示（隨版本更新）
-const IMG_CACHE = 'images-v22';         // 背景圖：看過才存，跨版本保留。換圖若沿用舊檔名，要把這個名稱改版（v22→v23…），舊的會在啟用時刪掉
+const IMG_CACHE = 'images-v24';         // 背景圖：看過才存，跨版本保留。換圖若沿用舊檔名，要把這個名稱改版（v24→v25…），舊的會在啟用時刪掉
 const FONT_CACHE = 'fonts';             // 楷體字型：跨版本保留
 
 const CORE_FILES = [
